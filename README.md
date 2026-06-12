@@ -190,17 +190,13 @@ type: custom:washwise-card
 entity: binary_sensor.washwise_daily_driver_can_wash
 name: My Honda Civic          # optional title override
 theme: auto                   # auto | light | dark
-gauge_style: bar              # bar | circle | half-circle
 accent_color: "#2e7d32"
 bad_color: "#c62828"
-icon_set: mdi                 # mdi | emoji
-border_radius: 12
-show_header: true
 show_score_gauge: true
 show_reason: true
 show_forecast_strip: true
-forecast_strip_days: 5
 show_diagnostics: true
+diagnostics_open: false       # start diagnostics section expanded
 compact_mode: false
 ```
 

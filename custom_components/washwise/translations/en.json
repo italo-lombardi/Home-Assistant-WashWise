@@ -165,7 +165,7 @@
     },
     "snooze": {
       "name": "Snooze",
-      "description": "Pause WashWise verdicts for a duration or until a given time.",
+      "description": "Pause WashWise verdicts for a number of hours. Defaults to 24 hours if not specified.",
       "fields": {
         "entry_id": {
           "name": "Configuration",
@@ -173,7 +173,7 @@
         },
         "hours": {
           "name": "Hours",
-          "description": "How many hours to snooze."
+          "description": "How many hours to snooze (minimum 1). Defaults to 24."
         }
       }
     },
