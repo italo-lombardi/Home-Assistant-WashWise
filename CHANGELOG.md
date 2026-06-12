@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.0] - Unreleased
+## [0.1.0] - 2026-06-12
 
 ### Added
 - Initial release of WashWise — Home Assistant integration that decides whether you can wash a surface (car, motorcycle, bicycle, boat, RV, windows, solar panels, patio/deck, or custom) based on weather forecast data.
@@ -19,7 +19,7 @@ All notable changes to this project will be documented in this file.
 - Sensors: `score`, `reason`, `days_until_wash`, `days_since_wash`, `last_washed`, `wash_count_30d`, `active_provider`, `last_update`, plus diagnostics (`category`, `days_analyzed`, `precip_total_mm`, `worst_condition`, `min_temp`, `max_temp`, `primary_provider_uptime`), `snooze_remaining`, and per-day score sensors.
 - Services: `mark_washed`, `snooze` (accepts `hours` integer), `clear_snooze`.
 - Button: `mark_washed` — appends a manual entry to the wash log.
-- Custom Lovelace card with configurable theme (auto / light / dark), accent + bad colors, gauge style (bar / circle / half-circle), compact mode, icon set (mdi / emoji), border radius, header toggle, and per-section toggles. Visual editor with inline help under every field.
+- Custom Lovelace card with configurable theme (auto / light / dark), accent + bad colors, score gauge bar, compact mode, and per-section toggles (gauge, reason, forecast strip, diagnostics). Visual editor with inline help under every field. Diagnostics section collapsible with animated chevron.
 - Frontend resource auto-registration via Lovelace resource collection so the card persists across restarts.
 - Multi-instance support: install N times for N vehicles / surfaces; storage and entity IDs are isolated per config entry.
 - Backend translations seeded for 11 languages: `da`, `de`, `en`, `es`, `fr`, `it`, `nb`, `nl`, `pl`, `pt`, `sv`. Card stays English-only.
