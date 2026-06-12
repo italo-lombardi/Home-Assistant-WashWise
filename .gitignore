@@ -42,9 +42,6 @@ htmlcov/
 .tox/
 coverage.xml
 
-# Environment variables
-.env
-.env.local
+# Claude
+.claude/
 
-# Home Assistant config (development)
-config/

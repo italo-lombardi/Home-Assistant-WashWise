@@ -17,16 +17,13 @@ jobs:
         id: version
         run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
 
-      - name: Zip integration
-        run: |
-          cd custom_components/washwise
-          zip -r ../../washwise.zip .
-
       - name: Extract changelog for this version
         id: changelog
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          NOTES=$(awk "/^## \[$VERSION\]/{found=1; next} found && /^## \[/{exit} found{print}" CHANGELOG.md)
+          # Strip pre-release suffix (e.g. 0.4.0-beta.1 → 0.4.0) for changelog lookup
+          BASE_VERSION="${VERSION%%-*}"
+          NOTES=$(awk "/^## \[$BASE_VERSION\]/{found=1; next} found && /^## \[/{exit} found{print}" CHANGELOG.md)
           echo "notes<<EOF" >> $GITHUB_OUTPUT
           echo "$NOTES" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -37,5 +34,4 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
           body: ${{ steps.changelog.outputs.notes }}
-          files: washwise.zip
-          prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') || contains(github.ref_name, '-rc') }}
+          prerelease: ${{ contains(github.ref_name, '-') }}

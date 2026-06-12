@@ -3,55 +3,52 @@ name: Validate
 on:
   push:
   pull_request:
+  schedule:
+    - cron: "0 0 * * *"
   workflow_dispatch:
 
 jobs:
   validate-hacs:
-    name: HACS Validation
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: "actions/checkout@v6"
       - name: HACS validation
-        uses: hacs/action@main
+        uses: "hacs/action@main"
         with:
           category: "integration"
 
   validate-hassfest:
-    name: Hassfest Validation
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v6
-      - name: Hassfest validation
-        uses: home-assistant/actions/hassfest@master
+      - uses: "actions/checkout@v6"
+      - name: HASS validation
+        uses: "home-assistant/actions/hassfest@master"
 
   lint:
-    name: Ruff Lint
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v6
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - uses: "actions/checkout@v6"
+      - uses: "actions/setup-python@v6"
         with:
-          python-version: "3.12"
-      - name: Install ruff
-        run: pip install ruff
-      - name: Run ruff check
-        run: ruff check .
-      - name: Run ruff format check
-        run: ruff format --check .
+          python-version: "3.14"
+      - name: Ruff check
+        run: |
+          pip install ruff
+          ruff check
+          ruff format --check
 
   test:
-    name: Tests
-    runs-on: ubuntu-latest
+    runs-on: "ubuntu-latest"
     steps:
-      - uses: actions/checkout@v6
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - uses: "actions/checkout@v6"
+      - uses: "actions/setup-python@v6"
         with:
-          python-version: "3.12"
+          python-version: "3.14"
       - name: Install dependencies
-        run: |
-          pip install -r requirements_test.txt 2>/dev/null || true
-          pip install pytest pytest-homeassistant-custom-component
+        run: pip install -r requirements_test.txt
       - name: Run tests
         run: pytest tests/ --tb=short -q --cov-fail-under=100
