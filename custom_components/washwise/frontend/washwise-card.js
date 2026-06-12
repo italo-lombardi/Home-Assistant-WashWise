@@ -452,7 +452,11 @@ class WashWiseCard extends LitElement {
     const oldHass = changedProps.get("hass");
     if (!oldHass) return true;
     const id = this._config.entity;
-    return oldHass.states?.[id] !== this.hass.states?.[id];
+    if (oldHass.states?.[id] !== this.hass.states?.[id]) return true;
+    const snoozeSensorId = id
+      .replace("binary_sensor.", "sensor.")
+      .replace(/_can_wash$/, "_snooze_remaining");
+    return oldHass.states?.[snoozeSensorId] !== this.hass.states?.[snoozeSensorId];
   }
 
   render() {
@@ -534,7 +538,25 @@ class WashWiseCard extends LitElement {
 
   _renderReason(stateObj) {
     const reason = stateObj.attributes.reason;
-    if (!reason || reason === "snoozed") return nothing;
+    if (!reason) return nothing;
+    if (reason === "snoozed") {
+      // Derive snooze_remaining sensor id from can_wash entity id.
+      const snoozeSensorId = stateObj.entity_id
+        .replace("binary_sensor.", "sensor.")
+        .replace(/_can_wash$/, "_snooze_remaining");
+      const snoozeSensor = this.hass?.states[snoozeSensorId];
+      const secs = snoozeSensor ? Number(snoozeSensor.state) : NaN;
+      let remaining = "—";
+      if (Number.isFinite(secs) && secs > 0) {
+        const h = Math.floor(secs / 3600);
+        const m = Math.floor((secs % 3600) / 60);
+        remaining = h > 0 ? `${h}h ${m}m` : `${m}m`;
+      }
+      return html`
+        <div class="ww-row"><span>Reason:</span><strong>Snoozed</strong></div>
+        <div class="ww-row"><span>Remaining:</span><strong>${remaining}</strong></div>
+      `;
+    }
     return html`
       <div class="ww-row">
         <span>Reason:</span>
