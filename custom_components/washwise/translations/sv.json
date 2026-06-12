@@ -1,0 +1,302 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "Konfigurera en tvättrådgivare som avgör om du kan tvätta en yta utifrån väderprognosen.",
+        "data": {
+          "weather_entities": "Väderkällor",
+          "name": "Namn",
+          "category": "Kategori",
+          "customize_thresholds": "Anpassa tröskelvärden"
+        },
+        "data_description": {
+          "weather_entities": "Välj en eller flera väderentiteter i HA. Den första tillgängliga källan i listan används; nästa testas bara om den föregående är otillgänglig.",
+          "name": "Visningsnamn för den här WashWise-instansen. Används som prefix för alla entiteter som skapas av posten.",
+          "category": "Vad du tvättar. Varje kategori har rimliga standardtröskelvärden och en standardikon. Välj Anpassad om du vill utgå från neutrala standardvärden.",
+          "customize_thresholds": "Slå på för att åsidosätta kategorins standardvärden i nästa steg. Lämna avstängt för att använda förinställda värden för vald kategori."
+        }
+      },
+      "thresholds": {
+        "title": "Anpassade tröskelvärden",
+        "description": "Åsidosätt standardvärdena för vald kategori. Värdena styr vilka prognosdagar som blockerar en tvätt och hur poängen beräknas.",
+        "data": {
+          "days": "Prognoshorisont (dagar)",
+          "precip_threshold_mm": "Nederbördströskel (mm)",
+          "freeze_check": "Blockera vid minusgrader",
+          "forecast_type": "Prognostyp",
+          "bad_conditions": "Blockerande väderförhållanden",
+          "precip_weight": "Vikt för nederbörd",
+          "freeze_weight": "Vikt för frost",
+          "condition_weight": "Vikt för väderförhållanden"
+        },
+        "data_description": {
+          "days": "Hur många prognosdagar som ska beaktas, inklusive idag. En längre horisont fångar upp mer väder men ger en mer försiktig bedömning.",
+          "precip_threshold_mm": "Total nederbörd per dag över det här värdet blockerar tvätten. Lägre värden (0,1) är striktare, högre värden (1,0) tolererar lätt duggregn.",
+          "freeze_check": "När detta är på blockerar en prognosdag vars temperatur passerar 0 °C tvätten, för att undvika att tvättvattnet fryser på ytan.",
+          "forecast_type": "Daglig använder en post per dag; Timvis aggregerar de N×24 närmaste timposterna. Timvis är mer exakt men kräver att källan tillhandahåller timdata.",
+          "bad_conditions": "Väderkoder som blockerar tvätt när de förekommer i prognosen eller som aktuellt väder.",
+          "precip_weight": "Hur mycket regn i prognosen drar av från poängen 0–100. Ett högre värde bestraffar regniga dagar hårdare.",
+          "freeze_weight": "Hur mycket en frostdag drar av från poängen 0–100. Sätt till 0 för att ignorera frost i poängsättningen men ändå låta bedömningen blockera.",
+          "condition_weight": "Hur mycket dåligt väder (åska, hagel, snö) drar av från poängen 0–100. Hur allvarligt det är beror på respektive förhållande."
+        }
+      },
+      "reconfigure": {
+        "title": "Konfigurera om WashWise",
+        "description": "Ändra väderkällor, namn, kategori eller tröskelanpassning för instansen.",
+        "data": {
+          "weather_entities": "Väderkällor",
+          "name": "Namn",
+          "category": "Kategori",
+          "customize_thresholds": "Anpassa tröskelvärden"
+        },
+        "data_description": {
+          "weather_entities": "Välj en eller flera väderentiteter i HA. Den första tillgängliga källan i listan används; nästa testas bara om den föregående är otillgänglig.",
+          "name": "Visningsnamn för den här WashWise-instansen. Används som prefix för alla entiteter som skapas av posten.",
+          "category": "Vad du tvättar. Varje kategori har rimliga standardtröskelvärden och en standardikon. Välj Anpassad om du vill utgå från neutrala standardvärden.",
+          "customize_thresholds": "Slå på för att åsidosätta kategorins standardvärden i nästa steg. Lämna avstängt för att använda förinställda värden för vald kategori."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "Välj minst en väderkälla.",
+      "weather_unavailable": "Alla valda väderkällor är för närvarande otillgängliga.",
+      "duplicate_name": "En WashWise-instans med det här namnet finns redan.",
+      "invalid_category": "Den valda kategorin är inte giltig."
+    },
+    "abort": {
+      "already_configured": "Den här kombinationen är redan konfigurerad.",
+      "reconfigure_successful": "Konfigurationen har uppdaterats."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WashWise-alternativ",
+        "description": "Välj ett avsnitt att redigera.",
+        "menu_options": {
+          "providers": "Väderkällor",
+          "thresholds": "Tröskelvärden",
+          "scoring": "Poängvikter",
+          "conditions": "Blockerande förhållanden",
+          "advanced": "Avancerat"
+        }
+      },
+      "providers": {
+        "title": "Väderkällor",
+        "description": "Lägg till, ta bort eller ändra ordningen på väderentiteterna som används som prognoskällor.",
+        "data": {
+          "weather_entities": "Väderkällor"
+        },
+        "data_description": {
+          "weather_entities": "Ordningen spelar roll. Den första tillgängliga entiteten i listan används; nästa testas bara om den föregående är otillgänglig."
+        }
+      },
+      "thresholds": {
+        "title": "Tröskelvärden",
+        "description": "Åsidosätt standardvärdena för vald kategori.",
+        "data": {
+          "days": "Prognoshorisont (dagar)",
+          "precip_threshold_mm": "Nederbördströskel (mm)",
+          "freeze_check": "Blockera vid minusgrader",
+          "forecast_type": "Prognostyp"
+        },
+        "data_description": {
+          "days": "Hur många prognosdagar som ska beaktas, inklusive idag.",
+          "precip_threshold_mm": "Total nederbörd per dag över det här värdet blockerar tvätten.",
+          "freeze_check": "När detta är på blockerar en prognosdag vars temperatur passerar 0 °C tvätten.",
+          "forecast_type": "Daglig använder en post per dag; Timvis aggregerar timposter när det stöds."
+        }
+      },
+      "scoring": {
+        "title": "Poängvikter",
+        "description": "Justera hur poängen 0–100 beräknas. Vikterna behöver inte summera till 100 — de tillämpas oberoende per dag.",
+        "data": {
+          "precip_weight": "Vikt för nederbörd",
+          "freeze_weight": "Vikt för frost",
+          "condition_weight": "Vikt för väderförhållanden"
+        },
+        "data_description": {
+          "precip_weight": "Hur mycket regn i prognosen drar av från poängen.",
+          "freeze_weight": "Hur mycket en frostdag drar av från poängen.",
+          "condition_weight": "Hur mycket dåligt väder drar av från poängen."
+        }
+      },
+      "conditions": {
+        "title": "Blockerande förhållanden",
+        "description": "Välj vilka väderkoder i HA som ska blockera en tvätt.",
+        "data": {
+          "bad_conditions": "Blockerande väderförhållanden"
+        },
+        "data_description": {
+          "bad_conditions": "När något av dessa förhållanden förekommer som aktuellt väder eller på en prognosdag blockeras bedömningen."
+        }
+      },
+      "advanced": {
+        "title": "Avancerat",
+        "description": "Mindre vanliga inställningar.",
+        "data": {
+          "scan_interval_minutes": "Uppdateringsintervall (minuter)",
+          "snooze_default_hours": "Standardlängd för paus (timmar)",
+          "temperature_unit": "Temperaturenhet"
+        },
+        "data_description": {
+          "scan_interval_minutes": "Som lägst hur ofta koordinatorn hämtar en ny prognos; integrationen räknar dessutom om direkt när den aktiva väderentiteten byter tillstånd, så 15 minuter räcker gott och väl.",
+          "snooze_default_hours": "Standardvaraktighet som tillämpas när paustjänsten anropas utan att en uttrycklig varaktighet anges.",
+          "temperature_unit": "Åsidosätter enheten som används för att tolka prognostemperaturer. Auto läser den från källväderentiteten (rekommenderas). Välj Celsius / Fahrenheit / Kelvin endast när en leverantörs metadata är felaktiga eller saknas."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "Markera som tvättad",
+      "description": "Lägg till en tvättpost i tvättloggen för vald WashWise-instans.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurationspost",
+          "description": "WashWise-konfigurationspost att uppdatera. Valfri om du anger en entitet."
+        },
+        "entity_id": {
+          "name": "Entitet",
+          "description": "Vilken entitet som helst som tillhör WashWise-instansen som ska uppdateras."
+        },
+        "timestamp": {
+          "name": "Tidsstämpel",
+          "description": "När tvätten ägde rum. Standard är nu."
+        }
+      }
+    },
+    "snooze": {
+      "name": "Pausa",
+      "description": "Pausa WashWise-bedömningar under en viss tid eller fram till en angiven tidpunkt.",
+      "fields": {
+        "hours": {
+          "name": "Hours",
+          "description": "How many hours to snooze."
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "Bil",
+        "motorcycle": "Motorcykel",
+        "bicycle": "Cykel",
+        "boat": "Båt",
+        "rv_camper": "Husbil/husvagn",
+        "windows_house": "Husfönster",
+        "solar_panels": "Solpaneler",
+        "patio_deck": "Uteplats/altan",
+        "custom": "Anpassad"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "Daglig",
+        "hourly": "Timvis"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "Åska med regn",
+        "rainy": "Regn",
+        "pouring": "Ösregn",
+        "snowy": "Snöfall",
+        "snowy-rainy": "Snöblandat regn",
+        "hail": "Hagel",
+        "exceptional": "Extremt väder"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "Auto (använd källentitet)",
+        "celsius": "Celsius (°C)",
+        "fahrenheit": "Fahrenheit (°F)",
+        "kelvin": "Kelvin (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "Kan tvätta"
+      },
+      "day_ok": {
+        "name": "Dag {day} OK"
+      },
+      "freeze_risk": {
+        "name": "Frostrisk i prognosen"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "Tvättpoäng"
+      },
+      "reason": {
+        "name": "Orsak",
+        "state": {
+          "clear": "Klart",
+          "rain": "Regn",
+          "freeze": "Frost",
+          "snow": "Snö",
+          "bad_condition": "Dåligt väder",
+          "bad_current_condition": "Dåligt väder just nu",
+          "snoozed": "Pausad",
+          "unavailable": "Otillgänglig"
+        }
+      },
+      "days_until_wash": {
+        "name": "Dagar till möjlig tvätt"
+      },
+      "days_since_wash": {
+        "name": "Dagar sedan senaste tvätt"
+      },
+      "last_washed": {
+        "name": "Senast tvättad"
+      },
+      "wash_count_30d": {
+        "name": "Antal tvättar (30 dagar)"
+      },
+      "active_provider": {
+        "name": "Aktiv leverantör"
+      },
+      "last_update": {
+        "name": "Senaste uppdatering"
+      },
+      "days_analyzed": {
+        "name": "Analyserade dagar"
+      },
+      "precip_total_mm": {
+        "name": "Total nederbörd i prognosen"
+      },
+      "worst_condition": {
+        "name": "Värsta väderförhållande i prognosen"
+      },
+      "min_temp": {
+        "name": "Lägsta prognostemperatur"
+      },
+      "max_temp": {
+        "name": "Högsta prognostemperatur"
+      },
+      "primary_provider_uptime": {
+        "name": "Drifttid för primär leverantör"
+      },
+      "snooze_remaining": {
+        "name": "Återstående paustid"
+      },
+      "day_score": {
+        "name": "Poäng dag {day}"
+      },
+      "freeze_risk": {
+        "name": "Freeze risk"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "Markera som tvättad"
+      }
+    }
+  }
+}

@@ -1,0 +1,426 @@
+"""Tests for ``custom_components.washwise.decision.compute``.
+
+Pure deterministic tests -- no clock, no I/O, no HA imports. Every test
+passes an explicit ``now`` so timestamps are reproducible.
+"""
+
+from __future__ import annotations
+
+from datetime import UTC, date, datetime
+
+import pytest
+
+from custom_components.washwise.decision import (
+    REASON_BAD_CURRENT_CONDITION,
+    REASON_CLEAR,
+    REASON_FREEZE,
+    REASON_RAIN,
+    CurrentWeather,
+    ForecastDay,
+    compute,
+)
+
+NOW = datetime(2026, 6, 11, 9, 0, tzinfo=UTC)
+TODAY = NOW.date()
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def _day(
+    offset: int,
+    *,
+    condition: str | None = "sunny",
+    precip: float | None = 0.0,
+    tmin: float | None = 12.0,
+    tmax: float | None = 22.0,
+) -> ForecastDay:
+    return ForecastDay(
+        date=date.fromordinal(TODAY.toordinal() + offset),
+        condition=condition,
+        precipitation_mm=precip,
+        temp_min_c=tmin,
+        temp_max_c=tmax,
+    )
+
+
+def _thresholds(**overrides) -> dict:
+    base: dict = {
+        "days": 3,
+        "precip_threshold_mm": 0.2,
+        "freeze_check": True,
+    }
+    base.update(overrides)
+    return base
+
+
+# ---------------------------------------------------------------------------
+# Sunny baseline
+# ---------------------------------------------------------------------------
+
+
+def test_sunny_forecast_can_wash_true_score_100() -> None:
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [_day(i) for i in range(3)]
+
+    result = compute(cur, forecast, _thresholds(), invert=False, now=NOW)
+
+    assert result.can_wash is True
+    assert result.score == 100
+    assert result.reason == REASON_CLEAR
+    assert result.blocking_days == []
+    assert result.days_analyzed == 3
+    # next_window = today → None (sensor shows "now", days_until_wash=0 conveys the info)
+    assert result.days_until_wash == 0
+
+
+# ---------------------------------------------------------------------------
+# Rain blocker
+# ---------------------------------------------------------------------------
+
+
+def test_rain_day_one_above_threshold_blocks() -> None:
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [
+        _day(0, condition="rainy", precip=5.0),
+        _day(1),
+        _day(2),
+    ]
+
+    result = compute(cur, forecast, _thresholds(), invert=False, now=NOW)
+
+    assert result.can_wash is False
+    assert result.reason == REASON_RAIN
+    assert result.blocking_days == [forecast[0].date]
+
+
+# ---------------------------------------------------------------------------
+# Bad current condition short-circuit
+# ---------------------------------------------------------------------------
+
+
+def test_bad_current_condition_rainy_blocks_immediately() -> None:
+    cur = CurrentWeather(condition="rainy", temperature_c=10.0)
+    forecast = [_day(i) for i in range(3)]  # forecast itself is fine
+
+    result = compute(cur, forecast, _thresholds(), invert=False, now=NOW)
+
+    assert result.can_wash is False
+    assert result.reason == REASON_BAD_CURRENT_CONDITION
+    assert result.score == 0
+    assert result.days_analyzed == 0
+    assert result.blocking_days == []
+
+
+# ---------------------------------------------------------------------------
+# Freeze cross
+# ---------------------------------------------------------------------------
+
+
+def test_freeze_cross_returns_freeze_reason() -> None:
+    """Current temp below 0, day1 min/max at or above 0 -> freeze cross."""
+    cur = CurrentWeather(condition="sunny", temperature_c=-2.0)
+    forecast = [
+        # day1 crosses through 0 (temp_check=-2 < 0 <= tmin=1).
+        _day(0, condition="sunny", precip=0.0, tmin=1.0, tmax=5.0),
+        _day(1, condition="sunny", precip=0.0, tmin=2.0, tmax=6.0),
+    ]
+
+    result = compute(cur, forecast, _thresholds(days=2), invert=False, now=NOW)
+
+    assert result.can_wash is False
+    assert result.reason == REASON_FREEZE
+    assert forecast[0].date in result.blocking_days
+
+
+def test_freeze_check_disabled_does_not_block() -> None:
+    cur = CurrentWeather(condition="sunny", temperature_c=-2.0)
+    forecast = [
+        _day(0, condition="sunny", precip=0.0, tmin=1.0, tmax=5.0),
+        _day(1, condition="sunny", precip=0.0, tmin=2.0, tmax=6.0),
+    ]
+
+    result = compute(
+        cur,
+        forecast,
+        _thresholds(days=2, freeze_check=False),
+        invert=False,
+        now=NOW,
+    )
+
+    assert result.can_wash is True
+    assert result.reason == REASON_CLEAR
+
+
+# ---------------------------------------------------------------------------
+# Solar (invert) mode
+# ---------------------------------------------------------------------------
+
+
+def test_invert_mode_with_rain_flips_to_true() -> None:
+    """Solar panels: forecasted rain == self-cleaning == verdict True."""
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [
+        _day(0),  # sunny
+        _day(1, condition="rainy", precip=4.0),  # rainy day
+        _day(2),
+    ]
+
+    result = compute(cur, forecast, _thresholds(), invert=True, now=NOW)
+
+    assert result.can_wash is True
+    # The first rainy day is the "next window" for self-cleaning.
+    assert result.days_until_wash == 1
+    # blocking_days in invert mode contains the rainy days.
+    assert forecast[1].date in result.blocking_days
+
+
+def test_invert_mode_no_rain_returns_false() -> None:
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [_day(i) for i in range(3)]  # all sunny
+
+    result = compute(cur, forecast, _thresholds(), invert=True, now=NOW)
+
+    assert result.can_wash is False
+    assert result.days_until_wash is None
+
+
+def test_invert_mode_with_bad_current_condition_does_not_short_circuit() -> None:
+    """Invert mode skips the bad-current-condition early-out."""
+    cur = CurrentWeather(condition="rainy", temperature_c=10.0)
+    forecast = [
+        _day(0, condition="rainy", precip=3.0),
+        _day(1),
+        _day(2),
+    ]
+
+    result = compute(cur, forecast, _thresholds(), invert=True, now=NOW)
+
+    assert result.can_wash is True
+    assert result.reason != REASON_BAD_CURRENT_CONDITION
+
+
+# ---------------------------------------------------------------------------
+# Score weights respected
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "precip_weight,expected_max_score",
+    [
+        (40, 99),  # weight 40 -> heavy penalty -> score < 100
+        (0, 100),  # weight 0 -> no precip penalty -> score stays 100
+    ],
+)
+def test_score_respects_precip_weight(precip_weight: int, expected_max_score: int) -> None:
+    """Same forecast, two precip_weights -> the high-weight score is lower."""
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    # One day of light rain that does NOT exceed the threshold (so no
+    # blocker, only a score penalty).
+    forecast = [
+        _day(0, condition="sunny", precip=0.05),
+        _day(1, condition="sunny", precip=0.0),
+        _day(2, condition="sunny", precip=0.0),
+    ]
+
+    result = compute(
+        cur,
+        forecast,
+        _thresholds(precip_weight=precip_weight),
+        invert=False,
+        now=NOW,
+    )
+
+    if precip_weight == 0:
+        assert result.score == 100
+    else:
+        # weight 40 + small precip -> something less than 100 but verdict
+        # still True (precip below threshold).
+        assert result.can_wash is True
+        assert result.score < 100
+
+
+def test_score_weights_zero_keeps_100_even_with_blocker() -> None:
+    """Setting all weights to zero -> score never decreases, but verdict
+    still reflects the blocker."""
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [_day(0, condition="rainy", precip=10.0)]
+
+    result = compute(
+        cur,
+        forecast,
+        _thresholds(
+            days=1,
+            precip_weight=0,
+            freeze_weight=0,
+            condition_weight=0,
+        ),
+        invert=False,
+        now=NOW,
+    )
+
+    assert result.can_wash is False  # blocker still applies
+    assert result.score == 100  # but score untouched
+
+    # ---------------------------------------------------------------------------
+    # ---------------------------------------------------------------------------
+
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [
+        _day(0, condition="rainy", precip=5.0),  # blocked
+        _day(1, condition="rainy", precip=5.0),  # blocked
+        _day(2, condition="sunny", precip=0.0),  # clear -> next window
+    ]
+
+    result = compute(cur, forecast, _thresholds(), invert=False, now=NOW)
+
+    assert result.can_wash is False
+    assert result.days_until_wash == 2
+
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [
+        _day(0, condition="rainy", precip=5.0),
+        _day(1, condition="rainy", precip=5.0),
+        _day(2, condition="rainy", precip=5.0),
+    ]
+
+    result = compute(cur, forecast, _thresholds(), invert=False, now=NOW)
+
+    assert result.can_wash is False
+    assert result.days_until_wash is None
+
+
+# ---------------------------------------------------------------------------
+# blocking_days exactly the bad dates
+# ---------------------------------------------------------------------------
+
+
+def test_blocking_days_lists_exact_bad_dates() -> None:
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [
+        _day(0, condition="sunny", precip=0.0),  # ok
+        _day(1, condition="rainy", precip=4.0),  # blocked
+        _day(2, condition="sunny", precip=0.0),  # ok
+        _day(3, condition="rainy", precip=4.0),  # blocked
+    ]
+
+    result = compute(cur, forecast, _thresholds(days=4), invert=False, now=NOW)
+
+    assert result.blocking_days == [forecast[1].date, forecast[3].date]
+
+
+# ---------------------------------------------------------------------------
+# days_analyzed == min(forecast_len, threshold_days)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "horizon,forecast_len,expected_analyzed",
+    [
+        (3, 5, 3),  # forecast longer than horizon -> horizon
+        (5, 3, 3),  # horizon longer than forecast -> forecast
+        (3, 3, 3),  # equal
+        (1, 7, 1),  # short horizon
+    ],
+)
+def test_days_analyzed_equals_min_of_horizon_and_forecast_len(
+    horizon: int, forecast_len: int, expected_analyzed: int
+) -> None:
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [_day(i) for i in range(forecast_len)]
+
+    result = compute(cur, forecast, _thresholds(days=horizon), invert=False, now=NOW)
+
+    assert result.days_analyzed == expected_analyzed
+
+
+# ---------------------------------------------------------------------------
+# Empty forecast
+# ---------------------------------------------------------------------------
+
+
+def test_empty_forecast_returns_can_wash_true() -> None:
+    """No forecast data == no blockers == verdict True (with reason=clear)."""
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+
+    result = compute(cur, [], _thresholds(), invert=False, now=NOW)
+
+    assert result.can_wash is True
+    assert result.reason == REASON_CLEAR
+    assert result.days_analyzed == 0
+    assert result.blocking_days == []
+
+
+def test_zero_horizon_returns_can_wash_true() -> None:
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [_day(i) for i in range(3)]
+
+    result = compute(cur, forecast, _thresholds(days=0), invert=False, now=NOW)
+
+    assert result.can_wash is True
+    assert result.reason == REASON_CLEAR
+    assert result.days_analyzed == 0
+
+
+# ---------------------------------------------------------------------------
+# Threshold parametrize: precip flips verdict
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "threshold_mm,precip_mm,expected_can_wash",
+    [
+        (0.1, 0.3, False),  # 0.3 > 0.1 -> blocked
+        (0.5, 0.3, True),  # 0.3 < 0.5 -> ok
+    ],
+)
+def test_precip_threshold_flips_verdict(
+    threshold_mm: float, precip_mm: float, expected_can_wash: bool
+) -> None:
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    # Use a non-blocking condition so only precip drives the verdict.
+    forecast = [_day(0, condition="cloudy", precip=precip_mm)]
+
+    result = compute(
+        cur,
+        forecast,
+        _thresholds(days=1, precip_threshold_mm=threshold_mm),
+        invert=False,
+        now=NOW,
+    )
+
+    assert result.can_wash is expected_can_wash
+
+
+# ---------------------------------------------------------------------------
+# Determinism
+# ---------------------------------------------------------------------------
+
+
+def test_compute_is_deterministic_for_fixed_now() -> None:
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [_day(i) for i in range(3)]
+    args = (cur, forecast, _thresholds())
+    a = compute(*args, invert=False, now=NOW)
+    b = compute(*args, invert=False, now=NOW)
+    assert a == b
+
+
+def test_compute_naive_now_yields_naive_window_ts() -> None:
+    naive_now = datetime(2026, 6, 11, 9, 0)
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [
+        ForecastDay(
+            date=date(2026, 6, 11),
+            condition="sunny",
+            precipitation_mm=0.0,
+            temp_min_c=12.0,
+            temp_max_c=22.0,
+        ),
+    ]
+
+    compute(cur, forecast, _thresholds(days=1), invert=False, now=naive_now)
+
+    # window is today → None

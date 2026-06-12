@@ -1,0 +1,12 @@
+[run]
+source = custom_components/washwise
+omit =
+    */__pycache__/*
+    */tests/*
+    */frontend_src/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if TYPE_CHECKING:
+    raise NotImplementedError

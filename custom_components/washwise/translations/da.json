@@ -1,0 +1,302 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "Opsæt en vaskerådgiver, der ud fra vejrudsigten afgør, om du kan vaske en overflade.",
+        "data": {
+          "weather_entities": "Vejrkilder",
+          "name": "Navn",
+          "category": "Kategori",
+          "customize_thresholds": "Tilpas tærskler"
+        },
+        "data_description": {
+          "weather_entities": "Vælg en eller flere HA-vejrentiteter. Den første tilgængelige kilde i den angivne rækkefølge bruges; den næste prøves kun, hvis den foregående er utilgængelig.",
+          "name": "Vist navn for denne WashWise-instans. Bruges som præfiks for alle entiteter, der oprettes af denne post.",
+          "category": "Hvad du vasker. Hver kategori leveres med fornuftige standardtærskler og et standardikon. Vælg Brugerdefineret for at starte med neutrale standardværdier.",
+          "customize_thresholds": "Slå til for at tilsidesætte kategoriens standardværdier på næste skærm. Lad stå slået fra for at bruge de forudindstillede værdier for den valgte kategori."
+        }
+      },
+      "thresholds": {
+        "title": "Brugerdefinerede tærskler",
+        "description": "Tilsidesæt standardværdierne, der følger med den valgte kategori. Disse værdier styrer, hvilke prognosedage der blokerer en vask, og hvordan scoren beregnes.",
+        "data": {
+          "days": "Prognosehorisont (dage)",
+          "precip_threshold_mm": "Nedbørstærskel (mm)",
+          "freeze_check": "Bloker ved frostgrader",
+          "forecast_type": "Prognosetype",
+          "bad_conditions": "Blokerende vejrforhold",
+          "precip_weight": "Vægt for nedbør",
+          "freeze_weight": "Vægt for frost",
+          "condition_weight": "Vægt for vejrforhold"
+        },
+        "data_description": {
+          "days": "Hvor mange prognosedage der skal kigges frem, inklusive i dag. En længere horisont fanger mere vejr, men giver mere konservative vurderinger.",
+          "precip_threshold_mm": "Samlet nedbør pr. dag over denne værdi blokerer vasken. Lavere værdier (0,1) er strengere; højere værdier (1,0) tolererer let støvregn.",
+          "freeze_check": "Når slået til, blokeres vasken på en prognosedag, hvor temperaturen krydser 0 °C, så vaskevandet ikke fryser på overfladen.",
+          "forecast_type": "Daglig bruger én post pr. dag; Timevis sammenlægger de næste N×24 timeposter. Timevis er mere præcis, men kræver, at kilden leverer timedata.",
+          "bad_conditions": "Vejrforholdskoder, der blokerer vask, når de optræder i prognosen eller som det aktuelle forhold.",
+          "precip_weight": "Hvor meget regn i prognosen trækker fra 0–100-scoren. Højere værdi straffer regnvejrsdage hårdere.",
+          "freeze_weight": "Hvor meget en frostdag trækker fra 0–100-scoren. Sæt til 0 for at se bort fra frost i scoringen, men stadig blokere vurderingen.",
+          "condition_weight": "Hvor meget dårlige vejrforhold (storm, hagl, sne) trækker fra 0–100-scoren. Alvorligheden afhænger af det enkelte forhold."
+        }
+      },
+      "reconfigure": {
+        "title": "Genkonfigurer WashWise",
+        "description": "Skift vejrkilder, navn, kategori eller tærskeltilpasning for denne instans.",
+        "data": {
+          "weather_entities": "Vejrkilder",
+          "name": "Navn",
+          "category": "Kategori",
+          "customize_thresholds": "Tilpas tærskler"
+        },
+        "data_description": {
+          "weather_entities": "Vælg en eller flere HA-vejrentiteter. Den første tilgængelige kilde i den angivne rækkefølge bruges; den næste prøves kun, hvis den foregående er utilgængelig.",
+          "name": "Vist navn for denne WashWise-instans. Bruges som præfiks for alle entiteter, der oprettes af denne post.",
+          "category": "Hvad du vasker. Hver kategori leveres med fornuftige standardtærskler og et standardikon. Vælg Brugerdefineret for at starte med neutrale standardværdier.",
+          "customize_thresholds": "Slå til for at tilsidesætte kategoriens standardværdier på næste skærm. Lad stå slået fra for at bruge de forudindstillede værdier for den valgte kategori."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "Vælg mindst én vejrkilde.",
+      "weather_unavailable": "Alle valgte vejrkilder er i øjeblikket utilgængelige.",
+      "duplicate_name": "Der findes allerede en WashWise-instans med dette navn.",
+      "invalid_category": "Den valgte kategori er ikke gyldig."
+    },
+    "abort": {
+      "already_configured": "Denne kombination er allerede konfigureret.",
+      "reconfigure_successful": "Konfigurationen blev opdateret."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WashWise-indstillinger",
+        "description": "Vælg en sektion at redigere.",
+        "menu_options": {
+          "providers": "Vejrkilder",
+          "thresholds": "Tærskler",
+          "scoring": "Scorevægte",
+          "conditions": "Blokerende forhold",
+          "advanced": "Avanceret"
+        }
+      },
+      "providers": {
+        "title": "Vejrkilder",
+        "description": "Tilføj, fjern eller omarranger de vejrentiteter, der bruges som prognosekilder.",
+        "data": {
+          "weather_entities": "Vejrkilder"
+        },
+        "data_description": {
+          "weather_entities": "Rækkefølgen er vigtig. Den første tilgængelige entitet på listen bruges; den næste prøves kun, hvis den foregående er utilgængelig."
+        }
+      },
+      "thresholds": {
+        "title": "Tærskler",
+        "description": "Tilsidesæt standardværdierne, der følger med den valgte kategori.",
+        "data": {
+          "days": "Prognosehorisont (dage)",
+          "precip_threshold_mm": "Nedbørstærskel (mm)",
+          "freeze_check": "Bloker ved frostgrader",
+          "forecast_type": "Prognosetype"
+        },
+        "data_description": {
+          "days": "Hvor mange prognosedage der skal kigges frem, inklusive i dag.",
+          "precip_threshold_mm": "Samlet nedbør pr. dag over denne værdi blokerer vasken.",
+          "freeze_check": "Når slået til, blokeres vasken på en prognosedag, hvor temperaturen krydser 0 °C.",
+          "forecast_type": "Daglig bruger én post pr. dag; Timevis sammenlægger timeposter, når det understøttes."
+        }
+      },
+      "scoring": {
+        "title": "Scorevægte",
+        "description": "Juster, hvordan 0–100-scoren beregnes. Vægtene behøver ikke at give 100 i alt — de anvendes uafhængigt pr. dag.",
+        "data": {
+          "precip_weight": "Vægt for nedbør",
+          "freeze_weight": "Vægt for frost",
+          "condition_weight": "Vægt for vejrforhold"
+        },
+        "data_description": {
+          "precip_weight": "Hvor meget regn i prognosen trækker fra scoren.",
+          "freeze_weight": "Hvor meget en frostdag trækker fra scoren.",
+          "condition_weight": "Hvor meget dårlige vejrforhold trækker fra scoren."
+        }
+      },
+      "conditions": {
+        "title": "Blokerende forhold",
+        "description": "Vælg, hvilke HA-vejrforholdskoder der skal blokere en vask.",
+        "data": {
+          "bad_conditions": "Blokerende vejrforhold"
+        },
+        "data_description": {
+          "bad_conditions": "Når et af disse forhold optræder som det aktuelle forhold eller på en prognosedag, blokeres vurderingen."
+        }
+      },
+      "advanced": {
+        "title": "Avanceret",
+        "description": "Mindre almindelige indstillinger.",
+        "data": {
+          "scan_interval_minutes": "Opdateringsinterval (minutter)",
+          "snooze_default_hours": "Standardvarighed for udsættelse (timer)",
+          "temperature_unit": "Temperaturenhed"
+        },
+        "data_description": {
+          "scan_interval_minutes": "Hvor ofte koordinatoren henter en frisk prognose som minimum; integrationen genberegner også med det samme, når den aktive vejrentitet skifter tilstand, så 15 minutter er rigeligt.",
+          "snooze_default_hours": "Standardvarighed, der anvendes, når udsættelsestjenesten kaldes uden en eksplicit varighed.",
+          "temperature_unit": "Tilsidesæt enheden, der bruges til at fortolke prognosens temperaturer. Auto læser den fra kildevejrentiteten (anbefales). Vælg Celsius / Fahrenheit / Kelvin kun når en udbyders metadata er forkerte eller mangler."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "Marker som vasket",
+      "description": "Tilføj en vaskepost til vaskeloggen for den valgte WashWise-instans.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurationspost",
+          "description": "WashWise-konfigurationspost, der skal opdateres. Valgfri, når du angiver en entitet."
+        },
+        "entity_id": {
+          "name": "Entitet",
+          "description": "En vilkårlig entitet, der tilhører den WashWise-instans, som skal opdateres."
+        },
+        "timestamp": {
+          "name": "Tidsstempel",
+          "description": "Hvornår vasken fandt sted. Standard er nu."
+        }
+      }
+    },
+    "snooze": {
+      "name": "Udsæt",
+      "description": "Sæt WashWise-vurderinger på pause i en periode eller indtil et givet tidspunkt.",
+      "fields": {
+        "hours": {
+          "name": "Hours",
+          "description": "How many hours to snooze."
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "Bil",
+        "motorcycle": "Motorcykel",
+        "bicycle": "Cykel",
+        "boat": "Båd",
+        "rv_camper": "Autocamper / campingvogn",
+        "windows_house": "Husvinduer",
+        "solar_panels": "Solpaneler",
+        "patio_deck": "Terrasse",
+        "custom": "Brugerdefineret"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "Daglig",
+        "hourly": "Timevis"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "Tordenvejr med regn",
+        "rainy": "Regn",
+        "pouring": "Styrtregn",
+        "snowy": "Sne",
+        "snowy-rainy": "Sne og regn",
+        "hail": "Hagl",
+        "exceptional": "Ekstremt"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "Auto (brug kildeentitet)",
+        "celsius": "Celsius (°C)",
+        "fahrenheit": "Fahrenheit (°F)",
+        "kelvin": "Kelvin (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "Kan vaske"
+      },
+      "day_ok": {
+        "name": "Dag {day} OK"
+      },
+      "freeze_risk": {
+        "name": "Frostrisiko i prognosen"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "Vaskescore"
+      },
+      "reason": {
+        "name": "Årsag",
+        "state": {
+          "clear": "Klart",
+          "rain": "Regn",
+          "freeze": "Frost",
+          "snow": "Sne",
+          "bad_condition": "Dårligt vejr",
+          "bad_current_condition": "Dårligt aktuelt vejr",
+          "snoozed": "Udsat",
+          "unavailable": "Utilgængelig"
+        }
+      },
+      "days_until_wash": {
+        "name": "Dage til mulig vask"
+      },
+      "days_since_wash": {
+        "name": "Dage siden sidste vask"
+      },
+      "last_washed": {
+        "name": "Sidst vasket"
+      },
+      "wash_count_30d": {
+        "name": "Antal vaske (30 dage)"
+      },
+      "active_provider": {
+        "name": "Aktiv udbyder"
+      },
+      "last_update": {
+        "name": "Seneste opdatering"
+      },
+      "days_analyzed": {
+        "name": "Analyserede dage"
+      },
+      "precip_total_mm": {
+        "name": "Samlet nedbør i prognosen"
+      },
+      "worst_condition": {
+        "name": "Værste vejrforhold i prognosen"
+      },
+      "min_temp": {
+        "name": "Minimumtemperatur i prognosen"
+      },
+      "max_temp": {
+        "name": "Maksimumtemperatur i prognosen"
+      },
+      "primary_provider_uptime": {
+        "name": "Primær udbyders oppetid"
+      },
+      "snooze_remaining": {
+        "name": "Resterende udsættelse"
+      },
+      "day_score": {
+        "name": "Dag {day} score"
+      },
+      "freeze_risk": {
+        "name": "Freeze risk"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "Marker som vasket"
+      }
+    }
+  }
+}

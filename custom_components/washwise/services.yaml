@@ -1,0 +1,45 @@
+mark_washed:
+  name: Mark as washed
+  description: Record that the surface was just washed. Appends an entry to the wash log.
+  target:
+    entity:
+      integration: washwise
+    device:
+      integration: washwise
+  fields:
+    timestamp:
+      name: Timestamp
+      description: Optional timestamp for the wash event. Defaults to now.
+      required: false
+      example: "2026-06-11T10:30:00+00:00"
+      selector:
+        datetime:
+
+snooze:
+  name: Snooze
+  description: Pause the wash advisor for a number of hours.
+  target:
+    entity:
+      integration: washwise
+    device:
+      integration: washwise
+  fields:
+    hours:
+      name: Hours
+      description: How many hours to snooze (minimum 1).
+      required: true
+      example: 24
+      selector:
+        number:
+          min: 1
+          max: 720
+          unit_of_measurement: h
+
+clear_snooze:
+  name: Clear snooze
+  description: Cancel any active snooze and return to the normal verdict.
+  target:
+    entity:
+      integration: washwise
+    device:
+      integration: washwise

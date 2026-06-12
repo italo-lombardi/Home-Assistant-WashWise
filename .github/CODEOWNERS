@@ -1,0 +1,4 @@
+# This file controls who gets requested for reviews on PRs.
+# Format: <file pattern>   <GitHub username(s)>
+
+*    @italo-lombardi

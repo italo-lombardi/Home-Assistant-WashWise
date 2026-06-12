@@ -1,0 +1,302 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "Richten Sie einen Wasch-Assistenten ein, der anhand von Wettervorhersagedaten entscheidet, ob eine Oberfläche gewaschen werden kann.",
+        "data": {
+          "weather_entities": "Wetterquellen",
+          "name": "Name",
+          "category": "Kategorie",
+          "customize_thresholds": "Schwellenwerte anpassen"
+        },
+        "data_description": {
+          "weather_entities": "Wählen Sie eine oder mehrere HA-Wetterentitäten aus. Es wird die erste verfügbare Quelle aus dieser geordneten Liste verwendet; die nächste wird nur dann herangezogen, wenn die vorherige nicht verfügbar ist.",
+          "name": "Anzeigename für diese WashWise-Instanz. Wird als Präfix für jede von diesem Eintrag erstellte Entität verwendet.",
+          "category": "Was Sie waschen möchten. Jede Kategorie liefert sinnvolle Standard-Schwellenwerte und ein Standardsymbol mit. Wählen Sie „Benutzerdefiniert“, um mit neutralen Standardwerten zu starten.",
+          "customize_thresholds": "Aktivieren, um die Standardwerte der Kategorie im nächsten Schritt zu überschreiben. Deaktiviert lassen, um die voreingestellten Werte für die gewählte Kategorie zu übernehmen."
+        }
+      },
+      "thresholds": {
+        "title": "Benutzerdefinierte Schwellenwerte",
+        "description": "Überschreiben Sie die Standardwerte, die mit der gewählten Kategorie ausgeliefert werden. Diese Werte legen fest, welche Vorhersagetage einen Waschvorgang blockieren und wie der Score berechnet wird.",
+        "data": {
+          "days": "Vorhersagezeitraum (Tage)",
+          "precip_threshold_mm": "Niederschlagsschwelle (mm)",
+          "freeze_check": "Bei Frosttemperaturen blockieren",
+          "forecast_type": "Vorhersagetyp",
+          "bad_conditions": "Blockierende Wetterlagen",
+          "precip_weight": "Gewichtung Niederschlag",
+          "freeze_weight": "Gewichtung Frost",
+          "condition_weight": "Gewichtung Wetterlage"
+        },
+        "data_description": {
+          "days": "Wie viele Vorhersagetage einschließlich heute berücksichtigt werden. Längere Zeiträume erfassen mehr Wetterereignisse, führen aber zu vorsichtigeren Bewertungen.",
+          "precip_threshold_mm": "Eine Tagesniederschlagsmenge oberhalb dieses Werts blockiert den Waschvorgang. Niedrigere Werte (0,1) sind strenger, höhere Werte (1,0) tolerieren leichten Nieselregen.",
+          "freeze_check": "Wenn aktiviert, blockiert ein Vorhersagetag, an dem die Temperatur 0 °C über- oder unterschreitet, den Waschvorgang, damit das Waschwasser nicht auf der Oberfläche gefriert.",
+          "forecast_type": "„Täglich“ verwendet einen Eintrag pro Tag; „Stündlich“ fasst die nächsten N×24 stündlichen Einträge zusammen. Stündlich ist genauer, setzt aber voraus, dass die Quelle stündliche Daten bereitstellt.",
+          "bad_conditions": "Wetterlagen-Codes, die das Waschen blockieren, wenn sie in der Vorhersage oder als aktuelle Wetterlage auftreten.",
+          "precip_weight": "Wie stark Regen in der Vorhersage den Score (0–100) reduziert. Höhere Werte bestrafen Regentage stärker.",
+          "freeze_weight": "Wie stark ein Frosttag den Score (0–100) reduziert. Auf 0 setzen, um Frost beim Score zu ignorieren, während die Bewertung weiterhin blockiert wird.",
+          "condition_weight": "Wie stark schlechte Wetterlagen (Sturm, Hagel, Schnee) den Score (0–100) reduzieren. Der Schweregrad wird je Wetterlage festgelegt."
+        }
+      },
+      "reconfigure": {
+        "title": "WashWise neu konfigurieren",
+        "description": "Ändern Sie die Wetterquellen, den Namen, die Kategorie oder die Schwellenwert-Anpassung dieser Instanz.",
+        "data": {
+          "weather_entities": "Wetterquellen",
+          "name": "Name",
+          "category": "Kategorie",
+          "customize_thresholds": "Schwellenwerte anpassen"
+        },
+        "data_description": {
+          "weather_entities": "Wählen Sie eine oder mehrere HA-Wetterentitäten aus. Es wird die erste verfügbare Quelle aus dieser geordneten Liste verwendet; die nächste wird nur dann herangezogen, wenn die vorherige nicht verfügbar ist.",
+          "name": "Anzeigename für diese WashWise-Instanz. Wird als Präfix für jede von diesem Eintrag erstellte Entität verwendet.",
+          "category": "Was Sie waschen möchten. Jede Kategorie liefert sinnvolle Standard-Schwellenwerte und ein Standardsymbol mit. Wählen Sie „Benutzerdefiniert“, um mit neutralen Standardwerten zu starten.",
+          "customize_thresholds": "Aktivieren, um die Standardwerte der Kategorie im nächsten Schritt zu überschreiben. Deaktiviert lassen, um die voreingestellten Werte für die gewählte Kategorie zu übernehmen."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "Wählen Sie mindestens eine Wetterquelle aus.",
+      "weather_unavailable": "Alle ausgewählten Wetterquellen sind derzeit nicht verfügbar.",
+      "duplicate_name": "Eine WashWise-Instanz mit diesem Namen existiert bereits.",
+      "invalid_category": "Die ausgewählte Kategorie ist ungültig."
+    },
+    "abort": {
+      "already_configured": "Diese Kombination ist bereits konfiguriert.",
+      "reconfigure_successful": "Konfiguration erfolgreich aktualisiert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WashWise-Optionen",
+        "description": "Wählen Sie einen Bereich zum Bearbeiten aus.",
+        "menu_options": {
+          "providers": "Wetterquellen",
+          "thresholds": "Schwellenwerte",
+          "scoring": "Score-Gewichtungen",
+          "conditions": "Blockierende Wetterlagen",
+          "advanced": "Erweitert"
+        }
+      },
+      "providers": {
+        "title": "Wetterquellen",
+        "description": "Fügen Sie Wetterentitäten als Vorhersagequellen hinzu, entfernen Sie sie oder ändern Sie deren Reihenfolge.",
+        "data": {
+          "weather_entities": "Wetterquellen"
+        },
+        "data_description": {
+          "weather_entities": "Die Reihenfolge ist entscheidend. Es wird die erste verfügbare Entität aus dieser Liste verwendet; die nächste wird nur dann herangezogen, wenn die vorherige nicht verfügbar ist."
+        }
+      },
+      "thresholds": {
+        "title": "Schwellenwerte",
+        "description": "Überschreiben Sie die Standardwerte, die mit der gewählten Kategorie ausgeliefert werden.",
+        "data": {
+          "days": "Vorhersagezeitraum (Tage)",
+          "precip_threshold_mm": "Niederschlagsschwelle (mm)",
+          "freeze_check": "Bei Frosttemperaturen blockieren",
+          "forecast_type": "Vorhersagetyp"
+        },
+        "data_description": {
+          "days": "Wie viele Vorhersagetage einschließlich heute berücksichtigt werden.",
+          "precip_threshold_mm": "Eine Tagesniederschlagsmenge oberhalb dieses Werts blockiert den Waschvorgang.",
+          "freeze_check": "Wenn aktiviert, blockiert ein Vorhersagetag, an dem die Temperatur 0 °C über- oder unterschreitet, den Waschvorgang.",
+          "forecast_type": "„Täglich“ verwendet einen Eintrag pro Tag; „Stündlich“ fasst die stündlichen Einträge zusammen, sofern unterstützt."
+        }
+      },
+      "scoring": {
+        "title": "Score-Gewichtungen",
+        "description": "Legen Sie fest, wie der Score von 0–100 berechnet wird. Die Gewichtungen müssen sich nicht auf 100 summieren – sie werden unabhängig je Tag angewendet.",
+        "data": {
+          "precip_weight": "Gewichtung Niederschlag",
+          "freeze_weight": "Gewichtung Frost",
+          "condition_weight": "Gewichtung Wetterlage"
+        },
+        "data_description": {
+          "precip_weight": "Wie stark Regen in der Vorhersage den Score reduziert.",
+          "freeze_weight": "Wie stark ein Frosttag den Score reduziert.",
+          "condition_weight": "Wie stark schlechte Wetterlagen den Score reduzieren."
+        }
+      },
+      "conditions": {
+        "title": "Blockierende Wetterlagen",
+        "description": "Wählen Sie aus, welche HA-Wetterlagen-Codes einen Waschvorgang blockieren sollen.",
+        "data": {
+          "bad_conditions": "Blockierende Wetterlagen"
+        },
+        "data_description": {
+          "bad_conditions": "Sobald eine dieser Wetterlagen als aktuelle Wetterlage oder an einem Vorhersagetag auftritt, wird die Bewertung blockiert."
+        }
+      },
+      "advanced": {
+        "title": "Erweitert",
+        "description": "Weniger gebräuchliche Einstellungen.",
+        "data": {
+          "scan_interval_minutes": "Aktualisierungsintervall (Minuten)",
+          "snooze_default_hours": "Standard-Schlummerdauer (Stunden)",
+          "temperature_unit": "Temperatureinheit"
+        },
+        "data_description": {
+          "scan_interval_minutes": "Wie oft der Koordinator als Untergrenze eine neue Vorhersage abruft; die Integration berechnet außerdem sofort neu, sobald die aktive Wetterentität ihren Zustand ändert, daher reichen 15 Minuten völlig aus.",
+          "snooze_default_hours": "Standarddauer, die angewendet wird, wenn der Schlummer-Service ohne explizite Dauer aufgerufen wird.",
+          "temperature_unit": "Überschreibt die Einheit, mit der Vorhersagetemperaturen interpretiert werden. „Auto“ liest sie aus der Quell-Wetterentität (empfohlen). Wählen Sie Celsius / Fahrenheit / Kelvin nur dann, wenn die Metadaten eines Anbieters falsch sind oder fehlen."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "Als gewaschen markieren",
+      "description": "Hängt einen Wascheintrag an das Waschprotokoll der ausgewählten WashWise-Instanz an.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurationseintrag",
+          "description": "Zu aktualisierender WashWise-Konfigurationseintrag. Optional, wenn eine Entität angegeben wird."
+        },
+        "entity_id": {
+          "name": "Entität",
+          "description": "Eine beliebige Entität, die zur zu aktualisierenden WashWise-Instanz gehört."
+        },
+        "timestamp": {
+          "name": "Zeitstempel",
+          "description": "Wann der Waschvorgang stattgefunden hat. Standard ist „jetzt“."
+        }
+      }
+    },
+    "snooze": {
+      "name": "Schlummern",
+      "description": "Pausiert WashWise-Bewertungen für eine bestimmte Dauer oder bis zu einem bestimmten Zeitpunkt.",
+      "fields": {
+        "hours": {
+          "name": "Hours",
+          "description": "How many hours to snooze."
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "Auto",
+        "motorcycle": "Motorrad",
+        "bicycle": "Fahrrad",
+        "boat": "Boot",
+        "rv_camper": "Wohnmobil / Camper",
+        "windows_house": "Hausfenster",
+        "solar_panels": "Solarmodule",
+        "patio_deck": "Terrasse / Deck",
+        "custom": "Benutzerdefiniert"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "Täglich",
+        "hourly": "Stündlich"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "Gewitter mit Regen",
+        "rainy": "Regnerisch",
+        "pouring": "Starkregen",
+        "snowy": "Schneefall",
+        "snowy-rainy": "Schneeregen",
+        "hail": "Hagel",
+        "exceptional": "Außergewöhnlich"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "Auto (Quellenentität verwenden)",
+        "celsius": "Celsius (°C)",
+        "fahrenheit": "Fahrenheit (°F)",
+        "kelvin": "Kelvin (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "Waschen möglich"
+      },
+      "day_ok": {
+        "name": "Tag {day} OK"
+      },
+      "freeze_risk": {
+        "name": "Frostrisiko in der Vorhersage"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "Wasch-Score"
+      },
+      "reason": {
+        "name": "Grund",
+        "state": {
+          "clear": "Klar",
+          "rain": "Regen",
+          "freeze": "Frost",
+          "snow": "Schnee",
+          "bad_condition": "Schlechtes Wetter",
+          "bad_current_condition": "Aktuell schlechtes Wetter",
+          "snoozed": "Schlummert",
+          "unavailable": "Nicht verfügbar"
+        }
+      },
+      "days_until_wash": {
+        "name": "Tage bis zur möglichen Wäsche"
+      },
+      "days_since_wash": {
+        "name": "Tage seit letzter Wäsche"
+      },
+      "last_washed": {
+        "name": "Zuletzt gewaschen"
+      },
+      "wash_count_30d": {
+        "name": "Anzahl Wäschen (30 Tage)"
+      },
+      "active_provider": {
+        "name": "Aktiver Anbieter"
+      },
+      "last_update": {
+        "name": "Letzte Aktualisierung"
+      },
+      "days_analyzed": {
+        "name": "Analysierte Tage"
+      },
+      "precip_total_mm": {
+        "name": "Gesamtniederschlag in der Vorhersage"
+      },
+      "worst_condition": {
+        "name": "Stärkste Wetterlage in der Vorhersage"
+      },
+      "min_temp": {
+        "name": "Mindesttemperatur in der Vorhersage"
+      },
+      "max_temp": {
+        "name": "Höchsttemperatur in der Vorhersage"
+      },
+      "primary_provider_uptime": {
+        "name": "Verfügbarkeit primärer Anbieter"
+      },
+      "snooze_remaining": {
+        "name": "Verbleibende Schlummerzeit"
+      },
+      "day_score": {
+        "name": "Score Tag {day}"
+      },
+      "freeze_risk": {
+        "name": "Freeze risk"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "Als gewaschen markieren"
+      }
+    }
+  }
+}

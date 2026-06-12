@@ -1,0 +1,24 @@
+{
+  "version": "0.2",
+  "words": [
+    "italo",
+    "lombardi",
+    "HACS",
+    "homeassistant",
+    "aiohttp",
+    "voluptuous",
+    "automations",
+    "cooldown",
+    "lovelace",
+    "buildid",
+    "washwise",
+    "forecast_home",
+    "gismeteo",
+    "met_no",
+    "tomorrow_io",
+    "accuweather",
+    "openweathermap",
+    "templow",
+    "lit"
+  ]
+}

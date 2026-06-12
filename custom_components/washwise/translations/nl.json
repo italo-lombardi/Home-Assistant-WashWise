@@ -1,0 +1,302 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "Stel een wasadviseur in die op basis van weersvoorspellingen bepaalt of je een oppervlak kunt wassen.",
+        "data": {
+          "weather_entities": "Weerbronnen",
+          "name": "Naam",
+          "category": "Categorie",
+          "customize_thresholds": "Drempelwaarden aanpassen"
+        },
+        "data_description": {
+          "weather_entities": "Kies een of meer HA-weerentiteiten. De eerste beschikbare bron in deze geordende lijst wordt gebruikt; de volgende wordt alleen geprobeerd als de vorige niet beschikbaar is.",
+          "name": "Weergavenaam voor deze WashWise-instantie. Wordt gebruikt als prefix voor elke entiteit die door deze configuratie wordt aangemaakt.",
+          "category": "Wat je gaat wassen. Elke categorie heeft zinvolle standaarddrempels en een standaardpictogram. Kies Aangepast om met neutrale standaardwaarden te beginnen.",
+          "customize_thresholds": "Schakel in om de standaardwaarden van de categorie op het volgende scherm te overschrijven. Laat uit om de vooraf ingestelde waarden voor de gekozen categorie te gebruiken."
+        }
+      },
+      "thresholds": {
+        "title": "Aangepaste drempelwaarden",
+        "description": "Overschrijf de standaardwaarden van de gekozen categorie. Deze waarden bepalen welke voorspellingsdagen een wasbeurt blokkeren en hoe de score wordt berekend.",
+        "data": {
+          "days": "Voorspellingshorizon (dagen)",
+          "precip_threshold_mm": "Neerslagdrempel (mm)",
+          "freeze_check": "Blokkeren bij vriestemperaturen",
+          "forecast_type": "Type voorspelling",
+          "bad_conditions": "Blokkerende weersomstandigheden",
+          "precip_weight": "Weging neerslagscore",
+          "freeze_weight": "Weging vriesscore",
+          "condition_weight": "Weging weerconditiescore"
+        },
+        "data_description": {
+          "days": "Hoeveel voorspellingsdagen er vooruit worden gekeken, inclusief vandaag. Een grotere horizon vangt meer weer op, maar levert voorzichtigere oordelen op.",
+          "precip_threshold_mm": "Wanneer de totale neerslag per dag boven deze waarde uitkomt, wordt de wasbeurt geblokkeerd. Lagere waarden (0,1) zijn strenger, hogere waarden (1,0) tolereren lichte motregen.",
+          "freeze_check": "Wanneer ingeschakeld, blokkeert een voorspellingsdag waarop de temperatuur onder 0 °C zakt de wasbeurt, om te voorkomen dat het waswater op het oppervlak bevriest.",
+          "forecast_type": "Dagelijks gebruikt één invoer per dag; Per uur aggregeert de eerstvolgende N×24 uurwaarden. Per uur is nauwkeuriger, maar vereist dat de bron uurgegevens beschikbaar stelt.",
+          "bad_conditions": "Weerconditiecodes die wassen blokkeren wanneer ze in de voorspelling of als huidige conditie verschijnen.",
+          "precip_weight": "Hoeveel regen in de voorspelling van de score van 0–100 aftrekt. Een hogere waarde bestraft regenachtige dagen strenger.",
+          "freeze_weight": "Hoeveel een vriesdag van de score van 0–100 aftrekt. Stel in op 0 om vriezen in de score te negeren, terwijl het oordeel nog steeds geblokkeerd wordt.",
+          "condition_weight": "Hoeveel slechte weersomstandigheden (storm, hagel, sneeuw) van de score van 0–100 aftrekken. De ernst verschilt per conditie."
+        }
+      },
+      "reconfigure": {
+        "title": "WashWise opnieuw configureren",
+        "description": "Wijzig de weerbronnen, naam, categorie of drempelaanpassingen voor deze instantie.",
+        "data": {
+          "weather_entities": "Weerbronnen",
+          "name": "Naam",
+          "category": "Categorie",
+          "customize_thresholds": "Drempelwaarden aanpassen"
+        },
+        "data_description": {
+          "weather_entities": "Kies een of meer HA-weerentiteiten. De eerste beschikbare bron in deze geordende lijst wordt gebruikt; de volgende wordt alleen geprobeerd als de vorige niet beschikbaar is.",
+          "name": "Weergavenaam voor deze WashWise-instantie. Wordt gebruikt als prefix voor elke entiteit die door deze configuratie wordt aangemaakt.",
+          "category": "Wat je gaat wassen. Elke categorie heeft zinvolle standaarddrempels en een standaardpictogram. Kies Aangepast om met neutrale standaardwaarden te beginnen.",
+          "customize_thresholds": "Schakel in om de standaardwaarden van de categorie op het volgende scherm te overschrijven. Laat uit om de vooraf ingestelde waarden voor de gekozen categorie te gebruiken."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "Selecteer ten minste één weerbron.",
+      "weather_unavailable": "Alle geselecteerde weerbronnen zijn momenteel niet beschikbaar.",
+      "duplicate_name": "Er bestaat al een WashWise-instantie met deze naam.",
+      "invalid_category": "De geselecteerde categorie is niet geldig."
+    },
+    "abort": {
+      "already_configured": "Deze combinatie is al geconfigureerd.",
+      "reconfigure_successful": "Configuratie succesvol bijgewerkt."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WashWise-opties",
+        "description": "Kies een onderdeel om te bewerken.",
+        "menu_options": {
+          "providers": "Weerbronnen",
+          "thresholds": "Drempelwaarden",
+          "scoring": "Scorewegingen",
+          "conditions": "Blokkerende omstandigheden",
+          "advanced": "Geavanceerd"
+        }
+      },
+      "providers": {
+        "title": "Weerbronnen",
+        "description": "Voeg weerentiteiten toe, verwijder ze of wijzig de volgorde van de bronnen die als voorspellingsbron worden gebruikt.",
+        "data": {
+          "weather_entities": "Weerbronnen"
+        },
+        "data_description": {
+          "weather_entities": "De volgorde is van belang. De eerste beschikbare entiteit in deze lijst wordt gebruikt; de volgende wordt alleen geprobeerd als de vorige niet beschikbaar is."
+        }
+      },
+      "thresholds": {
+        "title": "Drempelwaarden",
+        "description": "Overschrijf de standaardwaarden van de gekozen categorie.",
+        "data": {
+          "days": "Voorspellingshorizon (dagen)",
+          "precip_threshold_mm": "Neerslagdrempel (mm)",
+          "freeze_check": "Blokkeren bij vriestemperaturen",
+          "forecast_type": "Type voorspelling"
+        },
+        "data_description": {
+          "days": "Hoeveel voorspellingsdagen er vooruit worden gekeken, inclusief vandaag.",
+          "precip_threshold_mm": "Wanneer de totale neerslag per dag boven deze waarde uitkomt, wordt de wasbeurt geblokkeerd.",
+          "freeze_check": "Wanneer ingeschakeld, blokkeert een voorspellingsdag waarop de temperatuur onder 0 °C zakt de wasbeurt.",
+          "forecast_type": "Dagelijks gebruikt één invoer per dag; Per uur aggregeert uurwaarden wanneer dat ondersteund wordt."
+        }
+      },
+      "scoring": {
+        "title": "Scorewegingen",
+        "description": "Bepaal hoe de score van 0–100 wordt berekend. De wegingen hoeven niet samen 100 te zijn — ze worden onafhankelijk per dag toegepast.",
+        "data": {
+          "precip_weight": "Weging neerslagscore",
+          "freeze_weight": "Weging vriesscore",
+          "condition_weight": "Weging weerconditiescore"
+        },
+        "data_description": {
+          "precip_weight": "Hoeveel regen in de voorspelling van de score aftrekt.",
+          "freeze_weight": "Hoeveel een vriesdag van de score aftrekt.",
+          "condition_weight": "Hoeveel slechte weersomstandigheden van de score aftrekken."
+        }
+      },
+      "conditions": {
+        "title": "Blokkerende omstandigheden",
+        "description": "Kies welke HA-weerconditiecodes een wasbeurt moeten blokkeren.",
+        "data": {
+          "bad_conditions": "Blokkerende weersomstandigheden"
+        },
+        "data_description": {
+          "bad_conditions": "Wanneer een van deze omstandigheden als huidige conditie of in een voorspellingsdag verschijnt, wordt het oordeel geblokkeerd."
+        }
+      },
+      "advanced": {
+        "title": "Geavanceerd",
+        "description": "Minder gebruikte instellingen.",
+        "data": {
+          "scan_interval_minutes": "Update-interval (minuten)",
+          "snooze_default_hours": "Standaardduur sluimeren (uren)",
+          "temperature_unit": "Temperatuureenheid"
+        },
+        "data_description": {
+          "scan_interval_minutes": "Hoe vaak de coördinator op zijn minst een nieuwe voorspelling ophaalt; de integratie berekent ook direct opnieuw wanneer de actieve weerentiteit van toestand verandert, dus 15 minuten is ruim voldoende.",
+          "snooze_default_hours": "Standaardduur die wordt toegepast wanneer de sluimer-service zonder expliciete duur wordt aangeroepen.",
+          "temperature_unit": "Overschrijf de eenheid die wordt gebruikt om voorspellingstemperaturen te interpreteren. Auto leest deze uit de bron-weerentiteit (aanbevolen). Kies Celsius / Fahrenheit / Kelvin alleen wanneer de metadata van een provider onjuist of ontbrekend zijn."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "Markeren als gewassen",
+      "description": "Voeg een wasinvoer toe aan het waslogboek voor de geselecteerde WashWise-instantie.",
+      "fields": {
+        "entry_id": {
+          "name": "Configuratie-item",
+          "description": "WashWise-configuratie-item om bij te werken. Optioneel als je een entiteit als doel gebruikt."
+        },
+        "entity_id": {
+          "name": "Entiteit",
+          "description": "Een entiteit die bij de bij te werken WashWise-instantie hoort."
+        },
+        "timestamp": {
+          "name": "Tijdstempel",
+          "description": "Wanneer de wasbeurt plaatsvond. Standaard is nu."
+        }
+      }
+    },
+    "snooze": {
+      "name": "Sluimeren",
+      "description": "Pauzeer WashWise-oordelen voor een bepaalde duur of tot een opgegeven tijd.",
+      "fields": {
+        "hours": {
+          "name": "Hours",
+          "description": "How many hours to snooze."
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "Auto",
+        "motorcycle": "Motor",
+        "bicycle": "Fiets",
+        "boat": "Boot",
+        "rv_camper": "Camper",
+        "windows_house": "Ramen van het huis",
+        "solar_panels": "Zonnepanelen",
+        "patio_deck": "Terras / vlonder",
+        "custom": "Aangepast"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "Dagelijks",
+        "hourly": "Per uur"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "Onweer met regen",
+        "rainy": "Regenachtig",
+        "pouring": "Stortregen",
+        "snowy": "Sneeuw",
+        "snowy-rainy": "Sneeuw en regen",
+        "hail": "Hagel",
+        "exceptional": "Uitzonderlijk"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "Auto (bronentiteit gebruiken)",
+        "celsius": "Celsius (°C)",
+        "fahrenheit": "Fahrenheit (°F)",
+        "kelvin": "Kelvin (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "Kan wassen"
+      },
+      "day_ok": {
+        "name": "Dag {day} OK"
+      },
+      "freeze_risk": {
+        "name": "Vriesrisico in voorspelling"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "Wasscore"
+      },
+      "reason": {
+        "name": "Reden",
+        "state": {
+          "clear": "Geen belemmering",
+          "rain": "Regen",
+          "freeze": "Vorst",
+          "snow": "Sneeuw",
+          "bad_condition": "Slecht weer",
+          "bad_current_condition": "Slecht actueel weer",
+          "snoozed": "Gesluimerd",
+          "unavailable": "Niet beschikbaar"
+        }
+      },
+      "days_until_wash": {
+        "name": "Dagen tot mogelijke wasbeurt"
+      },
+      "days_since_wash": {
+        "name": "Dagen sinds laatste wasbeurt"
+      },
+      "last_washed": {
+        "name": "Laatst gewassen"
+      },
+      "wash_count_30d": {
+        "name": "Aantal wasbeurten (30 dagen)"
+      },
+      "active_provider": {
+        "name": "Actieve provider"
+      },
+      "last_update": {
+        "name": "Laatste update"
+      },
+      "days_analyzed": {
+        "name": "Geanalyseerde dagen"
+      },
+      "precip_total_mm": {
+        "name": "Totale neerslag in voorspelling"
+      },
+      "worst_condition": {
+        "name": "Ernstigste weerconditie in voorspelling"
+      },
+      "min_temp": {
+        "name": "Minimumtemperatuur in voorspelling"
+      },
+      "max_temp": {
+        "name": "Maximumtemperatuur in voorspelling"
+      },
+      "primary_provider_uptime": {
+        "name": "Beschikbaarheid primaire provider"
+      },
+      "snooze_remaining": {
+        "name": "Resterende sluimertijd"
+      },
+      "day_score": {
+        "name": "Score dag {day}"
+      },
+      "freeze_risk": {
+        "name": "Freeze risk"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "Markeren als gewassen"
+      }
+    }
+  }
+}

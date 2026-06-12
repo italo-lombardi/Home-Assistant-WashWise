@@ -1,0 +1,44 @@
+{
+  "current": {
+    "temperature": 18.7,
+    "condition": "partlycloudy",
+    "temperature_unit": "°C"
+  },
+  "forecast": [
+    {
+      "datetime": "2026-06-11T00:00:00+00:00",
+      "condition": "partlycloudy",
+      "temperature": 19.5,
+      "temperature_min": 11.0,
+      "precipitation_amount": 0.1
+    },
+    {
+      "datetime": "2026-06-12T00:00:00+00:00",
+      "condition": "rainy",
+      "temperature": 16.2,
+      "temperature_min": 10.4,
+      "precipitation_amount": 6.8
+    },
+    {
+      "datetime": "2026-06-13T00:00:00+00:00",
+      "condition": "cloudy",
+      "temperature": 17.8,
+      "temperature_min": 11.5,
+      "precipitation_amount": 0.0
+    },
+    {
+      "datetime": "2026-06-14T00:00:00+00:00",
+      "condition": "partlycloudy",
+      "temperature": 20.1,
+      "temperature_min": 12.7,
+      "precipitation_amount": 0.0
+    },
+    {
+      "datetime": "2026-06-15T00:00:00+00:00",
+      "condition": "sunny",
+      "temperature": 22.0,
+      "temperature_min": 13.4,
+      "precipitation_amount": 0.0
+    }
+  ]
+}

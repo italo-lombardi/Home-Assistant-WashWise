@@ -1,0 +1,302 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "Configure um assistente de lavagem que decide se você pode lavar uma superfície com base nos dados de previsão do tempo.",
+        "data": {
+          "weather_entities": "Fontes meteorológicas",
+          "name": "Nome",
+          "category": "Categoria",
+          "customize_thresholds": "Personalizar limites"
+        },
+        "data_description": {
+          "weather_entities": "Escolha uma ou mais entidades meteorológicas do HA. A primeira fonte disponível desta lista ordenada é usada; a próxima só é tentada se a anterior estiver indisponível.",
+          "name": "Nome amigável para esta instância do WashWise. Usado como prefixo de cada entidade criada por esta entrada.",
+          "category": "O que você está lavando. Cada categoria vem com limites padrão sensatos e um ícone padrão. Escolha Personalizado para começar com valores neutros.",
+          "customize_thresholds": "Ative para substituir os valores padrão da categoria na próxima tela. Deixe desativado para usar os valores predefinidos da categoria escolhida."
+        }
+      },
+      "thresholds": {
+        "title": "Limites personalizados",
+        "description": "Substitua os valores padrão que vêm com a categoria escolhida. Estes valores controlam quais dias da previsão bloqueiam uma lavagem e como a pontuação é calculada.",
+        "data": {
+          "days": "Horizonte de previsão (dias)",
+          "precip_threshold_mm": "Limite de precipitação (mm)",
+          "freeze_check": "Bloquear em temperaturas de congelamento",
+          "forecast_type": "Tipo de previsão",
+          "bad_conditions": "Condições meteorológicas que bloqueiam",
+          "precip_weight": "Peso da pontuação de precipitação",
+          "freeze_weight": "Peso da pontuação de congelamento",
+          "condition_weight": "Peso da pontuação de condições"
+        },
+        "data_description": {
+          "days": "Quantos dias de previsão considerar à frente, incluindo hoje. Horizontes maiores capturam mais variações do tempo, mas produzem vereditos mais conservadores.",
+          "precip_threshold_mm": "Precipitação total diária acima deste valor bloqueia a lavagem. Valores mais baixos (0,1) são mais rigorosos; valores mais altos (1,0) toleram chuviscos leves.",
+          "freeze_check": "Quando ativado, um dia de previsão cuja temperatura cruze 0 °C bloqueia a lavagem para evitar que a água da lavagem congele na superfície.",
+          "forecast_type": "Diária usa uma entrada por dia; Horária agrega as próximas N×24 entradas horárias. Horária é mais precisa, mas exige que a fonte exponha dados horários.",
+          "bad_conditions": "Códigos de condições meteorológicas que bloqueiam a lavagem quando aparecem na previsão ou como condição atual.",
+          "precip_weight": "Quanto a chuva na previsão subtrai da pontuação de 0–100. Valores mais altos penalizam dias chuvosos com mais intensidade.",
+          "freeze_weight": "Quanto um dia de congelamento subtrai da pontuação de 0–100. Defina como 0 para ignorar o congelamento na pontuação enquanto continua bloqueando o veredito.",
+          "condition_weight": "Quanto as condições meteorológicas ruins (tempestades, granizo, neve) subtraem da pontuação de 0–100. A severidade é por condição."
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigurar WashWise",
+        "description": "Altere as fontes meteorológicas, nome, categoria ou personalização de limites desta instância.",
+        "data": {
+          "weather_entities": "Fontes meteorológicas",
+          "name": "Nome",
+          "category": "Categoria",
+          "customize_thresholds": "Personalizar limites"
+        },
+        "data_description": {
+          "weather_entities": "Escolha uma ou mais entidades meteorológicas do HA. A primeira fonte disponível desta lista ordenada é usada; a próxima só é tentada se a anterior estiver indisponível.",
+          "name": "Nome amigável para esta instância do WashWise. Usado como prefixo de cada entidade criada por esta entrada.",
+          "category": "O que você está lavando. Cada categoria vem com limites padrão sensatos e um ícone padrão. Escolha Personalizado para começar com valores neutros.",
+          "customize_thresholds": "Ative para substituir os valores padrão da categoria na próxima tela. Deixe desativado para usar os valores predefinidos da categoria escolhida."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "Selecione pelo menos uma fonte meteorológica.",
+      "weather_unavailable": "Todas as fontes meteorológicas selecionadas estão indisponíveis no momento.",
+      "duplicate_name": "Já existe uma instância do WashWise com este nome.",
+      "invalid_category": "A categoria selecionada não é válida."
+    },
+    "abort": {
+      "already_configured": "Esta combinação já está configurada.",
+      "reconfigure_successful": "Configuração atualizada com sucesso."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opções do WashWise",
+        "description": "Escolha uma seção para editar.",
+        "menu_options": {
+          "providers": "Fontes meteorológicas",
+          "thresholds": "Limites",
+          "scoring": "Pesos da pontuação",
+          "conditions": "Condições que bloqueiam",
+          "advanced": "Avançado"
+        }
+      },
+      "providers": {
+        "title": "Fontes meteorológicas",
+        "description": "Adicione, remova ou reordene as entidades meteorológicas usadas como fontes de previsão.",
+        "data": {
+          "weather_entities": "Fontes meteorológicas"
+        },
+        "data_description": {
+          "weather_entities": "A ordem importa. A primeira entidade disponível desta lista é usada; a próxima só é tentada se a anterior estiver indisponível."
+        }
+      },
+      "thresholds": {
+        "title": "Limites",
+        "description": "Substitua os valores padrão que vêm com a categoria escolhida.",
+        "data": {
+          "days": "Horizonte de previsão (dias)",
+          "precip_threshold_mm": "Limite de precipitação (mm)",
+          "freeze_check": "Bloquear em temperaturas de congelamento",
+          "forecast_type": "Tipo de previsão"
+        },
+        "data_description": {
+          "days": "Quantos dias de previsão considerar à frente, incluindo hoje.",
+          "precip_threshold_mm": "Precipitação total diária acima deste valor bloqueia a lavagem.",
+          "freeze_check": "Quando ativado, um dia de previsão cuja temperatura cruze 0 °C bloqueia a lavagem.",
+          "forecast_type": "Diária usa uma entrada por dia; Horária agrega entradas horárias quando suportadas."
+        }
+      },
+      "scoring": {
+        "title": "Pesos da pontuação",
+        "description": "Ajuste como a pontuação de 0–100 é calculada. Os pesos não precisam somar 100 — são aplicados de forma independente por dia.",
+        "data": {
+          "precip_weight": "Peso da pontuação de precipitação",
+          "freeze_weight": "Peso da pontuação de congelamento",
+          "condition_weight": "Peso da pontuação de condições"
+        },
+        "data_description": {
+          "precip_weight": "Quanto a chuva na previsão subtrai da pontuação.",
+          "freeze_weight": "Quanto um dia de congelamento subtrai da pontuação.",
+          "condition_weight": "Quanto as condições meteorológicas ruins subtraem da pontuação."
+        }
+      },
+      "conditions": {
+        "title": "Condições que bloqueiam",
+        "description": "Escolha quais códigos de condição meteorológica do HA devem bloquear uma lavagem.",
+        "data": {
+          "bad_conditions": "Condições meteorológicas que bloqueiam"
+        },
+        "data_description": {
+          "bad_conditions": "Quando qualquer uma destas condições aparece como condição atual ou em um dia da previsão, o veredito é bloqueado."
+        }
+      },
+      "advanced": {
+        "title": "Avançado",
+        "description": "Configurações menos comuns.",
+        "data": {
+          "scan_interval_minutes": "Intervalo de atualização (minutos)",
+          "snooze_default_hours": "Duração padrão do adiamento (horas)",
+          "temperature_unit": "Unidade de temperatura"
+        },
+        "data_description": {
+          "scan_interval_minutes": "Com que frequência mínima o coordenador busca uma nova previsão; a integração também recalcula imediatamente quando a entidade meteorológica ativa muda de estado, então 15 minutos são mais que suficientes.",
+          "snooze_default_hours": "Duração padrão aplicada quando o serviço de adiamento é chamado sem uma duração explícita.",
+          "temperature_unit": "Substitui a unidade usada para interpretar as temperaturas da previsão. Auto a lê da entidade meteorológica de origem (recomendado). Escolha Celsius / Fahrenheit / Kelvin somente quando os metadados de um provedor estiverem incorretos ou ausentes."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "Marcar como lavado",
+      "description": "Adiciona uma entrada de lavagem ao registro de lavagens da instância WashWise selecionada.",
+      "fields": {
+        "entry_id": {
+          "name": "Entrada de configuração",
+          "description": "Entrada de configuração WashWise a atualizar. Opcional quando o alvo é uma entidade."
+        },
+        "entity_id": {
+          "name": "Entidade",
+          "description": "Qualquer entidade pertencente à instância WashWise a atualizar."
+        },
+        "timestamp": {
+          "name": "Data e hora",
+          "description": "Quando a lavagem ocorreu. O padrão é agora."
+        }
+      }
+    },
+    "snooze": {
+      "name": "Adiar",
+      "description": "Pausa os vereditos do WashWise por um período ou até um determinado horário.",
+      "fields": {
+        "hours": {
+          "name": "Hours",
+          "description": "How many hours to snooze."
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "Carro",
+        "motorcycle": "Moto",
+        "bicycle": "Bicicleta",
+        "boat": "Barco",
+        "rv_camper": "Motorhome / Trailer",
+        "windows_house": "Janelas da casa",
+        "solar_panels": "Painéis solares",
+        "patio_deck": "Pátio / deck",
+        "custom": "Personalizado"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "Diária",
+        "hourly": "Horária"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "Tempestade com chuva",
+        "rainy": "Chuvoso",
+        "pouring": "Chuva torrencial",
+        "snowy": "Nevando",
+        "snowy-rainy": "Neve e chuva",
+        "hail": "Granizo",
+        "exceptional": "Excepcional"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "Auto (usar entidade de origem)",
+        "celsius": "Celsius (°C)",
+        "fahrenheit": "Fahrenheit (°F)",
+        "kelvin": "Kelvin (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "Pode lavar"
+      },
+      "day_ok": {
+        "name": "Dia {day} OK"
+      },
+      "freeze_risk": {
+        "name": "Risco de congelamento na previsão"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "Pontuação de lavagem"
+      },
+      "reason": {
+        "name": "Motivo",
+        "state": {
+          "clear": "Limpo",
+          "rain": "Chuva",
+          "freeze": "Congelamento",
+          "snow": "Neve",
+          "bad_condition": "Tempo ruim",
+          "bad_current_condition": "Tempo ruim atual",
+          "snoozed": "Adiado",
+          "unavailable": "Indisponível"
+        }
+      },
+      "days_until_wash": {
+        "name": "Dias até uma possível lavagem"
+      },
+      "days_since_wash": {
+        "name": "Dias desde a última lavagem"
+      },
+      "last_washed": {
+        "name": "Última lavagem"
+      },
+      "wash_count_30d": {
+        "name": "Contagem de lavagens (30 dias)"
+      },
+      "active_provider": {
+        "name": "Provedor ativo"
+      },
+      "last_update": {
+        "name": "Última atualização"
+      },
+      "days_analyzed": {
+        "name": "Dias analisados"
+      },
+      "precip_total_mm": {
+        "name": "Precipitação total prevista"
+      },
+      "worst_condition": {
+        "name": "Condição mais severa prevista"
+      },
+      "min_temp": {
+        "name": "Temperatura mínima prevista"
+      },
+      "max_temp": {
+        "name": "Temperatura máxima prevista"
+      },
+      "primary_provider_uptime": {
+        "name": "Tempo no ar do provedor primário"
+      },
+      "snooze_remaining": {
+        "name": "Tempo de adiamento restante"
+      },
+      "day_score": {
+        "name": "Pontuação do dia {day}"
+      },
+      "freeze_risk": {
+        "name": "Freeze risk"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "Marcar como lavado"
+      }
+    }
+  }
+}

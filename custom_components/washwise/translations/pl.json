@@ -1,0 +1,302 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "Skonfiguruj doradcę mycia, który na podstawie prognozy pogody decyduje, czy można umyć daną powierzchnię.",
+        "data": {
+          "weather_entities": "Źródła pogody",
+          "name": "Nazwa",
+          "category": "Kategoria",
+          "customize_thresholds": "Dostosuj progi"
+        },
+        "data_description": {
+          "weather_entities": "Wybierz co najmniej jedną encję pogodową HA. Używane jest pierwsze dostępne źródło z tej uporządkowanej listy; kolejne jest sprawdzane tylko wtedy, gdy poprzednie jest niedostępne.",
+          "name": "Przyjazna nazwa tej instancji WashWise. Używana jako prefiks każdej encji utworzonej przez ten wpis.",
+          "category": "Co myjesz. Każda kategoria ma rozsądne, domyślne progi i domyślną ikonę. Wybierz „Niestandardowa”, aby zacząć od neutralnych wartości domyślnych.",
+          "customize_thresholds": "Włącz, aby na następnym ekranie nadpisać domyślne wartości kategorii. Pozostaw wyłączone, aby użyć wartości zdefiniowanych dla wybranej kategorii."
+        }
+      },
+      "thresholds": {
+        "title": "Niestandardowe progi",
+        "description": "Nadpisz wartości domyślne dostarczane wraz z wybraną kategorią. Wartości te decydują, które dni prognozy blokują mycie i jak obliczany jest wynik.",
+        "data": {
+          "days": "Horyzont prognozy (dni)",
+          "precip_threshold_mm": "Próg opadów (mm)",
+          "freeze_check": "Blokuj przy ujemnych temperaturach",
+          "forecast_type": "Typ prognozy",
+          "bad_conditions": "Blokujące warunki pogodowe",
+          "precip_weight": "Waga wyniku opadów",
+          "freeze_weight": "Waga wyniku mrozu",
+          "condition_weight": "Waga wyniku warunków pogodowych"
+        },
+        "data_description": {
+          "days": "Ile dni prognozy uwzględnić, włącznie z dzisiaj. Większe horyzonty wychwytują więcej zjawisk pogodowych, ale dają bardziej zachowawcze werdykty.",
+          "precip_threshold_mm": "Łączne dzienne opady przekraczające tę wartość blokują mycie. Niższe wartości (0,1) są bardziej restrykcyjne, wyższe (1,0) tolerują lekką mżawkę.",
+          "freeze_check": "Gdy włączone, dzień prognozy, w którym temperatura przekracza próg 0 °C, blokuje mycie, aby uniknąć zamarznięcia wody na umytej powierzchni.",
+          "forecast_type": "Tryb dzienny używa jednego wpisu na dobę; tryb godzinowy agreguje kolejne N×24 wpisy godzinowe. Tryb godzinowy jest dokładniejszy, ale wymaga, aby źródło udostępniało dane godzinowe.",
+          "bad_conditions": "Kody warunków pogodowych, które blokują mycie, gdy pojawią się w prognozie lub jako warunek bieżący.",
+          "precip_weight": "O ile deszcz w prognozie obniża wynik w skali 0–100. Wyższa wartość bardziej karze deszczowe dni.",
+          "freeze_weight": "O ile mroźny dzień obniża wynik w skali 0–100. Ustaw 0, aby ignorować mróz w punktacji, ale nadal blokować werdykt.",
+          "condition_weight": "O ile złe warunki pogodowe (burze, grad, śnieg) obniżają wynik w skali 0–100. Dotkliwość jest indywidualna dla każdego warunku."
+        }
+      },
+      "reconfigure": {
+        "title": "Rekonfiguracja WashWise",
+        "description": "Zmień źródła pogody, nazwę, kategorię lub dostosowanie progów dla tej instancji.",
+        "data": {
+          "weather_entities": "Źródła pogody",
+          "name": "Nazwa",
+          "category": "Kategoria",
+          "customize_thresholds": "Dostosuj progi"
+        },
+        "data_description": {
+          "weather_entities": "Wybierz co najmniej jedną encję pogodową HA. Używane jest pierwsze dostępne źródło z tej uporządkowanej listy; kolejne jest sprawdzane tylko wtedy, gdy poprzednie jest niedostępne.",
+          "name": "Przyjazna nazwa tej instancji WashWise. Używana jako prefiks każdej encji utworzonej przez ten wpis.",
+          "category": "Co myjesz. Każda kategoria ma rozsądne, domyślne progi i domyślną ikonę. Wybierz „Niestandardowa”, aby zacząć od neutralnych wartości domyślnych.",
+          "customize_thresholds": "Włącz, aby na następnym ekranie nadpisać domyślne wartości kategorii. Pozostaw wyłączone, aby użyć wartości zdefiniowanych dla wybranej kategorii."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "Wybierz co najmniej jedno źródło pogody.",
+      "weather_unavailable": "Wszystkie wybrane źródła pogody są obecnie niedostępne.",
+      "duplicate_name": "Instancja WashWise o tej nazwie już istnieje.",
+      "invalid_category": "Wybrana kategoria jest nieprawidłowa."
+    },
+    "abort": {
+      "already_configured": "Ta kombinacja jest już skonfigurowana.",
+      "reconfigure_successful": "Konfiguracja została pomyślnie zaktualizowana."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opcje WashWise",
+        "description": "Wybierz sekcję do edycji.",
+        "menu_options": {
+          "providers": "Źródła pogody",
+          "thresholds": "Progi",
+          "scoring": "Wagi punktacji",
+          "conditions": "Warunki blokujące",
+          "advanced": "Zaawansowane"
+        }
+      },
+      "providers": {
+        "title": "Źródła pogody",
+        "description": "Dodaj, usuń lub zmień kolejność encji pogodowych używanych jako źródła prognoz.",
+        "data": {
+          "weather_entities": "Źródła pogody"
+        },
+        "data_description": {
+          "weather_entities": "Kolejność ma znaczenie. Używana jest pierwsza dostępna encja z listy; kolejna jest sprawdzana tylko wtedy, gdy poprzednia jest niedostępna."
+        }
+      },
+      "thresholds": {
+        "title": "Progi",
+        "description": "Nadpisz wartości domyślne dostarczane wraz z wybraną kategorią.",
+        "data": {
+          "days": "Horyzont prognozy (dni)",
+          "precip_threshold_mm": "Próg opadów (mm)",
+          "freeze_check": "Blokuj przy ujemnych temperaturach",
+          "forecast_type": "Typ prognozy"
+        },
+        "data_description": {
+          "days": "Ile dni prognozy uwzględnić, włącznie z dzisiaj.",
+          "precip_threshold_mm": "Łączne dzienne opady przekraczające tę wartość blokują mycie.",
+          "freeze_check": "Gdy włączone, dzień prognozy, w którym temperatura przekracza próg 0 °C, blokuje mycie.",
+          "forecast_type": "Tryb dzienny używa jednego wpisu na dobę; tryb godzinowy agreguje wpisy godzinowe, jeśli są obsługiwane."
+        }
+      },
+      "scoring": {
+        "title": "Wagi punktacji",
+        "description": "Dostosuj sposób obliczania wyniku w skali 0–100. Wagi nie muszą sumować się do 100 — są stosowane niezależnie dla każdego dnia.",
+        "data": {
+          "precip_weight": "Waga wyniku opadów",
+          "freeze_weight": "Waga wyniku mrozu",
+          "condition_weight": "Waga wyniku warunków pogodowych"
+        },
+        "data_description": {
+          "precip_weight": "O ile deszcz w prognozie obniża wynik.",
+          "freeze_weight": "O ile mroźny dzień obniża wynik.",
+          "condition_weight": "O ile złe warunki pogodowe obniżają wynik."
+        }
+      },
+      "conditions": {
+        "title": "Warunki blokujące",
+        "description": "Wybierz, które kody warunków pogodowych HA mają blokować mycie.",
+        "data": {
+          "bad_conditions": "Blokujące warunki pogodowe"
+        },
+        "data_description": {
+          "bad_conditions": "Gdy którykolwiek z tych warunków pojawi się jako warunek bieżący lub w jednym z dni prognozy, werdykt zostaje zablokowany."
+        }
+      },
+      "advanced": {
+        "title": "Zaawansowane",
+        "description": "Rzadziej używane ustawienia.",
+        "data": {
+          "scan_interval_minutes": "Interwał aktualizacji (minuty)",
+          "snooze_default_hours": "Domyślny czas drzemki (godziny)",
+          "temperature_unit": "Jednostka temperatury"
+        },
+        "data_description": {
+          "scan_interval_minutes": "Jak często koordynator pobiera świeżą prognozę jako minimum; integracja przelicza również od razu, gdy aktywna encja pogody zmieni stan, więc 15 minut w zupełności wystarczy.",
+          "snooze_default_hours": "Domyślny czas trwania stosowany, gdy usługa drzemki zostanie wywołana bez podanego czasu trwania.",
+          "temperature_unit": "Nadpisuje jednostkę używaną do interpretacji temperatur z prognozy. Auto odczytuje ją ze źródłowej encji pogody (zalecane). Wybierz Celsius / Fahrenheit / Kelvin tylko wtedy, gdy metadane dostawcy są błędne lub ich brakuje."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "Oznacz jako umyte",
+      "description": "Dodaje wpis do dziennika myć dla wybranej instancji WashWise.",
+      "fields": {
+        "entry_id": {
+          "name": "Wpis konfiguracji",
+          "description": "Wpis konfiguracji WashWise do zaktualizowania. Opcjonalny, gdy wskazujesz encję."
+        },
+        "entity_id": {
+          "name": "Encja",
+          "description": "Dowolna encja należąca do instancji WashWise, którą chcesz zaktualizować."
+        },
+        "timestamp": {
+          "name": "Znacznik czasu",
+          "description": "Kiedy nastąpiło mycie. Domyślnie teraz."
+        }
+      }
+    },
+    "snooze": {
+      "name": "Drzemka",
+      "description": "Wstrzymuje werdykty WashWise na określony czas lub do wskazanego momentu.",
+      "fields": {
+        "hours": {
+          "name": "Hours",
+          "description": "How many hours to snooze."
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "Samochód",
+        "motorcycle": "Motocykl",
+        "bicycle": "Rower",
+        "boat": "Łódź",
+        "rv_camper": "Kamper",
+        "windows_house": "Okna domu",
+        "solar_panels": "Panele słoneczne",
+        "patio_deck": "Taras",
+        "custom": "Niestandardowa"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "Dzienna",
+        "hourly": "Godzinowa"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "Burza z deszczem",
+        "rainy": "Deszcz",
+        "pouring": "Ulewny deszcz",
+        "snowy": "Śnieg",
+        "snowy-rainy": "Śnieg z deszczem",
+        "hail": "Grad",
+        "exceptional": "Warunki wyjątkowe"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "Auto (użyj encji źródłowej)",
+        "celsius": "Celsjusz (°C)",
+        "fahrenheit": "Fahrenheit (°F)",
+        "kelvin": "Kelwin (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "Można myć"
+      },
+      "day_ok": {
+        "name": "Dzień {day} OK"
+      },
+      "freeze_risk": {
+        "name": "Ryzyko mrozu w prognozie"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "Wynik mycia"
+      },
+      "reason": {
+        "name": "Przyczyna",
+        "state": {
+          "clear": "Brak przeszkód",
+          "rain": "Deszcz",
+          "freeze": "Mróz",
+          "snow": "Śnieg",
+          "bad_condition": "Zła pogoda",
+          "bad_current_condition": "Zła bieżąca pogoda",
+          "snoozed": "Drzemka",
+          "unavailable": "Niedostępne"
+        }
+      },
+      "days_until_wash": {
+        "name": "Dni do możliwego mycia"
+      },
+      "days_since_wash": {
+        "name": "Dni od ostatniego mycia"
+      },
+      "last_washed": {
+        "name": "Ostatnio umyte"
+      },
+      "wash_count_30d": {
+        "name": "Liczba myć (30 dni)"
+      },
+      "active_provider": {
+        "name": "Aktywny dostawca"
+      },
+      "last_update": {
+        "name": "Ostatnia aktualizacja"
+      },
+      "days_analyzed": {
+        "name": "Przeanalizowane dni"
+      },
+      "precip_total_mm": {
+        "name": "Łączne opady w prognozie"
+      },
+      "worst_condition": {
+        "name": "Najcięższe warunki w prognozie"
+      },
+      "min_temp": {
+        "name": "Minimalna temperatura w prognozie"
+      },
+      "max_temp": {
+        "name": "Maksymalna temperatura w prognozie"
+      },
+      "primary_provider_uptime": {
+        "name": "Dostępność głównego dostawcy"
+      },
+      "snooze_remaining": {
+        "name": "Pozostały czas drzemki"
+      },
+      "day_score": {
+        "name": "Wynik dnia {day}"
+      },
+      "freeze_risk": {
+        "name": "Freeze risk"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "Oznacz jako umyte"
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+    "domain": "washwise",
+    "name": "WashWise",
+    "after_dependencies": ["http", "lovelace"],
+    "codeowners": ["@italo-lombardi"],
+    "config_flow": true,
+    "dependencies": ["weather", "frontend"],
+    "documentation": "https://github.com/italo-lombardi/Home-Assistant-WashWise",
+    "integration_type": "service",
+    "iot_class": "calculated",
+    "issue_tracker": "https://github.com/italo-lombardi/Home-Assistant-WashWise/issues",
+    "quality_scale": "custom",
+    "requirements": [],
+    "version": "0.1.0"
+}

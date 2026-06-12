@@ -1,0 +1,44 @@
+{
+  "current": {
+    "temperature": 78.4,
+    "condition": "partlycloudy",
+    "temperature_unit": "°F"
+  },
+  "forecast": [
+    {
+      "time": 1749600000000,
+      "condition": "partlycloudy",
+      "temp": 82.5,
+      "temp_low": 64.2,
+      "precip_mm": 0.0
+    },
+    {
+      "time": 1749686400000,
+      "condition": "lightning-rainy",
+      "temp": 76.8,
+      "temp_low": 62.1,
+      "precip_mm": 12.4
+    },
+    {
+      "time": 1749772800000,
+      "condition": "cloudy",
+      "temp": 80.0,
+      "temp_low": 65.3,
+      "precip_mm": 0.5
+    },
+    {
+      "time": 1749859200000,
+      "condition": "partlycloudy",
+      "temp": 84.2,
+      "temp_low": 66.8,
+      "precip_mm": 0.0
+    },
+    {
+      "time": 1749945600000,
+      "condition": "sunny",
+      "temp": 86.5,
+      "temp_low": 68.0,
+      "precip_mm": 0.0
+    }
+  ]
+}

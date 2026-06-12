@@ -1,0 +1,309 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "Set up a wash advisor that decides whether you can wash a surface based on weather forecast data.",
+        "data": {
+          "weather_entities": "Weather sources",
+          "name": "Name",
+          "category": "Category",
+          "customize_thresholds": "Customize thresholds"
+        },
+        "data_description": {
+          "weather_entities": "Pick one or more HA weather entities. The first available source in this ordered list is used; the next one is tried only if the previous one is unavailable.",
+          "name": "Friendly name for this WashWise instance. Used to prefix every entity created by this entry.",
+          "category": "What you are washing. Each category ships with sensible default thresholds and a default icon. Pick Custom to start from neutral defaults.",
+          "customize_thresholds": "Turn on to override the category defaults on the next screen. Leave off to use the preset values for the chosen category."
+        }
+      },
+      "thresholds": {
+        "title": "Custom thresholds",
+        "description": "Override the defaults that ship with the chosen category. These values control which forecast days block a wash and how the score is computed.",
+        "data": {
+          "days": "Forecast horizon (days)",
+          "precip_threshold_mm": "Precipitation threshold (mm)",
+          "freeze_check": "Block on freezing temperatures",
+          "forecast_type": "Forecast type",
+          "bad_conditions": "Blocking weather conditions",
+          "precip_weight": "Precipitation score weight",
+          "freeze_weight": "Freeze score weight",
+          "condition_weight": "Condition score weight"
+        },
+        "data_description": {
+          "days": "How many forecast days to look ahead, including today. Larger horizons catch more weather but produce more conservative verdicts.",
+          "precip_threshold_mm": "Total precipitation per day above this value blocks the wash. Lower values (0.1) are stricter, higher values (1.0) tolerate light drizzle.",
+          "freeze_check": "When on, a forecast day whose temperature crosses 0 °C blocks the wash to avoid freezing the wash water on the surface.",
+          "forecast_type": "Daily uses one entry per day; Hourly aggregates the next N×24 hourly entries. Hourly is more accurate but requires the source to expose hourly data.",
+          "bad_conditions": "Weather condition codes that block washing when they appear in the forecast or as the current condition.",
+          "precip_weight": "How much rain in the forecast subtracts from the 0–100 score. Higher value penalizes rainy days more aggressively.",
+          "freeze_weight": "How much a freezing day subtracts from the 0–100 score. Set to 0 to ignore freeze in scoring while still blocking the verdict.",
+          "condition_weight": "How much bad weather conditions (storms, hail, snow) subtract from the 0–100 score. Severity is per-condition."
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigure WashWise",
+        "description": "Change the weather sources, name, category, or threshold customization for this instance.",
+        "data": {
+          "weather_entities": "Weather sources",
+          "name": "Name",
+          "category": "Category",
+          "customize_thresholds": "Customize thresholds"
+        },
+        "data_description": {
+          "weather_entities": "Pick one or more HA weather entities. The first available source in this ordered list is used; the next one is tried only if the previous one is unavailable.",
+          "name": "Friendly name for this WashWise instance. Used to prefix every entity created by this entry.",
+          "category": "What you are washing. Each category ships with sensible default thresholds and a default icon. Pick Custom to start from neutral defaults.",
+          "customize_thresholds": "Turn on to override the category defaults on the next screen. Leave off to use the preset values for the chosen category."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "Select at least one weather source.",
+      "weather_unavailable": "All selected weather sources are currently unavailable.",
+      "duplicate_name": "A WashWise instance with this name already exists.",
+      "invalid_category": "The selected category is not valid."
+    },
+    "abort": {
+      "already_configured": "This combination is already configured.",
+      "reconfigure_successful": "Configuration updated successfully."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WashWise options",
+        "description": "Pick a section to edit.",
+        "menu_options": {
+          "providers": "Weather sources",
+          "thresholds": "Thresholds",
+          "scoring": "Scoring weights",
+          "conditions": "Blocking conditions",
+          "advanced": "Advanced"
+        }
+      },
+      "providers": {
+        "title": "Weather sources",
+        "description": "Add, remove, or reorder the weather entities used as forecast sources.",
+        "data": {
+          "weather_entities": "Weather sources"
+        },
+        "data_description": {
+          "weather_entities": "Order matters. The first available entity in this list is used; the next one is tried only if the previous one is unavailable."
+        }
+      },
+      "thresholds": {
+        "title": "Thresholds",
+        "description": "Override the defaults that ship with the chosen category.",
+        "data": {
+          "days": "Forecast horizon (days)",
+          "precip_threshold_mm": "Precipitation threshold (mm)",
+          "freeze_check": "Block on freezing temperatures",
+          "forecast_type": "Forecast type"
+        },
+        "data_description": {
+          "days": "How many forecast days to look ahead, including today.",
+          "precip_threshold_mm": "Total precipitation per day above this value blocks the wash.",
+          "freeze_check": "When on, a forecast day whose temperature crosses 0 °C blocks the wash.",
+          "forecast_type": "Daily uses one entry per day; Hourly aggregates hourly entries when supported."
+        }
+      },
+      "scoring": {
+        "title": "Scoring weights",
+        "description": "Tune how the 0–100 score is computed. Weights do not need to sum to 100 — they are applied independently per day.",
+        "data": {
+          "precip_weight": "Precipitation score weight",
+          "freeze_weight": "Freeze score weight",
+          "condition_weight": "Condition score weight"
+        },
+        "data_description": {
+          "precip_weight": "How much rain in the forecast subtracts from the score.",
+          "freeze_weight": "How much a freezing day subtracts from the score.",
+          "condition_weight": "How much bad weather conditions subtract from the score."
+        }
+      },
+      "conditions": {
+        "title": "Blocking conditions",
+        "description": "Pick which HA weather condition codes should block a wash.",
+        "data": {
+          "bad_conditions": "Blocking weather conditions"
+        },
+        "data_description": {
+          "bad_conditions": "When any of these conditions appears as the current condition or in a forecast day, the verdict is blocked."
+        }
+      },
+      "advanced": {
+        "title": "Advanced",
+        "description": "Less common settings.",
+        "data": {
+          "scan_interval_minutes": "Update interval (minutes)",
+          "snooze_default_hours": "Default snooze duration (hours)",
+          "temperature_unit": "Temperature unit"
+        },
+        "data_description": {
+          "scan_interval_minutes": "How often the coordinator pulls a fresh forecast as a floor; the integration also recomputes immediately when the active weather entity changes state, so 15 minutes is plenty.",
+          "snooze_default_hours": "Default duration applied when the snooze service is called without an explicit duration.",
+          "temperature_unit": "Override the unit used to interpret forecast temperatures. Auto reads it from the source weather entity (recommended). Pick Celsius / Fahrenheit / Kelvin only when a provider's metadata is wrong or missing."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "Mark as washed",
+      "description": "Append a wash entry to the wash log for the selected WashWise instance.",
+      "fields": {
+        "entry_id": {
+          "name": "Config entry",
+          "description": "WashWise config entry to update. Optional when targeting an entity."
+        },
+        "entity_id": {
+          "name": "Entity",
+          "description": "Any entity belonging to the WashWise instance to update."
+        },
+        "timestamp": {
+          "name": "Timestamp",
+          "description": "When the wash happened. Defaults to now."
+        }
+      }
+    },
+    "snooze": {
+      "name": "Snooze",
+      "description": "Pause WashWise verdicts for a duration or until a given time.",
+      "fields": {
+        "hours": {
+          "name": "Hours",
+          "description": "How many hours to snooze."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Clear snooze",
+      "description": "Cancel the active snooze."
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "Car",
+        "motorcycle": "Motorcycle",
+        "bicycle": "Bicycle",
+        "boat": "Boat",
+        "rv_camper": "RV / Camper",
+        "windows_house": "House windows",
+        "solar_panels": "Solar panels",
+        "patio_deck": "Patio / deck",
+        "custom": "Custom"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "Daily",
+        "hourly": "Hourly"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "Thunderstorm with rain",
+        "rainy": "Rainy",
+        "pouring": "Pouring rain",
+        "snowy": "Snowy",
+        "snowy-rainy": "Snow and rain",
+        "hail": "Hail",
+        "exceptional": "Exceptional"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "Auto (use source entity)",
+        "celsius": "Celsius (°C)",
+        "fahrenheit": "Fahrenheit (°F)",
+        "kelvin": "Kelvin (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "Can wash"
+      },
+      "day_ok": {
+        "name": "Day {day} OK"
+      },
+      "freeze_risk": {
+        "name": "Freeze risk in forecast"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "Wash score"
+      },
+      "reason": {
+        "name": "Reason",
+        "state": {
+          "clear": "Clear",
+          "rain": "Rain",
+          "freeze": "Freeze",
+          "snow": "Snow",
+          "bad_condition": "Bad weather",
+          "bad_current_condition": "Bad current weather",
+          "snoozed": "Snoozed",
+          "unavailable": "Unavailable"
+        }
+      },
+      "days_until_wash": {
+        "name": "Days until possible wash"
+      },
+      "days_since_wash": {
+        "name": "Days since last wash"
+      },
+      "last_washed": {
+        "name": "Last washed"
+      },
+      "wash_count_30d": {
+        "name": "Wash count (30 days)"
+      },
+      "active_provider": {
+        "name": "Active provider"
+      },
+      "last_update": {
+        "name": "Last update"
+      },
+      "days_analyzed": {
+        "name": "Days analyzed"
+      },
+      "precip_total_mm": {
+        "name": "Forecast rainfall total"
+      },
+      "worst_condition": {
+        "name": "Most severe forecast condition"
+      },
+      "min_temp": {
+        "name": "Minimum forecast temperature"
+      },
+      "max_temp": {
+        "name": "Maximum forecast temperature"
+      },
+      "primary_provider_uptime": {
+        "name": "Primary provider uptime"
+      },
+      "snooze_remaining": {
+        "name": "Snooze remaining"
+      },
+      "day_score": {
+        "name": "Day {day} score"
+      },
+      "category": {
+        "name": "Category"
+      },
+      "freeze_risk": {
+        "name": "Freeze risk"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "Mark washed"
+      }
+    }
+  }
+}
