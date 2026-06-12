@@ -237,9 +237,24 @@ const cardStyles = css`
     font-weight: 500;
     list-style: none;
     user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
 
   details.ww-diagnostics summary::-webkit-details-marker { display: none; }
+
+  details.ww-diagnostics summary::before {
+    content: "▶";
+    font-size: 0.65em;
+    display: inline-block;
+    transition: transform 200ms ease;
+    color: var(--ww-fg-muted);
+  }
+
+  details.ww-diagnostics[open] summary::before {
+    transform: rotate(90deg);
+  }
 
   details.ww-diagnostics dl {
     display: grid;

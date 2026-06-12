@@ -13,6 +13,26 @@ Decide whether to wash your car (or motorcycle, boat, solar panels, patio…) ba
 
 ---
 
+## Screenshots
+
+| Card — OK | Card — Snoozed |
+|:---------:|:--------------:|
+| ![Card OK](assets/screenshots/card-can-wash.png) | ![Card snoozed](assets/screenshots/card-snoozed.png) |
+
+| Controls & Sensors | Diagnostics |
+|:-----------------:|:-----------:|
+| ![Controls and sensors](assets/screenshots/device-controls-sensors.png) | ![Diagnostics](assets/screenshots/device-diagnostics.png) |
+
+| Config flow — step 1 | Config flow — thresholds |
+|:--------------------:|:------------------------:|
+| ![Config step 1](assets/screenshots/config-flow-step1.png) | ![Thresholds](assets/screenshots/config-flow-optional-thresholds.png) |
+
+| Card editor | Actions |
+|:-----------:|:-------:|
+| ![Card editor](assets/screenshots/card-configuration.png) | ![Actions](assets/screenshots/actions.png) |
+
+---
+
 ## Features
 
 - **Generic weather model** -- any HA `weather` entity works, no per-provider code
