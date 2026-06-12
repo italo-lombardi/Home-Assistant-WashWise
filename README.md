@@ -66,7 +66,7 @@ Visible only when **Customize thresholds** is on. Pre-filled from the selected c
 
 | Field | Description |
 |-------|-------------|
-| Horizon (days) | How many forecast days to analyse (0–14). |
+| Horizon (days) | How many forecast days to analyse (0–7). |
 | Precipitation cutoff (mm) | Any day above this value blocks the verdict. |
 | Freeze check | Block when any forecast day crosses 0 °C. |
 | Score weights | Independent weights for precipitation, freeze, and bad-condition penalties. |
@@ -106,7 +106,7 @@ All entities live under a single **WashWise \<name\>** device per config entry.
 | Entity | Description |
 |--------|-------------|
 | `binary_sensor.washwise_<name>_can_wash` | Primary verdict. Attributes: `forecast_summary`, `decision_details`, `days_analyzed`, `score`, `reason`, `active_weather_entity`. |
-| `binary_sensor.washwise_<name>_day_N_ok` | Per-day verdict for each day in the horizon (max 14). |
+| `binary_sensor.washwise_<name>_day_N_ok` | Per-day verdict for each day in the horizon (max 7). |
 | `binary_sensor.washwise_<name>_freeze_risk` | Diagnostic: ON when the forecast crosses 0 °C. |
 
 ### Sensors
@@ -114,7 +114,7 @@ All entities live under a single **WashWise \<name\>** device per config entry.
 | Entity | Description |
 |--------|-------------|
 | `sensor.washwise_<name>_score` | 0–100 wash score. |
-| `sensor.washwise_<name>_reason` | Reason key: `clear` / `rain` / `freeze` / `snow` / `bad_condition` / `snoozed` / `unavailable`. |
+| `sensor.washwise_<name>_reason` | Reason key: `clear` / `rain` / `freeze` / `snow` / `bad_condition` / `bad_current_condition` / `snoozed` / `unavailable`. |
 | `sensor.washwise_<name>_days_until_wash` | Whole-day count to first clear window. `0` means today. |
 | `sensor.washwise_<name>_days_since_wash` | Days since the last wash log entry. |
 | `sensor.washwise_<name>_last_washed` | Timestamp of the most recent wash log entry. |
@@ -133,7 +133,7 @@ All entities live under a single **WashWise \<name\>** device per config entry.
 | `sensor.washwise_<name>_min_temp` | Minimum forecast temperature (°C). |
 | `sensor.washwise_<name>_max_temp` | Maximum forecast temperature (°C). |
 | `sensor.washwise_<name>_primary_provider_uptime` | Success ratio of the primary weather source (%). |
-| `sensor.washwise_<name>_snooze_remaining` | Seconds left on an active snooze, or Unknown when not snoozed. |
+| `sensor.washwise_<name>_snooze_remaining` | Minutes left on an active snooze, or Unknown when not snoozed. |
 | `sensor.washwise_<name>_day_N_score` | Per-day score (0–100) for each horizon day. |
 
 ### Buttons
@@ -170,7 +170,7 @@ Default weights: precipitation 40, freeze 30, bad condition 30. All three are co
 | `washwise.snooze` | Pause the verdict for `hours` (integer, minimum 1). |
 | `washwise.clear_snooze` | Cancel any active snooze and return to the normal verdict. |
 
-All services accept `entity_id` or `device_id` as target.
+All services require an `entry_id` field targeting the WashWise config entry (visible in Developer Tools → Actions).
 
 ---
 

@@ -287,6 +287,6 @@ class WashWiseFreezeRiskBinarySensor(_WashWiseBinarySensorBase):
                 continue
             if low is not None and low <= 0:
                 return True
-            if low is not None and high is not None and low <= 0 <= high:
+            if low is None and high is not None and high <= 0:
                 return True
         return False

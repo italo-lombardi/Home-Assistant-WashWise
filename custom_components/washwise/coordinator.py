@@ -11,6 +11,7 @@ Drives the wash decision pipeline:
 
 from __future__ import annotations
 
+import contextlib
 import logging
 from datetime import datetime, timedelta
 from typing import Any
@@ -85,8 +86,6 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         # a real timestamp the moment the entry is created, rather than
         # ``Unknown`` until the first coordinator tick lands.
         seed_ts = getattr(entry, "created_at", None) or dt_util.utcnow()
-        import contextlib
-
         with contextlib.suppress(Exception):  # pragma: no cover - HA versions without setter
             self.last_update_success_time = seed_ts  # type: ignore[attr-defined]
 

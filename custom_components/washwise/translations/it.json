@@ -288,9 +288,6 @@
       },
       "day_score": {
         "name": "Punteggio giorno {day}"
-      },
-      "freeze_risk": {
-        "name": "Freeze risk"
       }
     },
     "button": {

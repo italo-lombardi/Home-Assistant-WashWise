@@ -396,36 +396,11 @@ def test_freeze_risk_binary_sensor_spanning_zero_branch() -> None:
     assert sensor.is_on is True
 
 
-def test_freeze_risk_binary_sensor_spanning_zero_second_branch(monkeypatch) -> None:
-    """Exercise line 298 ``low <= 0 <= high`` via float subclass trickery.
-
-    Line 297 ``if low is not None and low <= 0`` subsumes line 298 in normal
-    execution. We monkeypatch ``float`` inside the binary_sensor module so the
-    first ``__le__`` call returns False, forcing the algorithm to the second
-    compound check.
-    """
-    from typing import ClassVar
-
-    import custom_components.washwise.binary_sensor as bs_module
+def test_freeze_risk_binary_sensor_tmax_only_below_zero() -> None:
+    """``is_on`` True when temp_min is absent but temp_max <= 0 (tmax-only freeze path)."""
     from custom_components.washwise.binary_sensor import WashWiseFreezeRiskBinarySensor
 
-    class _Trickster(float):
-        _calls: ClassVar[dict[str, int]] = {"n": 0}
-
-        def __le__(self, other):  # type: ignore[override]
-            _Trickster._calls["n"] += 1
-            if _Trickster._calls["n"] == 1:
-                return False
-            return float.__le__(self, other)
-
-    real_float = bs_module.__dict__.get("float", float)
-
-    def _patched(value):
-        return _Trickster(real_float(value))
-
-    monkeypatch.setattr(bs_module, "float", _patched, raising=False)
-
-    summary = [{"temp_min": -0.5, "temp_max": 5.0, "blocked": True}]
+    summary = [{"temp_min": None, "temp_max": -1.0, "blocked": True}]
     decision = _make_decision(forecast_summary=summary, days_analyzed=1)
     coordinator = _make_coordinator(decision)
     entry = _make_entry()

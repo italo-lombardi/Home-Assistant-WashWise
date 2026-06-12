@@ -32,7 +32,7 @@ MARK_WASHED_SCHEMA = vol.Schema(
 SNOOZE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTRY_ID): cv.string,
-        vol.Optional(ATTR_HOURS, default=24): vol.All(vol.Coerce(int), vol.Range(min=1)),
+        vol.Optional(ATTR_HOURS): vol.All(vol.Coerce(int), vol.Range(min=1)),
     }
 )
 
@@ -58,8 +58,15 @@ async def _handle_mark_washed(hass: HomeAssistant, call: ServiceCall) -> None:
 
 
 async def _handle_snooze(hass: HomeAssistant, call: ServiceCall) -> None:
-    hours: int = call.data[ATTR_HOURS]
-    await _resolve_coordinator(hass, call).async_snooze(timedelta(hours=hours))
+    coord = _resolve_coordinator(hass, call)
+    hours: int | None = call.data.get(ATTR_HOURS)
+    if hours is None:
+        hours = int(
+            (coord.entry.options or {}).get("snooze_default_hours")
+            or coord.entry.data.get("snooze_default_hours")
+            or 24
+        )
+    await coord.async_snooze(timedelta(hours=hours))
 
 
 async def _handle_clear_snooze(hass: HomeAssistant, call: ServiceCall) -> None:

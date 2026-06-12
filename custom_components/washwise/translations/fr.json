@@ -288,9 +288,6 @@
       },
       "day_score": {
         "name": "Score du jour {day}"
-      },
-      "freeze_risk": {
-        "name": "Freeze risk"
       }
     },
     "button": {

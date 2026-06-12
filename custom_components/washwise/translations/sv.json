@@ -288,9 +288,6 @@
       },
       "day_score": {
         "name": "Poäng dag {day}"
-      },
-      "freeze_risk": {
-        "name": "Freeze risk"
       }
     },
     "button": {

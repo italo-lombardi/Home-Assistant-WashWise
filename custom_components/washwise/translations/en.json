@@ -301,9 +301,6 @@
       },
       "category": {
         "name": "Category"
-      },
-      "freeze_risk": {
-        "name": "Freeze risk"
       }
     },
     "button": {

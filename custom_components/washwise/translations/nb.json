@@ -288,9 +288,6 @@
       },
       "day_score": {
         "name": "Poengsum dag {day}"
-      },
-      "freeze_risk": {
-        "name": "Freeze risk"
       }
     },
     "button": {

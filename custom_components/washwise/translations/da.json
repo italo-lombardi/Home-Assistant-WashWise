@@ -288,9 +288,6 @@
       },
       "day_score": {
         "name": "Dag {day} score"
-      },
-      "freeze_risk": {
-        "name": "Freeze risk"
       }
     },
     "button": {

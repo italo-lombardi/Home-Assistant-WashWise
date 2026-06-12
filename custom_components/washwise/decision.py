@@ -217,7 +217,7 @@ def compute(
 
     # For invert mode we also collect rainy days so we can pick the first
     # one as the "next_window".
-    rainy_days: list[tuple[date, datetime]] = []
+    rainy_days: list[date] = []
 
     for day in walked:
         day_blockers: list[str] = []

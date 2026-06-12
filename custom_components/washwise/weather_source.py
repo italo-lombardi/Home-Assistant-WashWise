@@ -16,7 +16,7 @@ Robustness rules:
 from __future__ import annotations
 
 import logging
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from typing import Any
 
 from homeassistant.const import (
@@ -269,7 +269,7 @@ def _parse_time(value: Any) -> date | None:
         return None
     if isinstance(value, (int, float)):
         try:
-            return datetime.fromtimestamp(float(value) / 1000).date()
+            return datetime.fromtimestamp(float(value) / 1000, tz=UTC).date()
         except (OverflowError, OSError, ValueError):
             return None
     if isinstance(value, str):
