@@ -326,6 +326,13 @@ function prettyReason(key) {
   return REASON_MAP[key] ?? key;
 }
 
+function _stripEntitySuffix(name) {
+  if (!name) return name;
+  // HA appends the entity translation name (e.g. "Can wash") to the device name.
+  // Strip trailing " Can wash" (case-insensitive) to get the device/config name.
+  return name.replace(/\s+can\s+wash$/i, "").trim() || name;
+}
+
 // Build a string for an inline `style="..."` attribute from an object.
 function buildStyle(obj) {
   return Object.entries(obj)
@@ -424,7 +431,7 @@ class WashWiseCard extends LitElement {
     const verdict = this._verdict(stateObj);
     const score = this._score(stateObj);
     const friendly =
-      cfg.name ?? stateObj.attributes.friendly_name ?? cfg.entity;
+      cfg.name ?? _stripEntitySuffix(stateObj.attributes.friendly_name) ?? cfg.entity;
 
     return html`
       <ha-card style=${hostStyle}>
@@ -489,10 +496,10 @@ class WashWiseCard extends LitElement {
     return html`
       <div class="ww-forecast">
         ${summary.map((day, idx) => {
-          const ok = day.ok ?? null;
-          const cls = ok === true ? "ok" : ok === false ? "bad" : "";
+          const blocked = day.blocked ?? null;
+          const cls = blocked === false ? "ok" : blocked === true ? "bad" : "";
           const dayLabel = day.date ? shortDay(day.date) : `D${idx + 1}`;
-          const precip = day.precipitation_mm;
+          const precip = day.precipitation_mm ?? day.precipitation;
           return html`
             <div class="ww-day ${cls}" title=${day.condition ?? ""}>
               <span class="label">${dayLabel}</span>
