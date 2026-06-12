@@ -599,7 +599,7 @@ def test_snooze_remaining_when_inactive_returns_none() -> None:
 
 
 def test_snooze_remaining_returns_seconds_when_active() -> None:
-    """Snooze remaining returns positive seconds while the snooze is live."""
+    """Snooze remaining returns positive minutes while the snooze is live."""
     until = datetime.now(UTC) + timedelta(hours=2)
     stored = StoredData(
         wash_log=[],
@@ -616,8 +616,39 @@ def test_snooze_remaining_returns_seconds_when_active() -> None:
     value = sensor.native_value
 
     assert isinstance(value, int)
-    # Allow some slack for clock skew during the test run.
-    assert 60 * 60 < value <= 2 * 60 * 60 + 5
+    # 2 hours = 120 minutes; allow ±1 for clock skew.
+    assert 119 <= value <= 121
+
+
+def test_snooze_remaining_extra_attributes_returns_snooze_until() -> None:
+    """extra_state_attributes exposes snooze_until ISO string."""
+    until = datetime.now(UTC) + timedelta(hours=1)
+    stored = StoredData(
+        wash_log=[],
+        snooze_until=until.isoformat(),
+        last_failover_ts=None,
+        last_failover_from=None,
+        last_failover_to=None,
+        provider_health={},
+    )
+    coordinator = _make_coordinator(_make_decision(), stored=stored)
+    entry = _make_entry()
+
+    sensor = SnoozeRemainingSensor(coordinator, entry)
+    attrs = sensor.extra_state_attributes
+
+    assert attrs["snooze_until"] == until.isoformat()
+
+
+def test_snooze_remaining_extra_attributes_none_when_inactive() -> None:
+    """extra_state_attributes returns snooze_until=None when not snoozed."""
+    coordinator = _make_coordinator(_make_decision(), stored=StoredData.empty())
+    entry = _make_entry()
+
+    sensor = SnoozeRemainingSensor(coordinator, entry)
+    attrs = sensor.extra_state_attributes
+
+    assert attrs["snooze_until"] is None
 
 
 # ----------------------------------------------------------------------

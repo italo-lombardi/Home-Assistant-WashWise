@@ -505,7 +505,7 @@ class SnoozeRemainingSensor(_DiagnosticBase):
     """Time remaining on the active snooze, or ``None`` when not snoozed."""
 
     _attr_icon = "mdi:timer-sand"
-    _attr_native_unit_of_measurement = UnitOfTime.SECONDS
+    _attr_native_unit_of_measurement = UnitOfTime.MINUTES
     _attr_device_class = SensorDeviceClass.DURATION
     _attr_state_class = SensorStateClass.MEASUREMENT
 
@@ -515,7 +515,7 @@ class SnoozeRemainingSensor(_DiagnosticBase):
 
     @property
     def native_value(self) -> int | None:
-        """Return seconds left on the snooze, or ``None`` when inactive."""
+        """Return minutes left on the snooze, or ``None`` when inactive."""
         stored = self._stored
         if stored is None:
             return None
@@ -528,7 +528,14 @@ class SnoozeRemainingSensor(_DiagnosticBase):
         remaining = (ts - datetime.now(UTC)).total_seconds()
         if remaining <= 0:
             return None
-        return int(remaining)
+        return max(1, int(remaining / 60))
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Expose snooze_until ISO timestamp so clients can compute remaining live."""
+        stored = self._stored
+        snooze_until = getattr(stored, "snooze_until", None) if stored else None
+        return {"snooze_until": snooze_until}
 
 
 class CategorySensor(_DiagnosticBase):

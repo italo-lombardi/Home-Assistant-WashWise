@@ -545,12 +545,20 @@ class WashWiseCard extends LitElement {
         .replace("binary_sensor.", "sensor.")
         .replace(/_can_wash$/, "_snooze_remaining");
       const snoozeSensor = this.hass?.states[snoozeSensorId];
-      const secs = snoozeSensor ? Number(snoozeSensor.state) : NaN;
+      const snoozeUntil = snoozeSensor?.attributes?.snooze_until;
       let remaining = "—";
-      if (Number.isFinite(secs) && secs > 0) {
-        const h = Math.floor(secs / 3600);
-        const m = Math.floor((secs % 3600) / 60);
-        remaining = h > 0 ? `${h}h ${m}m` : `${m}m`;
+      if (snoozeUntil) {
+        const secs = (new Date(snoozeUntil).getTime() - Date.now()) / 1000;
+        if (secs > 0) {
+          const weeks = Math.floor(secs / 604800);
+          const days  = Math.floor((secs % 604800) / 86400);
+          const hours = Math.floor((secs % 86400) / 3600);
+          const mins  = Math.floor((secs % 3600) / 60);
+          if (weeks > 0)      remaining = `${weeks}w ${days}d`;
+          else if (days > 0)  remaining = `${days}d ${hours}h`;
+          else if (hours > 0) remaining = `${hours}h ${mins}m`;
+          else                remaining = `${mins}m`;
+        }
       }
       return html`
         <div class="ww-row"><span>Reason:</span><strong>Snoozed</strong></div>
