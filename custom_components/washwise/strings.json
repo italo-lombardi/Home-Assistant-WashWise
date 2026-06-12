@@ -154,12 +154,8 @@
       "description": "Append a wash entry to the wash log for the selected WashWise instance.",
       "fields": {
         "entry_id": {
-          "name": "Config entry",
-          "description": "WashWise config entry to update. Optional when targeting an entity."
-        },
-        "entity_id": {
-          "name": "Entity",
-          "description": "Any entity belonging to the WashWise instance to update."
+          "name": "Configuration",
+          "description": "WashWise configuration entry to target."
         },
         "timestamp": {
           "name": "Timestamp",
@@ -171,6 +167,10 @@
       "name": "Snooze",
       "description": "Pause WashWise verdicts for a duration or until a given time.",
       "fields": {
+        "entry_id": {
+          "name": "Configuration",
+          "description": "WashWise configuration entry to target."
+        },
         "hours": {
           "name": "Hours",
           "description": "How many hours to snooze."
@@ -179,7 +179,13 @@
     },
     "clear_snooze": {
       "name": "Clear snooze",
-      "description": "Cancel the active snooze."
+      "description": "Cancel the active snooze.",
+      "fields": {
+        "entry_id": {
+          "name": "Configuration",
+          "description": "WashWise configuration entry to target."
+        }
+      }
     }
   },
   "selector": {

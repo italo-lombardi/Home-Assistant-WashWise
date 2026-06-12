@@ -4,7 +4,7 @@ Covers:
 * ``mark_washed`` — appends a wash-log entry
 * ``snooze`` — accepts ``hours`` integer
 * ``clear_snooze`` — cancels the active snooze
-Plus target validation and idempotent registration.
+Plus entry_id validation and idempotent registration.
 """
 
 from __future__ import annotations
@@ -14,7 +14,6 @@ from unittest.mock import AsyncMock
 
 import pytest
 import voluptuous as vol
-from homeassistant.const import ATTR_ENTITY_ID
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -22,6 +21,7 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.washwise.const import DOMAIN
 from custom_components.washwise.coordinator import WashWiseCoordinator
 from custom_components.washwise.services import (
+    ATTR_ENTRY_ID,
     ATTR_HOURS,
     ATTR_TIMESTAMP,
     SERVICE_CLEAR_SNOOZE,
@@ -34,24 +34,13 @@ from custom_components.washwise.services import (
 
 @pytest.fixture
 async def stub_coordinator(hass: HomeAssistant, mock_config_entry: MockConfigEntry):
-    from homeassistant.helpers import entity_registry as er
-
     mock_config_entry.add_to_hass(hass)
     coord = AsyncMock(spec=WashWiseCoordinator)
     coord.entry = mock_config_entry
     hass.data.setdefault(DOMAIN, {})[mock_config_entry.entry_id] = coord
 
-    registry = er.async_get(hass)
-    entity_entry = registry.async_get_or_create(
-        domain="binary_sensor",
-        platform=DOMAIN,
-        unique_id=f"{mock_config_entry.entry_id}_can_wash",
-        suggested_object_id="test_wash_can_wash",
-        config_entry=mock_config_entry,
-    )
-
     await async_register_services(hass)
-    yield hass, coord, entity_entry.entity_id
+    yield hass, coord, mock_config_entry.entry_id
     async_unregister_services(hass)
 
 
@@ -83,9 +72,9 @@ async def test_unregister_services_when_not_registered(hass: HomeAssistant) -> N
 
 
 async def test_mark_washed_calls_coordinator(stub_coordinator) -> None:
-    hass, coord, entity_id = stub_coordinator
+    hass, coord, entry_id = stub_coordinator
     await hass.services.async_call(
-        DOMAIN, SERVICE_MARK_WASHED, {ATTR_ENTITY_ID: entity_id}, blocking=True
+        DOMAIN, SERVICE_MARK_WASHED, {ATTR_ENTRY_ID: entry_id}, blocking=True
     )
     coord.async_mark_washed.assert_awaited_once()
     args, _ = coord.async_mark_washed.call_args
@@ -93,12 +82,12 @@ async def test_mark_washed_calls_coordinator(stub_coordinator) -> None:
 
 
 async def test_mark_washed_with_explicit_timestamp(stub_coordinator) -> None:
-    hass, coord, entity_id = stub_coordinator
+    hass, coord, entry_id = stub_coordinator
     ts = datetime(2026, 6, 11, 10, 30, 0, tzinfo=UTC)
     await hass.services.async_call(
         DOMAIN,
         SERVICE_MARK_WASHED,
-        {ATTR_ENTITY_ID: entity_id, ATTR_TIMESTAMP: ts.isoformat()},
+        {ATTR_ENTRY_ID: entry_id, ATTR_TIMESTAMP: ts.isoformat()},
         blocking=True,
     )
     coord.async_mark_washed.assert_awaited_once()
@@ -107,9 +96,9 @@ async def test_mark_washed_with_explicit_timestamp(stub_coordinator) -> None:
 
 
 async def test_mark_washed_via_service_equivalent_to_button(stub_coordinator) -> None:
-    hass, coord, entity_id = stub_coordinator
+    hass, coord, entry_id = stub_coordinator
     await hass.services.async_call(
-        DOMAIN, SERVICE_MARK_WASHED, {ATTR_ENTITY_ID: entity_id}, blocking=True
+        DOMAIN, SERVICE_MARK_WASHED, {ATTR_ENTRY_ID: entry_id}, blocking=True
     )
     await coord.async_mark_washed(None)
     assert coord.async_mark_washed.await_count == 2
@@ -121,11 +110,11 @@ async def test_mark_washed_via_service_equivalent_to_button(stub_coordinator) ->
 
 
 async def test_snooze_with_hours(stub_coordinator) -> None:
-    hass, coord, entity_id = stub_coordinator
+    hass, coord, entry_id = stub_coordinator
     await hass.services.async_call(
         DOMAIN,
         SERVICE_SNOOZE,
-        {ATTR_ENTITY_ID: entity_id, ATTR_HOURS: 24},
+        {ATTR_ENTRY_ID: entry_id, ATTR_HOURS: 24},
         blocking=True,
     )
     coord.async_snooze.assert_awaited_once()
@@ -134,23 +123,23 @@ async def test_snooze_with_hours(stub_coordinator) -> None:
 
 
 async def test_snooze_schema_rejects_zero_hours(stub_coordinator) -> None:
-    hass, _, entity_id = stub_coordinator
+    hass, _, entry_id = stub_coordinator
     with pytest.raises(vol.Invalid):
         await hass.services.async_call(
             DOMAIN,
             SERVICE_SNOOZE,
-            {ATTR_ENTITY_ID: entity_id, ATTR_HOURS: 0},
+            {ATTR_ENTRY_ID: entry_id, ATTR_HOURS: 0},
             blocking=True,
         )
 
 
 async def test_snooze_schema_rejects_missing_hours(stub_coordinator) -> None:
-    hass, _, entity_id = stub_coordinator
+    hass, _, entry_id = stub_coordinator
     with pytest.raises(vol.Invalid):
         await hass.services.async_call(
             DOMAIN,
             SERVICE_SNOOZE,
-            {ATTR_ENTITY_ID: entity_id},
+            {ATTR_ENTRY_ID: entry_id},
             blocking=True,
         )
 
@@ -161,78 +150,32 @@ async def test_snooze_schema_rejects_missing_hours(stub_coordinator) -> None:
 
 
 async def test_clear_snooze_calls_coordinator(stub_coordinator) -> None:
-    hass, coord, entity_id = stub_coordinator
+    hass, coord, entry_id = stub_coordinator
     await hass.services.async_call(
-        DOMAIN, SERVICE_CLEAR_SNOOZE, {ATTR_ENTITY_ID: entity_id}, blocking=True
+        DOMAIN, SERVICE_CLEAR_SNOOZE, {ATTR_ENTRY_ID: entry_id}, blocking=True
     )
     coord.async_clear_snooze.assert_awaited_once()
 
 
 # ---------------------------------------------------------------------------
-# Target validation
+# Entry ID validation
 # ---------------------------------------------------------------------------
 
 
-async def test_invalid_entity_raises(stub_coordinator) -> None:
+async def test_unknown_entry_id_raises(stub_coordinator) -> None:
     hass, coord, _ = stub_coordinator
     with pytest.raises(HomeAssistantError):
         await hass.services.async_call(
             DOMAIN,
             SERVICE_MARK_WASHED,
-            {ATTR_ENTITY_ID: "binary_sensor.does_not_exist"},
+            {ATTR_ENTRY_ID: "does-not-exist"},
             blocking=True,
         )
     coord.async_mark_washed.assert_not_called()
 
 
-async def test_no_target_raises(stub_coordinator) -> None:
+async def test_no_entry_id_raises(stub_coordinator) -> None:
     hass, coord, _ = stub_coordinator
-    with pytest.raises(HomeAssistantError):
+    with pytest.raises(vol.Invalid):
         await hass.services.async_call(DOMAIN, SERVICE_MARK_WASHED, {}, blocking=True)
-    coord.async_mark_washed.assert_not_called()
-
-
-async def test_device_target_resolves_to_coordinator(
-    hass: HomeAssistant, mock_config_entry: MockConfigEntry
-) -> None:
-    from homeassistant.const import ATTR_DEVICE_ID
-    from homeassistant.helpers import device_registry as dr
-
-    mock_config_entry.add_to_hass(hass)
-    coord = AsyncMock(spec=WashWiseCoordinator)
-    coord.entry = mock_config_entry
-    hass.data.setdefault(DOMAIN, {})[mock_config_entry.entry_id] = coord
-
-    registry = dr.async_get(hass)
-    device = registry.async_get_or_create(
-        config_entry_id=mock_config_entry.entry_id,
-        identifiers={(DOMAIN, "test_device")},
-        name="Test Device",
-    )
-
-    await async_register_services(hass)
-    try:
-        await hass.services.async_call(
-            DOMAIN,
-            SERVICE_MARK_WASHED,
-            {ATTR_DEVICE_ID: device.id},
-            blocking=True,
-        )
-    finally:
-        async_unregister_services(hass)
-
-    coord.async_mark_washed.assert_awaited_once()
-
-
-async def test_unknown_device_id_raises(stub_coordinator) -> None:
-    from homeassistant.const import ATTR_DEVICE_ID
-
-    hass, coord, _ = stub_coordinator
-    with pytest.raises(HomeAssistantError):
-        await hass.services.async_call(
-            DOMAIN,
-            SERVICE_MARK_WASHED,
-            {ATTR_DEVICE_ID: "no-such-device-id"},
-            blocking=True,
-        )
     coord.async_mark_washed.assert_not_called()

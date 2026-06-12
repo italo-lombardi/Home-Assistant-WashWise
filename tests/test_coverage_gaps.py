@@ -43,7 +43,6 @@ from custom_components.washwise.models import (
     _parse_date,
     _parse_datetime,
 )
-from custom_components.washwise.services import _as_list
 from custom_components.washwise.storage import _parse_ts
 
 # ---------------------------------------------------------------------------
@@ -123,21 +122,6 @@ def test_category_label_titlecases_and_replaces_underscores() -> None:
 
 
 # ---------------------------------------------------------------------------
-# services.py — _as_list iterable + fallback (lines 100-102)
-# ---------------------------------------------------------------------------
-
-
-def test_as_list_handles_iterable_input() -> None:
-    """An iterable (tuple) is materialised into a list of strings (line 101)."""
-    assert _as_list(("a", "b", "c")) == ["a", "b", "c"]
-
-
-def test_as_list_handles_non_iterable_input() -> None:
-    """A non-iterable scalar is wrapped via ``str(value)`` (line 102)."""
-    assert _as_list(123) == ["123"]
-
-
-# ---------------------------------------------------------------------------
 # services.py — snooze branches
 # ---------------------------------------------------------------------------
 
@@ -146,11 +130,9 @@ async def test_snooze_service_calls_coordinator(
     hass: HomeAssistant, mock_config_entry: MockConfigEntry
 ) -> None:
     """snooze service forwards hours as timedelta to coordinator."""
-    from homeassistant.const import ATTR_ENTITY_ID
-    from homeassistant.helpers import entity_registry as er
-
     from custom_components.washwise.coordinator import WashWiseCoordinator
     from custom_components.washwise.services import (
+        ATTR_ENTRY_ID,
         ATTR_HOURS,
         SERVICE_SNOOZE,
         async_register_services,
@@ -162,21 +144,12 @@ async def test_snooze_service_calls_coordinator(
     coord.entry = mock_config_entry
     hass.data.setdefault(DOMAIN, {})[mock_config_entry.entry_id] = coord
 
-    registry = er.async_get(hass)
-    e = registry.async_get_or_create(
-        domain="binary_sensor",
-        platform=DOMAIN,
-        unique_id=f"{mock_config_entry.entry_id}_can_wash",
-        suggested_object_id="cov_can_wash",
-        config_entry=mock_config_entry,
-    )
-
     await async_register_services(hass)
     try:
         await hass.services.async_call(
             DOMAIN,
             SERVICE_SNOOZE,
-            {ATTR_ENTITY_ID: e.entity_id, ATTR_HOURS: 6},
+            {ATTR_ENTRY_ID: mock_config_entry.entry_id, ATTR_HOURS: 6},
             blocking=True,
         )
         coord.async_snooze.assert_awaited_once()
@@ -192,11 +165,9 @@ async def test_clear_snooze_service_calls_coordinator(
     hass: HomeAssistant, mock_config_entry: MockConfigEntry
 ) -> None:
     """clear_snooze service forwards to async_clear_snooze."""
-    from homeassistant.const import ATTR_ENTITY_ID
-    from homeassistant.helpers import entity_registry as er
-
     from custom_components.washwise.coordinator import WashWiseCoordinator
     from custom_components.washwise.services import (
+        ATTR_ENTRY_ID,
         SERVICE_CLEAR_SNOOZE,
         async_register_services,
         async_unregister_services,
@@ -207,21 +178,12 @@ async def test_clear_snooze_service_calls_coordinator(
     coord.entry = mock_config_entry
     hass.data.setdefault(DOMAIN, {})[mock_config_entry.entry_id] = coord
 
-    registry = er.async_get(hass)
-    e = registry.async_get_or_create(
-        domain="binary_sensor",
-        platform=DOMAIN,
-        unique_id=f"{mock_config_entry.entry_id}_can_wash2",
-        suggested_object_id="cov_can_wash2",
-        config_entry=mock_config_entry,
-    )
-
     await async_register_services(hass)
     try:
         await hass.services.async_call(
             DOMAIN,
             SERVICE_CLEAR_SNOOZE,
-            {ATTR_ENTITY_ID: e.entity_id},
+            {ATTR_ENTRY_ID: mock_config_entry.entry_id},
             blocking=True,
         )
         coord.async_clear_snooze.assert_awaited_once()
