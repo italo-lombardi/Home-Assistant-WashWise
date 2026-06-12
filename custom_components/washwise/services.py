@@ -32,7 +32,7 @@ MARK_WASHED_SCHEMA = vol.Schema(
 SNOOZE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_ENTRY_ID): cv.string,
-        vol.Required(ATTR_HOURS): vol.All(vol.Coerce(int), vol.Range(min=1)),
+        vol.Optional(ATTR_HOURS, default=24): vol.All(vol.Coerce(int), vol.Range(min=1)),
     }
 )
 

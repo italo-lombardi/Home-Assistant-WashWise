@@ -263,6 +263,32 @@ const cardStyles = css`
     border-radius: var(--ww-radius);
     font-size: 0.9rem;
   }
+
+  /* Skeleton shimmer */
+  @keyframes ww-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .ww-skel {
+    display: inline-block;
+    border-radius: 4px;
+    background: linear-gradient(
+      90deg,
+      var(--secondary-background-color, #eee) 0%,
+      var(--divider-color, rgba(0, 0, 0, 0.12)) 50%,
+      var(--secondary-background-color, #eee) 100%
+    );
+    background-size: 200% 100%;
+    animation: ww-shimmer 1.4s ease-in-out infinite;
+  }
+
+  .ww-skel-title { height: 16px; width: 140px; }
+  .ww-skel-badge { height: 22px; width: 60px; border-radius: 999px; }
+  .ww-skel-bar   { height: 8px; width: 100%; border-radius: 999px; flex: 1 1 auto; }
+  .ww-skel-val   { height: 14px; width: 36px; }
+  .ww-skel-row   { height: 12px; width: 120px; }
+  .ww-skel-day   { height: 72px; border-radius: calc(var(--ww-radius) * 0.66); flex: 1 1 0; }
 `;
 
 // ── Constants & helpers ─────────────────────────────────────────────────────
@@ -373,6 +399,26 @@ class WashWiseCard extends LitElement {
   constructor() {
     super();
     this._config = undefined;
+    this._mountedAt = 0;
+    this._loadingTimer = null;
+  }
+
+  connectedCallback() {
+    super.connectedCallback?.();
+    this._mountedAt = Date.now();
+    if (this._loadingTimer) clearTimeout(this._loadingTimer);
+    this._loadingTimer = setTimeout(() => {
+      this._loadingTimer = null;
+      this.requestUpdate();
+    }, 4000);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback?.();
+    if (this._loadingTimer) {
+      clearTimeout(this._loadingTimer);
+      this._loadingTimer = null;
+    }
   }
 
   setConfig(config) {
@@ -410,12 +456,17 @@ class WashWiseCard extends LitElement {
   }
 
   render() {
-    if (!this.hass || !this._config) {
-      return html`<ha-card><div class="ww-card"></div></ha-card>`;
+    if (!this._config) {
+      return html`<ha-card><div class="ww-card"><div class="ww-error">Card not configured.</div></div></ha-card>`;
+    }
+    if (!this.hass) {
+      return this._renderSkeleton();
     }
     const cfg = this._mergedConfig();
     const stateObj = this.hass.states[cfg.entity];
     if (!stateObj) {
+      const sinceMount = Date.now() - this._mountedAt;
+      if (sinceMount < 4000) return this._renderSkeleton();
       return html`
         <ha-card>
           <div class="ww-card">
@@ -539,6 +590,34 @@ class WashWiseCard extends LitElement {
   }
 
   // ── Internals ──────────────────────────────────────────────────────────
+
+  _renderSkeleton() {
+    const title = this._config?.name;
+    return html`
+      <ha-card aria-busy="true">
+        <div class="ww-card">
+          <div class="ww-header">
+            ${title
+              ? html`<h2 class="ww-title">${title}</h2>`
+              : html`<span class="ww-skel ww-skel-title" aria-hidden="true"></span>`}
+            <span class="ww-skel ww-skel-badge" aria-hidden="true"></span>
+          </div>
+          <div class="ww-gauge">
+            <span class="ww-skel ww-skel-bar" aria-hidden="true"></span>
+            <span class="ww-skel ww-skel-val" aria-hidden="true"></span>
+          </div>
+          <div class="ww-row">
+            <span class="ww-skel ww-skel-row" aria-hidden="true"></span>
+          </div>
+          <div class="ww-forecast" style="display:flex;gap:6px;">
+            ${[0, 1, 2, 3, 4].map(
+              () => html`<span class="ww-skel ww-skel-day" aria-hidden="true"></span>`
+            )}
+          </div>
+        </div>
+      </ha-card>
+    `;
+  }
 
   _mergedConfig() {
     return { ...DEFAULT_CONFIG, ...(this._config ?? { entity: "" }) };

@@ -133,15 +133,17 @@ async def test_snooze_schema_rejects_zero_hours(stub_coordinator) -> None:
         )
 
 
-async def test_snooze_schema_rejects_missing_hours(stub_coordinator) -> None:
-    hass, _, entry_id = stub_coordinator
-    with pytest.raises(vol.Invalid):
-        await hass.services.async_call(
-            DOMAIN,
-            SERVICE_SNOOZE,
-            {ATTR_ENTRY_ID: entry_id},
-            blocking=True,
-        )
+async def test_snooze_missing_hours_uses_default_24(stub_coordinator) -> None:
+    hass, coord, entry_id = stub_coordinator
+    await hass.services.async_call(
+        DOMAIN,
+        SERVICE_SNOOZE,
+        {ATTR_ENTRY_ID: entry_id},
+        blocking=True,
+    )
+    coord.async_snooze.assert_awaited_once()
+    args, _ = coord.async_snooze.call_args
+    assert args[0] == timedelta(hours=24)
 
 
 # ---------------------------------------------------------------------------

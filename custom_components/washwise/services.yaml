@@ -30,8 +30,9 @@ snooze:
           integration: washwise
     hours:
       name: Hours
-      description: How many hours to snooze (minimum 1).
-      required: true
+      description: How many hours to snooze (minimum 1). Defaults to 24.
+      required: false
+      default: 24
       example: 24
       selector:
         number:
