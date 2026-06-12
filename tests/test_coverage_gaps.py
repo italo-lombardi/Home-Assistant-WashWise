@@ -664,6 +664,8 @@ async def test_resolve_temperature_unit_unrecognised_returns_none(hass) -> None:
 
 async def test_resolve_temperature_unit_auto_uses_system_unit(hass) -> None:
     """Auto mode with a configured system unit returns it (line 451)."""
+    from unittest.mock import patch
+
     from custom_components.washwise.const import CONF_WEATHER_ENTITIES
     from custom_components.washwise.coordinator import WashWiseCoordinator
 
@@ -674,8 +676,8 @@ async def test_resolve_temperature_unit_auto_uses_system_unit(hass) -> None:
     )
     entry.add_to_hass(hass)
     coord = WashWiseCoordinator(hass, entry)
-    hass.config.units.temperature_unit = "°C"
-    assert coord._resolve_temperature_unit() == "°C"
+    with patch.object(hass.config.units, "temperature_unit", "°C"):
+        assert coord._resolve_temperature_unit() == "°C"
 
 
 async def test_resolve_temperature_unit_auto_no_system_unit_returns_none(hass) -> None:

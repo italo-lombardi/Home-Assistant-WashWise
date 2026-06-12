@@ -338,7 +338,7 @@ class WashWiseOptionsFlow(OptionsFlow):
 
     def __init__(self, config_entry: ConfigEntry) -> None:
         """Initialise the options flow."""
-        self.config_entry = config_entry
+        self._config_entry = config_entry
 
     # ---------------------------------------------------------------- helpers
 
