@@ -483,17 +483,18 @@ class WashWiseCard extends LitElement {
     const score = this._score(stateObj);
     const friendly =
       cfg.name ?? _stripEntitySuffix(stateObj.attributes.friendly_name) ?? cfg.entity;
+    const snoozed = stateObj.attributes.reason === "snoozed";
 
     return html`
       <ha-card style=${hostStyle}>
         <div class="ww-card">
           ${this._renderHeader(friendly, verdict)}
-          ${cfg.show_score_gauge ? this._renderGauge(score, verdict) : nothing}
+          ${cfg.show_score_gauge && !snoozed ? this._renderGauge(score, verdict) : nothing}
           ${cfg.show_reason ? this._renderReason(stateObj) : nothing}
           ${cfg.show_forecast_strip
             ? this._renderForecastStrip(stateObj)
             : nothing}
-          ${cfg.show_diagnostics ? this._renderDiagnostics(stateObj, cfg.diagnostics_open) : nothing}
+          ${cfg.show_diagnostics && !snoozed ? this._renderDiagnostics(stateObj, cfg.diagnostics_open) : nothing}
         </div>
       </ha-card>
     `;
@@ -532,7 +533,8 @@ class WashWiseCard extends LitElement {
   }
 
   _renderReason(stateObj) {
-    const reason = stateObj.attributes.reason ?? "—";
+    const reason = stateObj.attributes.reason;
+    if (!reason || reason === "snoozed") return nothing;
     return html`
       <div class="ww-row">
         <span>Reason:</span>
