@@ -4,8 +4,6 @@ mark_washed:
   target:
     entity:
       integration: washwise
-    device:
-      integration: washwise
   fields:
     timestamp:
       name: Timestamp
@@ -20,8 +18,6 @@ snooze:
   description: Pause the wash advisor for a number of hours.
   target:
     entity:
-      integration: washwise
-    device:
       integration: washwise
   fields:
     hours:
@@ -40,6 +36,4 @@ clear_snooze:
   description: Cancel any active snooze and return to the normal verdict.
   target:
     entity:
-      integration: washwise
-    device:
       integration: washwise
