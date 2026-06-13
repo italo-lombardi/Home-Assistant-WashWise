@@ -7,6 +7,7 @@ from typing import Any
 
 import voluptuous as vol
 from homeassistant.config_entries import (
+    SOURCE_RECONFIGURE,
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
@@ -273,6 +274,14 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             self._data.update(user_input)
             title = (self._data.get(CONF_NAME) or "").strip() or _category_label(category)
+            if self.source == SOURCE_RECONFIGURE:
+                entry = self._get_reconfigure_entry()
+                return self.async_update_reload_and_abort(
+                    entry,
+                    title=title,
+                    data=self._data,
+                    reason="reconfigure_successful",
+                )
             return self.async_create_entry(title=title, data=self._data)
 
         data_schema = vol.Schema(
@@ -336,6 +345,9 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                         ),
                     }
                     title = name or _category_label(category)
+                    if category == "garden_irrigation":
+                        self._data = new_data
+                        return await self.async_step_irrigation()
                     return self.async_update_reload_and_abort(
                         entry,
                         title=title,

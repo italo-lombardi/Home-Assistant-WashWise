@@ -199,8 +199,8 @@
       "description": "Mette in pausa i verdetti di WashWise per una durata o fino a un orario specificato.",
       "fields": {
         "hours": {
-          "name": "Hours",
-          "description": "How many hours to snooze."
+          "name": "Ore",
+          "description": "Numero di ore di sospensione."
         }
       }
     },

@@ -199,8 +199,8 @@
       "description": "Suspend les verdicts WashWise pendant une durée ou jusqu'à une heure donnée.",
       "fields": {
         "hours": {
-          "name": "Hours",
-          "description": "How many hours to snooze."
+          "name": "Heures",
+          "description": "Nombre d'heures de pause."
         }
       }
     },

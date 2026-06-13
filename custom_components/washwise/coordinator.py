@@ -127,8 +127,8 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         category = entry.data.get(CONF_CATEGORY, DEFAULT_CATEGORY)
         if category == "garden_irrigation":
             gauge_entity: str | None = (
-                entry.data.get(CONF_RAIN_GAUGE_ENTITY)
-                or (entry.options or {}).get(CONF_RAIN_GAUGE_ENTITY)
+                (entry.options or {}).get(CONF_RAIN_GAUGE_ENTITY)
+                or entry.data.get(CONF_RAIN_GAUGE_ENTITY)
             )
             if gauge_entity:
                 self._unsub_gauge = async_track_state_change_event(
@@ -433,7 +433,10 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         if switch_entity:
             current_switch_state = self.hass.states.get(switch_entity)
             if current_switch_state is not None:
-                switch_on = current_switch_state.state not in ("off", "unavailable", "unknown")
+                state_val = current_switch_state.state
+                if state_val in ("unavailable", "unknown"):
+                    return
+                switch_on = state_val not in ("off",)
                 if suppressed and switch_on:
                     domain, _ = switch_entity.split(".", 1)
                     await self.hass.services.async_call(

@@ -48,7 +48,7 @@ FROZEN_NOW = datetime(2026, 6, 11, 12, 0, 0, tzinfo=UTC)
 _RAIN_EXPECTED = Decision(
     can_wash=True,
     score=80,
-    reason="clear",
+    reason="rain",
     days_until_wash=0,
     blocking_days=[],
     forecast_summary=[],
@@ -971,3 +971,102 @@ async def test_coordinator_irrigation_switch_state_none_no_entity(hass: HomeAssi
     entry.add_to_hass(hass)
     coord = WashWiseCoordinator(hass, entry)
     assert coord.irrigation_switch_state is None
+
+
+# ---------------------------------------------------------------------------
+# Reconfigure routing — garden_irrigation must pass through irrigation step
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_reconfigure_garden_irrigation_routes_to_irrigation_step(
+    hass: HomeAssistant,
+) -> None:
+    """Reconfigure with category=garden_irrigation shows the irrigation step."""
+    from unittest.mock import patch
+
+    from homeassistant.data_entry_flow import FlowResultType
+
+    entry = _make_irrigation_entry()
+    entry.add_to_hass(hass)
+
+    with (
+        patch("custom_components.washwise.async_setup_entry", return_value=True),
+        patch("custom_components.washwise.async_unload_entry", return_value=True),
+    ):
+        result = await entry.start_reconfigure_flow(hass)
+        assert result["step_id"] == "reconfigure"
+
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.home"],
+                CONF_NAME: "Garden",
+                CONF_CATEGORY: "garden_irrigation",
+                "customize_thresholds": False,
+            },
+        )
+        assert result["type"] == FlowResultType.FORM
+        assert result["step_id"] == "irrigation"
+
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_RAIN_GAUGE_ENTITY: "sensor.rain",
+                CONF_RAIN_GAUGE_THRESHOLD_MM: 5.0,
+                CONF_IRRIGATION_SWITCH_ENTITY: "input_boolean.irr",
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    assert entry.data[CONF_RAIN_GAUGE_ENTITY] == "sensor.rain"
+    assert entry.data[CONF_IRRIGATION_SWITCH_ENTITY] == "input_boolean.irr"
+
+
+# ---------------------------------------------------------------------------
+# Unavailable switch guard — no service call when switch is unavailable/unknown
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_irrigation_skips_switch_call_when_unavailable(
+    hass: HomeAssistant,
+) -> None:
+    """No turn_on/turn_off call when irrigation switch state is unavailable."""
+    from unittest.mock import AsyncMock, patch
+
+    entry = _make_irrigation_entry(switch_entity="switch.irr")
+    entry.add_to_hass(hass)
+    hass.states.async_set("sensor.rain", "2.0")
+    hass.states.async_set("switch.irr", "unavailable")
+    coord = WashWiseCoordinator(hass, entry)
+
+    with patch(
+        "homeassistant.core.ServiceRegistry.async_call", new_callable=AsyncMock
+    ) as mock_call:
+        await coord._async_handle_irrigation(_NO_RAIN)
+        mock_call.assert_not_called()
+    await coord.async_shutdown()
+
+
+@pytest.mark.asyncio
+async def test_irrigation_skips_switch_call_when_unknown(
+    hass: HomeAssistant,
+) -> None:
+    """No turn_on/turn_off call when irrigation switch state is unknown."""
+    from unittest.mock import AsyncMock, patch
+
+    entry = _make_irrigation_entry(switch_entity="switch.irr")
+    entry.add_to_hass(hass)
+    hass.states.async_set("sensor.rain", "2.0")
+    hass.states.async_set("switch.irr", "unknown")
+    coord = WashWiseCoordinator(hass, entry)
+
+    with patch(
+        "homeassistant.core.ServiceRegistry.async_call", new_callable=AsyncMock
+    ) as mock_call:
+        await coord._async_handle_irrigation(_NO_RAIN)
+        mock_call.assert_not_called()
+    await coord.async_shutdown()
