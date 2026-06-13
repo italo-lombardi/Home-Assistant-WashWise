@@ -9,7 +9,7 @@
 [![Add to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=italo-lombardi&repository=Home-Assistant-WashWise&category=integration)
 [![Add to Home Assistant](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=washwise)
 
-Decide whether to wash your car (or motorcycle, boat, solar panels, patio…) based on the weather forecast. WashWise reads any Home Assistant `weather` entity, walks an ordered fallback list of sources, and produces a verdict, a 0–100 score, a blocking reason, and per-day breakdown — all wrapped in a custom Lovelace card.
+Decide whether to wash your car (or motorcycle, boat, solar panels, patio…) — or whether to skip garden irrigation — based on the weather forecast. WashWise reads any Home Assistant `weather` entity, walks an ordered fallback list of sources, and produces a verdict, a 0–100 score, a blocking reason, and per-day breakdown — all wrapped in a custom Lovelace card.
 
 ---
 
@@ -38,8 +38,11 @@ Decide whether to wash your car (or motorcycle, boat, solar panels, patio…) ba
 - **Generic weather model** -- any HA `weather` entity works, no per-provider code
 - **Ordered fallback** -- list multiple weather sources; first available wins, failovers persisted
 - **0–100 score** -- weighted sum of precipitation, freeze, and bad-condition penalties
-- **Nine categories** -- Car, Motorcycle, Bicycle, Boat, RV, Windows, Solar Panels, Patio, Custom — each with sensible preset thresholds
+- **Ten categories** -- Car, Motorcycle, Bicycle, Boat, RV, Windows, Solar Panels, Patio, Garden Irrigation, Custom — each with sensible preset thresholds
 - **Solar panel inversion** -- rain *helps* clean panels; verdict flips automatically
+- **Garden irrigation** -- inverted-logic category; `can_wash = true` means rain is forecast so irrigation should be skipped; event-driven updates with no polling
+- **Rain gauge / pluviometer** -- optional sensor entity; measured rain suppresses irrigation when it meets a configurable mm threshold
+- **Irrigation switch control** -- optional `switch` / `input_boolean`; coordinator turns it off when irrigation is suppressed, on when conditions are dry
 - **Smart auto-recalc** -- coordinator recomputes the moment the active weather entity changes state
 - **Snooze** -- pause the verdict for N hours via service call; countdown sensor included
 - **Wash log** -- mark washes manually; days-since and 30-day count tracked in persistent storage
@@ -77,10 +80,20 @@ This integration uses a config flow accessible from **Settings > Devices & Servi
 |-------|-------------|
 | Weather entities | One or more HA `weather.*` entities in priority order. First available is used; rest are fallbacks. |
 | Name | Optional friendly name (e.g. "Daily driver"). Entity IDs become `sensor.washwise_<name>_*`. |
-| Category | One of nine categories (see [Categories](#categories) below). Default: Car. |
+| Category | One of ten categories (see [Categories](#categories) below). Default: Car. |
 | Customize thresholds | Toggle on to override the category preset in the next step. |
 
-### Step 2 (optional): Thresholds
+### Step 2 (optional): Garden irrigation
+
+Visible only when **Garden Irrigation** category is selected.
+
+| Field | Description |
+|-------|-------------|
+| Rain gauge entity | Optional `sensor` or `input_number` entity reporting precipitation in mm. |
+| Threshold (mm) | Measured rain at or above this value suppresses irrigation (default 5 mm). |
+| Irrigation switch entity | Optional `switch` or `input_boolean` to control automatically. |
+
+### Step 3 (optional): Thresholds
 
 Visible only when **Customize thresholds** is on. Pre-filled from the selected category preset.
 
@@ -111,9 +124,10 @@ The **Advanced** step includes a **Temperature unit** override. Leave it on **Au
 | House windows | 1 d | 1.0 mm | no | no |
 | Solar panels | 0 d | 0.0 mm | no | **yes** |
 | Patio / deck | 2 d | 0.5 mm | no | no |
+| Garden irrigation | 3 d | 0.2 mm | no | **yes** |
 | Custom | 3 d | 0.2 mm | yes | no |
 
-Solar panels invert the verdict — when rain is forecast the integration reports "self-cleaning expected" rather than "wash now".
+Solar panels and Garden irrigation invert the verdict — rain forecast means "self-cleaning expected" / "skip irrigation" rather than "wash now".
 
 ---
 
@@ -128,6 +142,9 @@ All entities live under a single **WashWise \<name\>** device per config entry.
 | `binary_sensor.washwise_<name>_can_wash` | Primary verdict. Attributes: `forecast_summary`, `decision_details`, `days_analyzed`, `score`, `reason`, `active_weather_entity`. |
 | `binary_sensor.washwise_<name>_day_N_ok` | Per-day verdict for each day in the horizon (max 7). |
 | `binary_sensor.washwise_<name>_freeze_risk` | Diagnostic: ON when the forecast crosses 0 °C. |
+| `binary_sensor.washwise_<name>_irrigation_suppressed` | *Garden irrigation only.* Primary: ON when irrigation should be skipped (rain forecast or gauge threshold met). |
+| `binary_sensor.washwise_<name>_forecast_blocks_irrigation` | *Garden irrigation only.* Diagnostic: ON when the weather forecast alone blocks irrigation. |
+| `binary_sensor.washwise_<name>_irrigation_switch_state` | *Garden irrigation only.* Diagnostic: mirrors the state of the configured irrigation switch entity. |
 
 ### Sensors
 
@@ -141,6 +158,8 @@ All entities live under a single **WashWise \<name\>** device per config entry.
 | `sensor.washwise_<name>_wash_count_30d` | Wash log entries in the last 30 days. |
 | `sensor.washwise_<name>_active_provider` | Friendly label of the active weather source. Attribute: `weather_entity_id`. |
 | `sensor.washwise_<name>_last_update` | Timestamp of the last successful coordinator refresh. |
+| `sensor.washwise_<name>_measured_rain_mm` | *Garden irrigation only.* Live reading from the configured rain gauge. Attribute: `threshold_mm`. |
+| `sensor.washwise_<name>_rain_gauge_threshold_mm` | *Garden irrigation only.* Diagnostic: the configured suppression threshold in mm. |
 
 ### Diagnostic sensors
 
@@ -160,7 +179,7 @@ All entities live under a single **WashWise \<name\>** device per config entry.
 
 | Entity | Action |
 |--------|--------|
-| `button.washwise_<name>_mark_washed` | Append a manual entry to the wash log. |
+| `button.washwise_<name>_mark_washed` | Append a manual entry to the wash log. Label shows **Mark irrigated** for garden irrigation instances. |
 
 ---
 
@@ -189,6 +208,7 @@ Default weights: precipitation 40, freeze 30, bad condition 30. All three are co
 | `washwise.mark_washed` | Append a wash entry. Optional `timestamp` (defaults to now). |
 | `washwise.snooze` | Pause the verdict for `hours` (integer, minimum 1). |
 | `washwise.clear_snooze` | Cancel any active snooze and return to the normal verdict. |
+| `washwise.set_irrigation_switch` | *Garden irrigation only.* Manually set the irrigation switch `state` (`on` \| `off`). |
 
 All services require an `entry_id` field targeting the WashWise config entry (visible in Developer Tools → Actions).
 

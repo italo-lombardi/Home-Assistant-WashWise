@@ -1,10 +1,10 @@
 /**
- * WashWise Card v0.1.0
+ * WashWise Card v0.2.0
  * Custom Lovelace card for the Home Assistant WashWise integration.
  * Single-file, hand-coded, no build step.
  */
 
-const CARD_VERSION = "0.1.0";
+const CARD_VERSION = "0.2.0";
 
 console.info(
   `%c WASHWISE-CARD %c v${CARD_VERSION} %c — github.com/italo-lombardi/Home-Assistant-WashWise `,
@@ -316,6 +316,7 @@ const DEFAULT_CONFIG = {
   show_diagnostics: true,
   diagnostics_open: false,
   compact_mode: false,
+  mode: "wash",
 };
 
 const REASON_MAP = {
@@ -498,7 +499,8 @@ class WashWiseCard extends LitElement {
     this._applyHostAttributes(cfg);
     const hostStyle = buildStyle(this._hostStyle(cfg));
 
-    const verdict = this._verdict(stateObj);
+    const isIrrigation = cfg.mode === "irrigation";
+    const verdict = this._verdict(stateObj, isIrrigation);
     const score = this._score(stateObj);
     const friendly =
       cfg.name ?? _stripEntitySuffix(stateObj.attributes.friendly_name) ?? cfg.entity;
@@ -507,9 +509,10 @@ class WashWiseCard extends LitElement {
     return html`
       <ha-card style=${hostStyle}>
         <div class="ww-card">
-          ${this._renderHeader(friendly, verdict)}
+          ${this._renderHeader(friendly, verdict, isIrrigation)}
           ${cfg.show_score_gauge && !snoozed ? this._renderGauge(score, verdict) : nothing}
-          ${cfg.show_reason ? this._renderReason(stateObj) : nothing}
+          ${cfg.show_reason ? this._renderReason(stateObj, isIrrigation) : nothing}
+          ${isIrrigation ? this._renderRainGauge(cfg) : nothing}
           ${cfg.show_forecast_strip
             ? this._renderForecastStrip(stateObj)
             : nothing}
@@ -521,9 +524,13 @@ class WashWiseCard extends LitElement {
 
   // ── Render helpers ─────────────────────────────────────────────────────
 
-  _renderHeader(title, verdict) {
-    const label = verdict === "ok" ? "OK" : verdict === "bad" ? "No" : "—";
-    const symbol = verdict === "ok" ? "✅" : verdict === "bad" ? "⛔" : "❓";
+  _renderHeader(title, verdict, isIrrigation = false) {
+    const okLabel = isIrrigation ? "Irrigate" : "OK";
+    const badLabel = isIrrigation ? "Skip" : "No";
+    const okSymbol = isIrrigation ? "💧" : "✅";
+    const badSymbol = isIrrigation ? "🌧️" : "⛔";
+    const label = verdict === "ok" ? okLabel : verdict === "bad" ? badLabel : "—";
+    const symbol = verdict === "ok" ? okSymbol : verdict === "bad" ? badSymbol : "❓";
     return html`
       <div class="ww-header">
         <h2 class="ww-title">${title}</h2>
@@ -551,7 +558,7 @@ class WashWiseCard extends LitElement {
     `;
   }
 
-  _renderReason(stateObj) {
+  _renderReason(stateObj, isIrrigation = false) {
     const reason = stateObj.attributes.reason;
     if (!reason) return nothing;
     if (reason === "snoozed") {
@@ -580,11 +587,69 @@ class WashWiseCard extends LitElement {
         <div class="ww-row"><span>Remaining:</span><strong>${remaining}</strong></div>
       `;
     }
+    const reasonLabel = isIrrigation
+      ? this._irrigationReason(reason)
+      : prettyReason(reason);
     return html`
       <div class="ww-row">
         <span>Reason:</span>
-        <strong>${prettyReason(reason)}</strong>
+        <strong>${reasonLabel}</strong>
       </div>
+    `;
+  }
+
+  _irrigationReason(key) {
+    const MAP = {
+      clear: "No rain forecast — irrigate",
+      rain: "Rain in forecast — skip",
+      freeze: "Freeze risk",
+      snow: "Snow in forecast — skip",
+      bad_condition: "Bad weather — skip",
+      unavailable: "No data",
+      snoozed: "Snoozed",
+    };
+    return MAP[key] ?? key;
+  }
+
+  _renderRainGauge(cfg) {
+    const gaugeEntityId = cfg.rain_gauge_sensor;
+    const thresholdEntityId = cfg.irrigation_suppressed_sensor;
+    if (!gaugeEntityId && !thresholdEntityId) return nothing;
+
+    // Try reading measured_rain_mm sensor directly if configured.
+    const gaugeState = gaugeEntityId ? this.hass?.states[gaugeEntityId] : null;
+    const measuredMm = gaugeState
+      ? parseFloat(gaugeState.state)
+      : null;
+    const thresholdMm = gaugeState?.attributes?.threshold_mm ?? null;
+
+    // Fallback: read from irrigation_suppressed binary sensor attributes.
+    const suppressedEntityId = cfg.entity
+      ? cfg.entity.replace(/_can_wash$/, "_irrigation_suppressed")
+      : null;
+    const suppressedState = suppressedEntityId ? this.hass?.states[suppressedEntityId] : null;
+    const suppressedMm = suppressedState?.attributes?.measured_rain_mm ?? null;
+    const isSuppressed = suppressedState?.state === "on";
+
+    const displayMm = Number.isFinite(measuredMm) ? measuredMm : (Number.isFinite(suppressedMm) ? suppressedMm : null);
+    const displayThreshold = thresholdMm ?? null;
+
+    if (displayMm === null && !isSuppressed) return nothing;
+
+    return html`
+      <div class="ww-row">
+        <span>🌧️ Measured rain:</span>
+        <strong>
+          ${displayMm !== null ? `${displayMm.toFixed(1)} mm` : "—"}
+          ${displayThreshold !== null ? html`<span style="font-weight:normal;color:var(--ww-fg-muted)"> / ${Number(displayThreshold).toFixed(1)} mm threshold</span>` : nothing}
+        </strong>
+      </div>
+      ${isSuppressed ? html`
+        <div class="ww-row">
+          <span>Irrigation:</span>
+          <strong style="color:var(--ww-bad)">🚫 Suppressed</strong>
+        </div>
+      ` : nothing}
     `;
   }
 
@@ -687,7 +752,14 @@ class WashWiseCard extends LitElement {
     return out;
   }
 
-  _verdict(stateObj) {
+  _verdict(stateObj, isIrrigation = false) {
+    // garden_irrigation uses invert=True: can_wash=True means rain expected (skip).
+    // can_wash=False means no rain (irrigate = good).
+    if (isIrrigation) {
+      if (stateObj.state === "on") return "bad";   // rain expected → skip
+      if (stateObj.state === "off") return "ok";   // no rain → irrigate
+      return "unknown";
+    }
     if (stateObj.state === "on") return "ok";
     if (stateObj.state === "off") return "bad";
     return "unknown";
@@ -889,6 +961,21 @@ class WashWiseCardEditor extends LitElement {
         </div>
 
         <div class="group-title">Appearance</div>
+
+        <div class="field">
+          <label for="ww-mode">Card mode</label>
+          <select
+            id="ww-mode"
+            .value=${cfg.mode ?? "wash"}
+            @change=${(e) => this._set("mode", e.target.value)}
+          >
+            <option value="wash" ?selected=${(cfg.mode ?? "wash") === "wash"}>Wash advisor</option>
+            <option value="irrigation" ?selected=${(cfg.mode ?? "wash") === "irrigation"}>Garden irrigation</option>
+          </select>
+          <span class="helper">
+            Irrigation mode relabels the verdict badge and shows rain gauge data when available.
+          </span>
+        </div>
 
         <div class="field">
           <label for="ww-theme">Theme</label>

@@ -41,6 +41,20 @@
           "condition_weight": "Hoeveel slechte weersomstandigheden (storm, hagel, sneeuw) van de score van 0–100 aftrekken. De ernst verschilt per conditie."
         }
       },
+      "irrigation": {
+        "title": "Irrigatie-instellingen",
+        "description": "Configureer de regenmeter en de schakelaar voor het irrigatieprogramma voor de adviseur Tuinirrigatie.",
+        "data": {
+          "rain_gauge_entity": "Regenmetersensor",
+          "rain_gauge_threshold_mm": "Regendrempel (mm)",
+          "irrigation_switch_entity": "Schakelaar irrigatieprogramma"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Selecteer de sensor die de gemeten neerslag in millimeter rapporteert. Wanneer de gemeten waarde de regendrempel overschrijdt, wordt beregening onderdrukt.",
+          "rain_gauge_threshold_mm": "Totale gemeten neerslag (mm) waarboven beregening als onnodig wordt beschouwd en wordt onderdrukt.",
+          "irrigation_switch_entity": "De HA-schakelaarentiteit die het irrigatieprogramma in- of uitschakelt. WashWise kan deze schakelaar uitschakelen wanneer regen voldoende is."
+        }
+      },
       "reconfigure": {
         "title": "WashWise opnieuw configureren",
         "description": "Wijzig de weerbronnen, naam, categorie of drempelaanpassingen voor deze instantie.",
@@ -79,6 +93,7 @@
           "thresholds": "Drempelwaarden",
           "scoring": "Scorewegingen",
           "conditions": "Blokkerende omstandigheden",
+          "irrigation": "Irrigatie-instellingen",
           "advanced": "Geavanceerd"
         }
       },
@@ -132,16 +147,28 @@
           "bad_conditions": "Wanneer een van deze omstandigheden als huidige conditie of in een voorspellingsdag verschijnt, wordt het oordeel geblokkeerd."
         }
       },
+      "irrigation": {
+        "title": "Irrigatie-instellingen",
+        "description": "Configureer de regenmeter en de schakelaar voor het irrigatieprogramma voor de adviseur Tuinirrigatie.",
+        "data": {
+          "rain_gauge_entity": "Regenmetersensor",
+          "rain_gauge_threshold_mm": "Regendrempel (mm)",
+          "irrigation_switch_entity": "Schakelaar irrigatieprogramma"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Selecteer de sensor die de gemeten neerslag in millimeter rapporteert. Wanneer de gemeten waarde de regendrempel overschrijdt, wordt beregening onderdrukt.",
+          "rain_gauge_threshold_mm": "Totale gemeten neerslag (mm) waarboven beregening als onnodig wordt beschouwd en wordt onderdrukt.",
+          "irrigation_switch_entity": "De HA-schakelaarentiteit die het irrigatieprogramma in- of uitschakelt. WashWise kan deze schakelaar uitschakelen wanneer regen voldoende is."
+        }
+      },
       "advanced": {
         "title": "Geavanceerd",
         "description": "Minder gebruikte instellingen.",
         "data": {
-          "scan_interval_minutes": "Update-interval (minuten)",
           "snooze_default_hours": "Standaardduur sluimeren (uren)",
           "temperature_unit": "Temperatuureenheid"
         },
         "data_description": {
-          "scan_interval_minutes": "Hoe vaak de coördinator op zijn minst een nieuwe voorspelling ophaalt; de integratie berekent ook direct opnieuw wanneer de actieve weerentiteit van toestand verandert, dus 15 minuten is ruim voldoende.",
           "snooze_default_hours": "Standaardduur die wordt toegepast wanneer de sluimer-service zonder expliciete duur wordt aangeroepen.",
           "temperature_unit": "Overschrijf de eenheid die wordt gebruikt om voorspellingstemperaturen te interpreteren. Auto leest deze uit de bron-weerentiteit (aanbevolen). Kies Celsius / Fahrenheit / Kelvin alleen wanneer de metadata van een provider onjuist of ontbrekend zijn."
         }
@@ -150,30 +177,54 @@
   },
   "services": {
     "mark_washed": {
-      "name": "Markeren als gewassen",
-      "description": "Voeg een wasinvoer toe aan het waslogboek voor de geselecteerde WashWise-instantie.",
+      "name": "Markeer als gewassen",
+      "description": "Voeg een wasbeurt toe aan het waslogboek van de geselecteerde WashWise-instantie.",
       "fields": {
         "entry_id": {
-          "name": "Configuratie-item",
-          "description": "WashWise-configuratie-item om bij te werken. Optioneel als je een entiteit als doel gebruikt."
-        },
-        "entity_id": {
-          "name": "Entiteit",
-          "description": "Een entiteit die bij de bij te werken WashWise-instantie hoort."
+          "name": "Configuratie",
+          "description": "Te updaten WashWise-configuratie-invoer."
         },
         "timestamp": {
           "name": "Tijdstempel",
-          "description": "Wanneer de wasbeurt plaatsvond. Standaard is nu."
+          "description": "Wanneer de wasbeurt plaatsvond. Standaard: nu."
         }
       }
     },
     "snooze": {
-      "name": "Sluimeren",
-      "description": "Pauzeer WashWise-oordelen voor een bepaalde duur of tot een opgegeven tijd.",
+      "name": "Uitstellen",
+      "description": "Pauzeert WashWise-uitspraken gedurende een aantal uren. Standaard: 24 uur.",
       "fields": {
+        "entry_id": {
+          "name": "Configuratie",
+          "description": "Te updaten WashWise-configuratie-invoer."
+        },
         "hours": {
-          "name": "Hours",
-          "description": "How many hours to snooze."
+          "name": "Uren",
+          "description": "Aantal uren pauze (minimum 1). Standaard: 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Uitstel annuleren",
+      "description": "Annuleert het actieve uitstel.",
+      "fields": {
+        "entry_id": {
+          "name": "Configuratie",
+          "description": "Te updaten WashWise-configuratie-invoer."
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "Irrigatieschakelaar instellen",
+      "description": "Schakel het irrigatieprogramma handmatig in of uit voor de geselecteerde WashWise-instantie.",
+      "fields": {
+        "entry_id": {
+          "name": "Configuratie-item",
+          "description": "WashWise-configuratie-item waarvan de irrigatieschakelaar moet worden bediend."
+        },
+        "state": {
+          "name": "Status",
+          "description": "De gewenste status van de irrigatieschakelaar: true om in te schakelen, false om uit te schakelen."
         }
       }
     }
@@ -189,6 +240,7 @@
         "windows_house": "Ramen van het huis",
         "solar_panels": "Zonnepanelen",
         "patio_deck": "Terras / vlonder",
+        "garden_irrigation": "Tuinirrigatie",
         "custom": "Aangepast"
       }
     },
@@ -228,6 +280,15 @@
       },
       "freeze_risk": {
         "name": "Vriesrisico in voorspelling"
+      },
+      "irrigation_suppressed": {
+        "name": "Beregening onderdrukt"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Voorspelling blokkeert beregening"
+      },
+      "irrigation_switch_state": {
+        "name": "Status beregeningsschakelaar"
       }
     },
     "sensor": {
@@ -288,11 +349,35 @@
       },
       "day_score": {
         "name": "Score dag {day}"
+      },
+      "measured_rain_mm": {
+        "name": "Gemeten neerslag"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Drempel regenmeter"
+      },
+      "category": {
+        "name": "Categorie",
+        "state": {
+          "car": "Auto",
+          "motorcycle": "Motor",
+          "bicycle": "Fiets",
+          "boat": "Boot",
+          "rv_camper": "Camper",
+          "windows_house": "Huisramen",
+          "solar_panels": "Zonnepanelen",
+          "patio_deck": "Terras",
+          "garden_irrigation": "Tuinberegening",
+          "custom": "Aangepast"
+        }
       }
     },
     "button": {
       "mark_washed": {
         "name": "Markeren als gewassen"
+      },
+      "mark_irrigated": {
+        "name": "Markeer als bewaterd"
       }
     }
   }

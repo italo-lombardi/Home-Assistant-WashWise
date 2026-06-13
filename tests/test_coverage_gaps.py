@@ -94,6 +94,18 @@ def test_parse_datetime_parses_iso_string() -> None:
     assert result.year == 2026
 
 
+def test_parse_date_returns_none_on_malformed_iso() -> None:
+    """Malformed ISO string returns None instead of raising ValueError."""
+    assert _parse_date("not-a-date") is None
+    assert _parse_date("2026-99-99") is None
+
+
+def test_parse_datetime_returns_none_on_malformed_iso() -> None:
+    """Malformed ISO string returns None instead of raising ValueError."""
+    assert _parse_datetime("not-a-datetime") is None
+    assert _parse_datetime("2026-99-99T99:99:99") is None
+
+
 # ---------------------------------------------------------------------------
 # storage.py — line 45 (``if not value: return None``)
 # ---------------------------------------------------------------------------

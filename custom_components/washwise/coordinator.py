@@ -37,8 +37,11 @@ from .const import (
     CONF_FORECAST_TYPE,
     CONF_FREEZE_CHECK,
     CONF_FREEZE_WEIGHT,
+    CONF_IRRIGATION_SWITCH_ENTITY,
     CONF_PRECIP_THRESHOLD,
     CONF_PRECIP_WEIGHT,
+    CONF_RAIN_GAUGE_ENTITY,
+    CONF_RAIN_GAUGE_THRESHOLD_MM,
     CONF_SCAN_INTERVAL_MINUTES,
     CONF_TEMPERATURE_UNIT,
     CONF_WEATHER_ENTITIES,
@@ -47,6 +50,7 @@ from .const import (
     DEFAULT_FORECAST_TYPE,
     DEFAULT_FREEZE_WEIGHT,
     DEFAULT_PRECIP_WEIGHT,
+    DEFAULT_RAIN_GAUGE_THRESHOLD_MM,
     DEFAULT_TEMPERATURE_UNIT,
     DOMAIN,
     SCAN_INTERVAL,
@@ -68,7 +72,10 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialise the coordinator and persistent store."""
-        interval = self._resolve_scan_interval(entry)
+        category = entry.data.get(CONF_CATEGORY, DEFAULT_CATEGORY)
+        # garden_irrigation is fully event-driven (weather + gauge state changes).
+        # No periodic polling needed — set interval to None.
+        interval = None if category == "garden_irrigation" else self._resolve_scan_interval(entry)
         super().__init__(
             hass,
             _LOGGER,
@@ -82,6 +89,11 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         self._last_decision: Decision | None = None
         self._unsub_registry: CALLBACK_TYPE | None = None
         self._unsub_state: CALLBACK_TYPE | None = None
+        self._unsub_gauge: CALLBACK_TYPE | None = None
+        self._measured_rain_mm: float | None = None
+        self._irrigation_suppressed: bool = False
+        self._rain_gauge_threshold_mm: float | None = None
+        self._forecast_blocks_irrigation: bool = False
         # Seed ``last_update_success_time`` so the ``last_update`` sensor has
         # a real timestamp the moment the entry is created, rather than
         # ``Unknown`` until the first coordinator tick lands.
@@ -109,6 +121,19 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
                 weather_ids,
                 self._handle_state_change,
             )
+
+        # React immediately when the rain gauge sensor changes — no need to
+        # wait for the periodic poll. Only wired when category is garden_irrigation.
+        if category == "garden_irrigation":
+            gauge_entity: str | None = (entry.options or {}).get(
+                CONF_RAIN_GAUGE_ENTITY
+            ) or entry.data.get(CONF_RAIN_GAUGE_ENTITY)
+            if gauge_entity:
+                self._unsub_gauge = async_track_state_change_event(
+                    hass,
+                    [gauge_entity],
+                    self._handle_gauge_change,
+                )
 
     # ------------------------------------------------------------------
     # Properties
@@ -140,6 +165,41 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
             if isinstance(friendly, str) and friendly.strip():
                 return friendly
         return eid
+
+    @property
+    def measured_rain_mm(self) -> float | None:
+        """Return the last read rain gauge value in mm, or None if not configured."""
+        return self._measured_rain_mm
+
+    @property
+    def irrigation_suppressed(self) -> bool:
+        """Return True when measured rain has exceeded the gauge threshold."""
+        return self._irrigation_suppressed
+
+    @property
+    def rain_gauge_threshold_mm(self) -> float | None:
+        """Return the configured rain gauge threshold in mm, or None if not irrigation category."""
+        return self._rain_gauge_threshold_mm
+
+    @property
+    def forecast_blocks_irrigation(self) -> bool:
+        """Return True when the forecast alone is blocking irrigation (rain expected)."""
+        return self._forecast_blocks_irrigation
+
+    @property
+    def irrigation_switch_state(self) -> bool | None:
+        """Return current ON/OFF state of the configured irrigation switch, or None if not set."""
+        options = self.entry.options or {}
+        data = self.entry.data or {}
+        switch_entity = options.get(CONF_IRRIGATION_SWITCH_ENTITY) or data.get(
+            CONF_IRRIGATION_SWITCH_ENTITY
+        )
+        if not switch_entity:
+            return None
+        state = self.hass.states.get(switch_entity)
+        if state is None or state.state in ("unavailable", "unknown"):
+            return None
+        return state.state not in ("off",)
 
     # ------------------------------------------------------------------
     # Mutators called from buttons / services
@@ -190,6 +250,9 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         if self._unsub_state is not None:
             self._unsub_state()
             self._unsub_state = None
+        if self._unsub_gauge is not None:
+            self._unsub_gauge()
+            self._unsub_gauge = None
         await super().async_shutdown()
 
     # ------------------------------------------------------------------
@@ -298,6 +361,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
 
             self._active_weather_entity = eid
             self._last_decision = decision
+            await self._async_handle_irrigation(decision)
             return decision
 
         # Step 5: every provider failed.
@@ -306,6 +370,87 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
     # ------------------------------------------------------------------
     # Internals
     # ------------------------------------------------------------------
+
+    async def _async_handle_irrigation(self, decision: Decision) -> None:
+        """Read rain gauge and toggle irrigation switch for garden_irrigation category."""
+        category = self.entry.data.get(CONF_CATEGORY, DEFAULT_CATEGORY)
+        if category != "garden_irrigation":
+            self._measured_rain_mm = None
+            self._irrigation_suppressed = False
+            self._rain_gauge_threshold_mm = None
+            self._forecast_blocks_irrigation = False
+            return
+
+        options = self.entry.options or {}
+        data = self.entry.data or {}
+
+        def _pick(key: str, default: Any) -> Any:
+            if key in options:
+                return options[key]
+            if key in data:
+                return data[key]
+            return default
+
+        gauge_entity: str | None = _pick(CONF_RAIN_GAUGE_ENTITY, None)
+        threshold_mm: float = float(
+            _pick(CONF_RAIN_GAUGE_THRESHOLD_MM, DEFAULT_RAIN_GAUGE_THRESHOLD_MM)
+        )
+        switch_entity: str | None = _pick(CONF_IRRIGATION_SWITCH_ENTITY, None)
+
+        # Read gauge.
+        measured: float | None = None
+        if gauge_entity:
+            gauge_state = self.hass.states.get(gauge_entity)
+            if gauge_state is not None and gauge_state.state not in (
+                "unavailable",
+                "unknown",
+                "",
+                None,
+            ):
+                try:
+                    measured = float(gauge_state.state)
+                except (TypeError, ValueError):
+                    _LOGGER.warning(
+                        "WashWise: rain gauge entity %s has non-numeric state %r",
+                        gauge_entity,
+                        gauge_state.state,
+                    )
+
+        self._measured_rain_mm = measured
+        self._rain_gauge_threshold_mm = threshold_mm
+
+        # Suppress irrigation when: measured rain >= threshold OR forecast blocks irrigation.
+        # garden_irrigation uses invert=True: can_wash=True means rain expected (skip irrigation).
+        gauge_suppressed = measured is not None and measured >= threshold_mm
+        forecast_suppressed = decision.can_wash
+        self._forecast_blocks_irrigation = forecast_suppressed
+        suppressed = gauge_suppressed or forecast_suppressed
+        self._irrigation_suppressed = suppressed
+
+        # Toggle irrigation switch when suppression state changes.
+        if switch_entity:
+            current_switch_state = self.hass.states.get(switch_entity)
+            if current_switch_state is not None:
+                state_val = current_switch_state.state
+                if state_val in ("unavailable", "unknown"):
+                    return
+                switch_on = state_val not in ("off",)
+                if suppressed and switch_on:
+                    domain, _ = switch_entity.split(".", 1)
+                    await self.hass.services.async_call(
+                        domain,
+                        "turn_off",
+                        {"entity_id": switch_entity},
+                        blocking=False,
+                    )
+                elif not suppressed and not switch_on:
+                    domain, _ = switch_entity.split(".", 1)
+                    await self.hass.services.async_call(
+                        domain,
+                        "turn_on",
+                        {"entity_id": switch_entity},
+                        blocking=False,
+                    )
 
     def _resolve_thresholds(self) -> tuple[dict[str, Any], bool]:
         """Return ``(thresholds, invert)`` based on entry data + options.
@@ -364,7 +509,9 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
 
     @staticmethod
     def _resolve_scan_interval(entry: ConfigEntry) -> timedelta:
-        """Return the configured scan interval, defaulting to ``SCAN_INTERVAL``."""
+        # CONF_SCAN_INTERVAL_MINUTES is no longer exposed in the options UI (removed in v0.2.0).
+        # Retained here so existing entries that had it configured keep their setting without
+        # a forced migration. New entries always get SCAN_INTERVAL.
         minutes = (entry.options or {}).get(CONF_SCAN_INTERVAL_MINUTES)
         if minutes is None:
             minutes = entry.data.get(CONF_SCAN_INTERVAL_MINUTES)
@@ -437,12 +584,16 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
 
         # Active provider tick -> always recompute.
         if active is not None and eid == active:
-            self.hass.async_create_task(self.async_request_refresh())
+            self.entry.async_create_background_task(
+                self.hass, self.async_request_refresh(), "washwise_refresh"
+            )
             return
 
         # Cold start -> primary triggers the first decision.
         if active is None and eid == primary:
-            self.hass.async_create_task(self.async_request_refresh())
+            self.entry.async_create_background_task(
+                self.hass, self.async_request_refresh(), "washwise_refresh"
+            )
             return
 
         # Fallback path: primary is sick, anything in the chain may unstick it.
@@ -455,7 +606,16 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
                 None,
             )
             if primary_dead:
-                self.hass.async_create_task(self.async_request_refresh())
+                self.entry.async_create_background_task(
+                    self.hass, self.async_request_refresh(), "washwise_refresh"
+                )
+
+    @callback
+    def _handle_gauge_change(self, event: Event) -> None:
+        """Trigger immediate refresh when the rain gauge sensor value changes."""
+        self.entry.async_create_background_task(
+            self.hass, self.async_request_refresh(), "washwise_refresh"
+        )
 
     @callback
     def _handle_registry_updated(self, event: Event) -> None:
@@ -498,7 +658,11 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         self.hass.config_entries.async_update_entry(self.entry, data=new_data)
         # Reload re-runs setup, which re-instantiates the coordinator with
         # the updated weather_ids and re-attaches the registry listener.
-        self.hass.async_create_task(self.hass.config_entries.async_reload(self.entry.entry_id))
+        self.entry.async_create_background_task(
+            self.hass,
+            self.hass.config_entries.async_reload(self.entry.entry_id),
+            "washwise_reload",
+        )
 
 
 __all__ = ["WashWiseCoordinator"]

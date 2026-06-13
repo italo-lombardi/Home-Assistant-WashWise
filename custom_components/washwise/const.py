@@ -94,6 +94,13 @@ CATEGORY_PRESETS = {
         "invert": False,
         "icon": "mdi:deck",
     },
+    "garden_irrigation": {
+        "days": 1,
+        "precip_threshold_mm": 2.0,
+        "freeze_check": False,
+        "invert": True,
+        "icon": "mdi:sprinkler",
+    },
     "custom": {
         "days": 3,
         "precip_threshold_mm": 0.2,
@@ -136,6 +143,11 @@ CONF_FREEZE_WEIGHT = "freeze_weight"
 CONF_CONDITION_WEIGHT = "condition_weight"
 CONF_EXTRA_ENTITIES = "extra_entities"
 CONF_SCAN_INTERVAL_MINUTES = "scan_interval_minutes"
+CONF_RAIN_GAUGE_ENTITY = "rain_gauge_entity"
+CONF_RAIN_GAUGE_THRESHOLD_MM = "rain_gauge_threshold_mm"
+CONF_IRRIGATION_SWITCH_ENTITY = "irrigation_switch_entity"
+
+DEFAULT_RAIN_GAUGE_THRESHOLD_MM = 5.0
 CONF_TEMPERATURE_UNIT = "temperature_unit"
 
 # Allowed values for ``CONF_TEMPERATURE_UNIT``. ``auto`` (default) reads the

@@ -88,6 +88,7 @@ def _make_decision(
                 "temp_max": 24.0,
                 "blocked": False,
                 "blockers": [],
+                "day_score": 100,
             },
             {
                 "date": date(2026, 6, 12),
@@ -97,6 +98,7 @@ def _make_decision(
                 "temp_max": 5.0,
                 "blocked": True,
                 "blockers": ["precipitation"],
+                "day_score": 0,
             },
             {
                 "date": date(2026, 6, 13),
@@ -106,6 +108,7 @@ def _make_decision(
                 "temp_max": 22.0,
                 "blocked": False,
                 "blockers": [],
+                "day_score": 96,
             },
         ]
     return Decision(
@@ -415,7 +418,7 @@ async def test_async_setup_entry_default_horizon(hass) -> None:
 
 
 def test_day_score_value_blocked_or_unblocked() -> None:
-    """Day score is 0 when blocked, 100 when not."""
+    """Day score reads ``day_score`` from the forecast summary dict."""
     decision = _make_decision()
     coordinator = _make_coordinator(decision)
     entry = _make_entry()

@@ -43,8 +43,10 @@ from .const import (
     CONF_CATEGORY,
     CONF_CUSTOMIZE_THRESHOLDS,
     CONF_DAYS,
+    CONF_RAIN_GAUGE_THRESHOLD_MM,
     CONF_WEATHER_ENTITIES,
     DEFAULT_CATEGORY,
+    DEFAULT_RAIN_GAUGE_THRESHOLD_MM,
     DOMAIN,
 )
 from .coordinator import WashWiseCoordinator
@@ -86,6 +88,11 @@ async def async_setup_entry(
     days = _resolve_horizon(entry)
     for i in range(days):
         entities.append(DayScoreSensor(coordinator, entry, i))
+
+    category = entry.data.get(CONF_CATEGORY, DEFAULT_CATEGORY)
+    if category == "garden_irrigation":
+        entities.append(MeasuredRainMmSensor(coordinator, entry))
+        entities.append(RainGaugeThresholdSensor(coordinator, entry))
 
     async_add_entities(entities)
 
@@ -588,7 +595,7 @@ class DayScoreSensor(WashWiseSensorBase):
 
     @property
     def native_value(self) -> int | None:
-        """Return 100 when the day is unblocked, 0 when it blocks washing."""
+        """Return the per-day score (0-100) from the decision summary."""
         decision = self._decision
         if decision is None:
             return None
@@ -596,8 +603,9 @@ class DayScoreSensor(WashWiseSensorBase):
         if self._index >= len(summary):
             return None
         day = summary[self._index]
-        blocked = bool(day.get("blocked", False))
-        return 0 if blocked else 100
+        # Fallback to binary 0/100 for Decision objects loaded from storage
+        # that pre-date v0.2.0 (forecast_summary dicts without ``day_score``).
+        return int(day.get("day_score", 0 if day.get("blocked") else 100))
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
@@ -685,6 +693,57 @@ def _coerce_str(value: Any) -> str | None:
         except Exception:
             return str(value)
     return str(value)
+
+
+class MeasuredRainMmSensor(WashWiseSensorBase):
+    """Sensor: current rain gauge reading in mm.
+
+    Only registered for the 'garden_irrigation' category. Reads from the
+    coordinator's ``measured_rain_mm`` property which is populated each tick
+    from the configured rain gauge sensor entity.
+    """
+
+    _attr_icon = "mdi:water-plus"
+    _attr_native_unit_of_measurement = "mm"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(self, coordinator: WashWiseCoordinator, entry: ConfigEntry) -> None:
+        """Register the measured-rain sensor."""
+        super().__init__(coordinator, entry, "measured_rain_mm")
+
+    @property
+    def native_value(self) -> float | None:
+        """Return current rain gauge reading."""
+        return self.coordinator.measured_rain_mm
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        """Expose the configured threshold for reference."""
+        options = self._entry.options or {}
+        data = self._entry.data or {}
+        threshold = options.get(
+            CONF_RAIN_GAUGE_THRESHOLD_MM,
+            data.get(CONF_RAIN_GAUGE_THRESHOLD_MM, DEFAULT_RAIN_GAUGE_THRESHOLD_MM),
+        )
+        return {"threshold_mm": float(threshold)}
+
+
+class RainGaugeThresholdSensor(WashWiseSensorBase):
+    """Diagnostic sensor: configured rain gauge suppression threshold in mm."""
+
+    _attr_icon = "mdi:water-alert"
+    _attr_native_unit_of_measurement = "mm"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator: WashWiseCoordinator, entry: ConfigEntry) -> None:
+        """Register the rain gauge threshold sensor."""
+        super().__init__(coordinator, entry, "rain_gauge_threshold_mm")
+
+    @property
+    def native_value(self) -> float | None:
+        """Return the configured suppression threshold."""
+        return self.coordinator.rain_gauge_threshold_mm
 
 
 __all__ = ["async_setup_entry"]

@@ -22,7 +22,10 @@ def _parse_date(value: Any) -> date | None:
         return value
     if isinstance(value, datetime):
         return value.date()
-    return date.fromisoformat(str(value))
+    try:
+        return date.fromisoformat(str(value))
+    except (ValueError, TypeError):
+        return None
 
 
 def _parse_datetime(value: Any) -> datetime | None:
@@ -30,7 +33,10 @@ def _parse_datetime(value: Any) -> datetime | None:
         return None
     if isinstance(value, datetime):
         return value
-    return datetime.fromisoformat(str(value))
+    try:
+        return datetime.fromisoformat(str(value))
+    except (ValueError, TypeError):
+        return None
 
 
 @dataclass(frozen=True, slots=True)

@@ -41,6 +41,20 @@
           "condition_weight": "Quanto as condições meteorológicas ruins (tempestades, granizo, neve) subtraem da pontuação de 0–100. A severidade é por condição."
         }
       },
+      "irrigation": {
+        "title": "Configurações de irrigação",
+        "description": "Configure o pluviômetro e o interruptor do programa de irrigação para o assistente de Irrigação de jardim.",
+        "data": {
+          "rain_gauge_entity": "Sensor do pluviômetro",
+          "rain_gauge_threshold_mm": "Limite de chuva (mm)",
+          "irrigation_switch_entity": "Interruptor do programa de irrigação"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Selecione o sensor que reporta a precipitação medida em milímetros. Quando o valor medido ultrapassar o limite de chuva, a irrigação será suprimida.",
+          "rain_gauge_threshold_mm": "Precipitação total medida (mm) acima da qual a irrigação é considerada desnecessária e será suprimida.",
+          "irrigation_switch_entity": "A entidade de interruptor do HA que liga ou desliga o programa de irrigação. O WashWise pode desligar este interruptor quando a chuva for suficiente."
+        }
+      },
       "reconfigure": {
         "title": "Reconfigurar WashWise",
         "description": "Altere as fontes meteorológicas, nome, categoria ou personalização de limites desta instância.",
@@ -79,6 +93,7 @@
           "thresholds": "Limites",
           "scoring": "Pesos da pontuação",
           "conditions": "Condições que bloqueiam",
+          "irrigation": "Configurações de irrigação",
           "advanced": "Avançado"
         }
       },
@@ -132,16 +147,28 @@
           "bad_conditions": "Quando qualquer uma destas condições aparece como condição atual ou em um dia da previsão, o veredito é bloqueado."
         }
       },
+      "irrigation": {
+        "title": "Configurações de irrigação",
+        "description": "Configure o pluviômetro e o interruptor do programa de irrigação para o assistente de Irrigação de jardim.",
+        "data": {
+          "rain_gauge_entity": "Sensor do pluviômetro",
+          "rain_gauge_threshold_mm": "Limite de chuva (mm)",
+          "irrigation_switch_entity": "Interruptor do programa de irrigação"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Selecione o sensor que reporta a precipitação medida em milímetros. Quando o valor medido ultrapassar o limite de chuva, a irrigação será suprimida.",
+          "rain_gauge_threshold_mm": "Precipitação total medida (mm) acima da qual a irrigação é considerada desnecessária e será suprimida.",
+          "irrigation_switch_entity": "A entidade de interruptor do HA que liga ou desliga o programa de irrigação. O WashWise pode desligar este interruptor quando a chuva for suficiente."
+        }
+      },
       "advanced": {
         "title": "Avançado",
         "description": "Configurações menos comuns.",
         "data": {
-          "scan_interval_minutes": "Intervalo de atualização (minutos)",
           "snooze_default_hours": "Duração padrão do adiamento (horas)",
           "temperature_unit": "Unidade de temperatura"
         },
         "data_description": {
-          "scan_interval_minutes": "Com que frequência mínima o coordenador busca uma nova previsão; a integração também recalcula imediatamente quando a entidade meteorológica ativa muda de estado, então 15 minutos são mais que suficientes.",
           "snooze_default_hours": "Duração padrão aplicada quando o serviço de adiamento é chamado sem uma duração explícita.",
           "temperature_unit": "Substitui a unidade usada para interpretar as temperaturas da previsão. Auto a lê da entidade meteorológica de origem (recomendado). Escolha Celsius / Fahrenheit / Kelvin somente quando os metadados de um provedor estiverem incorretos ou ausentes."
         }
@@ -151,29 +178,53 @@
   "services": {
     "mark_washed": {
       "name": "Marcar como lavado",
-      "description": "Adiciona uma entrada de lavagem ao registro de lavagens da instância WashWise selecionada.",
+      "description": "Adiciona uma entrada ao registro de lavagens da instância WashWise selecionada.",
       "fields": {
         "entry_id": {
-          "name": "Entrada de configuração",
-          "description": "Entrada de configuração WashWise a atualizar. Opcional quando o alvo é uma entidade."
-        },
-        "entity_id": {
-          "name": "Entidade",
-          "description": "Qualquer entidade pertencente à instância WashWise a atualizar."
+          "name": "Configuração",
+          "description": "Entrada de configuração WashWise a atualizar."
         },
         "timestamp": {
-          "name": "Data e hora",
-          "description": "Quando a lavagem ocorreu. O padrão é agora."
+          "name": "Carimbo de data/hora",
+          "description": "Quando a lavagem aconteceu. Padrão: agora."
         }
       }
     },
     "snooze": {
       "name": "Adiar",
-      "description": "Pausa os vereditos do WashWise por um período ou até um determinado horário.",
+      "description": "Pausa os veredictos WashWise por um número de horas. Padrão: 24 horas.",
       "fields": {
+        "entry_id": {
+          "name": "Configuração",
+          "description": "Entrada de configuração WashWise a atualizar."
+        },
         "hours": {
-          "name": "Hours",
-          "description": "How many hours to snooze."
+          "name": "Horas",
+          "description": "Número de horas de pausa (mínimo 1). Padrão: 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Cancelar adiamento",
+      "description": "Cancela o adiamento ativo.",
+      "fields": {
+        "entry_id": {
+          "name": "Configuração",
+          "description": "Entrada de configuração WashWise a atualizar."
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "Definir interruptor de irrigação",
+      "description": "Liga ou desliga manualmente o programa de irrigação para a instância WashWise selecionada.",
+      "fields": {
+        "entry_id": {
+          "name": "Entrada de configuração",
+          "description": "Entrada de configuração WashWise cujo interruptor de irrigação deve ser acionado."
+        },
+        "state": {
+          "name": "Estado",
+          "description": "Estado desejado do interruptor de irrigação: true para ligar, false para desligar."
         }
       }
     }
@@ -189,6 +240,7 @@
         "windows_house": "Janelas da casa",
         "solar_panels": "Painéis solares",
         "patio_deck": "Pátio / deck",
+        "garden_irrigation": "Irrigação de jardim",
         "custom": "Personalizado"
       }
     },
@@ -228,6 +280,15 @@
       },
       "freeze_risk": {
         "name": "Risco de congelamento na previsão"
+      },
+      "irrigation_suppressed": {
+        "name": "Irrigação suprimida"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Previsão bloqueia irrigação"
+      },
+      "irrigation_switch_state": {
+        "name": "Estado do interruptor de irrigação"
       }
     },
     "sensor": {
@@ -288,11 +349,35 @@
       },
       "day_score": {
         "name": "Pontuação do dia {day}"
+      },
+      "measured_rain_mm": {
+        "name": "Chuva medida"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Limite do pluviómetro"
+      },
+      "category": {
+        "name": "Categoria",
+        "state": {
+          "car": "Carro",
+          "motorcycle": "Moto",
+          "bicycle": "Bicicleta",
+          "boat": "Barco",
+          "rv_camper": "Motorhome",
+          "windows_house": "Janelas de casa",
+          "solar_panels": "Painéis solares",
+          "patio_deck": "Varanda",
+          "garden_irrigation": "Irrigação do jardim",
+          "custom": "Personalizado"
+        }
       }
     },
     "button": {
       "mark_washed": {
         "name": "Marcar como lavado"
+      },
+      "mark_irrigated": {
+        "name": "Marcar como irrigado"
       }
     }
   }

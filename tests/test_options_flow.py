@@ -12,7 +12,6 @@ from custom_components.washwise.const import (
     CONF_BAD_CONDITIONS,
     CONF_CATEGORY,
     CONF_CONDITION_WEIGHT,
-    CONF_CUSTOMIZE_THRESHOLDS,
     CONF_DAYS,
     CONF_FORECAST_TYPE,
     CONF_FREEZE_CHECK,
@@ -20,10 +19,11 @@ from custom_components.washwise.const import (
     CONF_NAME,
     CONF_PRECIP_THRESHOLD,
     CONF_PRECIP_WEIGHT,
-    CONF_SCAN_INTERVAL_MINUTES,
+    CONF_TEMPERATURE_UNIT,
     CONF_WEATHER_ENTITIES,
     DEFAULT_CATEGORY,
     DEFAULT_FORECAST_TYPE,
+    DEFAULT_TEMPERATURE_UNIT,
 )
 
 # ---------------------------------------------------------------------------
@@ -208,7 +208,6 @@ async def test_options_thresholds_save_updates_options(
         result["flow_id"], {"next_step_id": "thresholds"}
     )
     payload = {
-        CONF_CUSTOMIZE_THRESHOLDS: True,
         CONF_DAYS: 6,
         CONF_PRECIP_THRESHOLD: 1.25,
         CONF_FREEZE_CHECK: False,
@@ -313,7 +312,7 @@ async def test_options_conditions_save_updates_options(
 async def test_options_advanced_save_updates_options(
     hass: HomeAssistant, mock_config_entry: MockConfigEntry
 ) -> None:
-    """Saving the advanced step writes scan_interval + snooze defaults."""
+    """Saving the advanced step writes snooze defaults and temperature unit."""
     await _setup_entry(hass, mock_config_entry)
 
     result = await hass.config_entries.options.async_init(mock_config_entry.entry_id)
@@ -323,13 +322,12 @@ async def test_options_advanced_save_updates_options(
     result = await hass.config_entries.options.async_configure(
         result["flow_id"],
         {
-            CONF_SCAN_INTERVAL_MINUTES: 30,
             "snooze_default_hours": 48,
+            CONF_TEMPERATURE_UNIT: DEFAULT_TEMPERATURE_UNIT,
         },
     )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
-    assert mock_config_entry.options[CONF_SCAN_INTERVAL_MINUTES] == 30
     assert mock_config_entry.options["snooze_default_hours"] == 48
 
 
