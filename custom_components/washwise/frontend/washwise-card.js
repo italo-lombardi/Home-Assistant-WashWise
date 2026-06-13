@@ -625,7 +625,7 @@ class WashWiseCard extends LitElement {
 
     // Fallback: read from irrigation_suppressed binary sensor attributes.
     const suppressedEntityId = cfg.entity
-      ? cfg.entity.replace(/_can_wash$/, "_irrigation_suppressed").replace("binary_sensor.", "binary_sensor.")
+      ? cfg.entity.replace(/_can_wash$/, "_irrigation_suppressed")
       : null;
     const suppressedState = suppressedEntityId ? this.hass?.states[suppressedEntityId] : null;
     const suppressedMm = suppressedState?.attributes?.measured_rain_mm ?? null;
