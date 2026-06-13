@@ -10,9 +10,9 @@ Covers:
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from homeassistant.core import HomeAssistant
@@ -26,7 +26,6 @@ from custom_components.washwise.const import (
     CONF_RAIN_GAUGE_ENTITY,
     CONF_RAIN_GAUGE_THRESHOLD_MM,
     CONF_WEATHER_ENTITIES,
-    DEFAULT_FORECAST_TYPE,
     DEFAULT_RAIN_GAUGE_THRESHOLD_MM,
     DOMAIN,
 )
@@ -37,7 +36,6 @@ from custom_components.washwise.services import (
     async_register_services,
     async_unregister_services,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -328,8 +326,6 @@ async def test_coordinator_gauge_state_change_triggers_refresh(hass: HomeAssista
     coord = WashWiseCoordinator(hass, entry)
 
     refresh_count = 0
-    original_refresh = coord.async_request_refresh
-
     async def _counting_refresh():
         nonlocal refresh_count
         refresh_count += 1
@@ -352,7 +348,9 @@ async def test_coordinator_gauge_state_change_triggers_refresh(hass: HomeAssista
 @pytest.mark.asyncio
 async def test_irrigation_suppressed_sensor_registered(hass: HomeAssistant) -> None:
     """IrrigationSuppressedBinarySensor created for garden_irrigation entries."""
-    from custom_components.washwise.binary_sensor import async_setup_entry, IrrigationSuppressedBinarySensor
+    from custom_components.washwise.binary_sensor import (
+        async_setup_entry,
+    )
 
     entry = _make_irrigation_entry()
     coord = AsyncMock(spec=WashWiseCoordinator)
@@ -472,7 +470,7 @@ async def test_measured_rain_sensor_none(hass: HomeAssistant) -> None:
 @pytest.mark.asyncio
 async def test_measured_rain_sensor_registered(hass: HomeAssistant) -> None:
     """MeasuredRainMmSensor created for garden_irrigation entries."""
-    from custom_components.washwise.sensor import async_setup_entry, MeasuredRainMmSensor
+    from custom_components.washwise.sensor import async_setup_entry
 
     entry = _make_irrigation_entry()
     coord = AsyncMock(spec=WashWiseCoordinator)
@@ -610,7 +608,9 @@ async def test_config_flow_irrigation_step_creates_entry(hass: HomeAssistant) ->
     assert result3["data"][CONF_CATEGORY] == "garden_irrigation"
 
 
-async def test_config_flow_irrigation_step_customize_goes_to_thresholds(hass: HomeAssistant) -> None:
+async def test_config_flow_irrigation_step_customize_goes_to_thresholds(
+    hass: HomeAssistant,
+) -> None:
     """garden_irrigation with customize_thresholds=True goes thresholds → irrigation → entry."""
     from homeassistant.data_entry_flow import FlowResultType
 
@@ -737,7 +737,7 @@ async def test_rain_gauge_threshold_sensor_none(hass: HomeAssistant) -> None:
 @pytest.mark.asyncio
 async def test_rain_gauge_threshold_sensor_registered(hass: HomeAssistant) -> None:
     """RainGaugeThresholdSensor registered for garden_irrigation entries."""
-    from custom_components.washwise.sensor import async_setup_entry, RainGaugeThresholdSensor
+    from custom_components.washwise.sensor import async_setup_entry
 
     entry = _make_irrigation_entry()
     coord = AsyncMock(spec=WashWiseCoordinator)
@@ -873,8 +873,6 @@ async def test_new_diagnostic_sensors_registered(hass: HomeAssistant) -> None:
     """ForecastBlocksIrrigationBinarySensor and IrrigationSwitchStateBinarySensor registered."""
     from custom_components.washwise.binary_sensor import (
         async_setup_entry,
-        ForecastBlocksIrrigationBinarySensor,
-        IrrigationSwitchStateBinarySensor,
     )
 
     entry = _make_irrigation_entry()

@@ -193,7 +193,9 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         """Return current ON/OFF state of the configured irrigation switch, or None if not set."""
         options = self.entry.options or {}
         data = self.entry.data or {}
-        switch_entity = options.get(CONF_IRRIGATION_SWITCH_ENTITY) or data.get(CONF_IRRIGATION_SWITCH_ENTITY)
+        switch_entity = (
+            options.get(CONF_IRRIGATION_SWITCH_ENTITY) or data.get(CONF_IRRIGATION_SWITCH_ENTITY)
+        )
         if not switch_entity:
             return None
         state = self.hass.states.get(switch_entity)

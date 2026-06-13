@@ -19,11 +19,11 @@ from custom_components.washwise.const import (
     CONF_NAME,
     CONF_PRECIP_THRESHOLD,
     CONF_PRECIP_WEIGHT,
+    CONF_TEMPERATURE_UNIT,
     CONF_WEATHER_ENTITIES,
     DEFAULT_CATEGORY,
     DEFAULT_FORECAST_TYPE,
     DEFAULT_TEMPERATURE_UNIT,
-    CONF_TEMPERATURE_UNIT,
 )
 
 # ---------------------------------------------------------------------------

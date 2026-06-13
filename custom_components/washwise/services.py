@@ -140,7 +140,9 @@ def async_unregister_services(hass: HomeAssistant) -> None:
     domain_data = hass.data.get(DOMAIN, {})
     if not domain_data.get(_SERVICES_REGISTERED_FLAG):
         return
-    for name in (SERVICE_MARK_WASHED, SERVICE_SNOOZE, SERVICE_CLEAR_SNOOZE, SERVICE_SET_IRRIGATION_SWITCH):
+    for name in (
+        SERVICE_MARK_WASHED, SERVICE_SNOOZE, SERVICE_CLEAR_SNOOZE, SERVICE_SET_IRRIGATION_SWITCH
+    ):
         if hass.services.has_service(DOMAIN, name):
             hass.services.async_remove(DOMAIN, name)
     domain_data.pop(_SERVICES_REGISTERED_FLAG, None)
