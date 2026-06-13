@@ -326,6 +326,7 @@ async def test_coordinator_gauge_state_change_triggers_refresh(hass: HomeAssista
     coord = WashWiseCoordinator(hass, entry)
 
     refresh_count = 0
+
     async def _counting_refresh():
         nonlocal refresh_count
         refresh_count += 1
@@ -560,9 +561,7 @@ async def test_config_flow_irrigation_step(hass: HomeAssistant) -> None:
     """Selecting garden_irrigation routes to the irrigation step."""
     from homeassistant.data_entry_flow import FlowResultType
 
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": "user"}
-    )
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
     assert result["type"] == FlowResultType.FORM
 
     hass.states.async_set("weather.home", "sunny", {"temperature": 20, "forecast": []})
@@ -583,9 +582,7 @@ async def test_config_flow_irrigation_step_creates_entry(hass: HomeAssistant) ->
     """Completing the irrigation step creates the config entry."""
     from homeassistant.data_entry_flow import FlowResultType
 
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": "user"}
-    )
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
     hass.states.async_set("weather.home", "sunny", {"temperature": 20, "forecast": []})
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"],
@@ -614,9 +611,7 @@ async def test_config_flow_irrigation_step_customize_goes_to_thresholds(
     """garden_irrigation with customize_thresholds=True goes thresholds → irrigation → entry."""
     from homeassistant.data_entry_flow import FlowResultType
 
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": "user"}
-    )
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": "user"})
     hass.states.async_set("weather.home", "sunny", {"temperature": 20, "forecast": []})
     result2 = await hass.config_entries.flow.async_configure(
         result["flow_id"],
@@ -901,9 +896,12 @@ async def test_new_diagnostic_sensors_registered(hass: HomeAssistant) -> None:
 async def test_coordinator_new_properties_non_irrigation(hass: HomeAssistant) -> None:
     """New coordinator properties reset for non-irrigation categories."""
     entry = MockConfigEntry(
-        version=1, domain=DOMAIN, title="Car",
+        version=1,
+        domain=DOMAIN,
+        title="Car",
         data={CONF_NAME: "Car", CONF_WEATHER_ENTITIES: ["weather.home"], CONF_CATEGORY: "car"},
-        options={}, entry_id="car2",
+        options={},
+        entry_id="car2",
     )
     entry.add_to_hass(hass)
     coord = WashWiseCoordinator(hass, entry)

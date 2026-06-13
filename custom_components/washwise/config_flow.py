@@ -656,9 +656,7 @@ class WashWiseOptionsFlow(OptionsFlow):
                 vol.Optional(
                     CONF_IRRIGATION_SWITCH_ENTITY,
                 ): selector.EntitySelector(
-                    selector.EntitySelectorConfig(
-                        domain=["switch", "input_boolean", "automation"]
-                    )
+                    selector.EntitySelectorConfig(domain=["switch", "input_boolean", "automation"])
                 ),
             }
         )

@@ -385,7 +385,7 @@ class IrrigationSwitchStateBinarySensor(_WashWiseBinarySensorBase):
         """Expose the switch entity id for reference."""
         options = self._entry.options or {}
         data = self._entry.data or {}
-        switch_entity = (
-            options.get("irrigation_switch_entity") or data.get("irrigation_switch_entity")
+        switch_entity = options.get("irrigation_switch_entity") or data.get(
+            "irrigation_switch_entity"
         )
         return {"switch_entity_id": switch_entity}

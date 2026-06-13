@@ -96,9 +96,7 @@ async def _handle_set_irrigation_switch(hass: HomeAssistant, call: ServiceCall) 
         )
     domain, _ = switch_entity.split(".", 1)
     service = "turn_on" if state == "on" else "turn_off"
-    await hass.services.async_call(
-        domain, service, {"entity_id": switch_entity}, blocking=True
-    )
+    await hass.services.async_call(domain, service, {"entity_id": switch_entity}, blocking=True)
 
 
 async def async_register_services(hass: HomeAssistant) -> None:
@@ -141,7 +139,10 @@ def async_unregister_services(hass: HomeAssistant) -> None:
     if not domain_data.get(_SERVICES_REGISTERED_FLAG):
         return
     for name in (
-        SERVICE_MARK_WASHED, SERVICE_SNOOZE, SERVICE_CLEAR_SNOOZE, SERVICE_SET_IRRIGATION_SWITCH
+        SERVICE_MARK_WASHED,
+        SERVICE_SNOOZE,
+        SERVICE_CLEAR_SNOOZE,
+        SERVICE_SET_IRRIGATION_SWITCH,
     ):
         if hass.services.has_service(DOMAIN, name):
             hass.services.async_remove(DOMAIN, name)

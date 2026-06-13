@@ -126,10 +126,9 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         # wait for the periodic poll. Only wired when category is garden_irrigation.
         category = entry.data.get(CONF_CATEGORY, DEFAULT_CATEGORY)
         if category == "garden_irrigation":
-            gauge_entity: str | None = (
-                (entry.options or {}).get(CONF_RAIN_GAUGE_ENTITY)
-                or entry.data.get(CONF_RAIN_GAUGE_ENTITY)
-            )
+            gauge_entity: str | None = (entry.options or {}).get(
+                CONF_RAIN_GAUGE_ENTITY
+            ) or entry.data.get(CONF_RAIN_GAUGE_ENTITY)
             if gauge_entity:
                 self._unsub_gauge = async_track_state_change_event(
                     hass,
@@ -193,8 +192,8 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         """Return current ON/OFF state of the configured irrigation switch, or None if not set."""
         options = self.entry.options or {}
         data = self.entry.data or {}
-        switch_entity = (
-            options.get(CONF_IRRIGATION_SWITCH_ENTITY) or data.get(CONF_IRRIGATION_SWITCH_ENTITY)
+        switch_entity = options.get(CONF_IRRIGATION_SWITCH_ENTITY) or data.get(
+            CONF_IRRIGATION_SWITCH_ENTITY
         )
         if not switch_entity:
             return None
