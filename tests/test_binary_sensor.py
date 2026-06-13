@@ -302,23 +302,6 @@ def test_day_ok_uses_blocked_field() -> None:
     assert day3.is_on is True  # row 2 blocked=False
 
 
-def test_day_ok_falls_back_to_can_wash_field() -> None:
-    """Pre-rename rows using ``can_wash`` instead of ``blocked`` still work."""
-    summary = [
-        {"date": date(2026, 6, 11), "can_wash": True},
-        {"date": date(2026, 6, 12), "can_wash": False},
-    ]
-    decision = _make_decision(forecast_summary=summary, days_analyzed=2)
-    coordinator = _make_coordinator(decision)
-    entry = _make_entry()
-
-    day1 = WashWiseDayOkBinarySensor(coordinator, entry, 0)
-    day2 = WashWiseDayOkBinarySensor(coordinator, entry, 1)
-
-    assert day1.is_on is True
-    assert day2.is_on is False
-
-
 def test_day_ok_returns_none_when_index_out_of_range() -> None:
     """Day sensor for an index past the summary length returns ``None``."""
     decision = _make_decision(forecast_summary=[], days_analyzed=0)

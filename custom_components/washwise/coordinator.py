@@ -124,7 +124,6 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
 
         # React immediately when the rain gauge sensor changes — no need to
         # wait for the periodic poll. Only wired when category is garden_irrigation.
-        category = entry.data.get(CONF_CATEGORY, DEFAULT_CATEGORY)
         if category == "garden_irrigation":
             gauge_entity: str | None = (entry.options or {}).get(
                 CONF_RAIN_GAUGE_ENTITY
@@ -510,7 +509,9 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
 
     @staticmethod
     def _resolve_scan_interval(entry: ConfigEntry) -> timedelta:
-        """Return the configured scan interval, defaulting to ``SCAN_INTERVAL``."""
+        # CONF_SCAN_INTERVAL_MINUTES is no longer exposed in the options UI (removed in v0.2.0).
+        # Retained here so existing entries that had it configured keep their setting without
+        # a forced migration. New entries always get SCAN_INTERVAL.
         minutes = (entry.options or {}).get(CONF_SCAN_INTERVAL_MINUTES)
         if minutes is None:
             minutes = entry.data.get(CONF_SCAN_INTERVAL_MINUTES)
@@ -583,12 +584,16 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
 
         # Active provider tick -> always recompute.
         if active is not None and eid == active:
-            self.hass.async_create_task(self.async_request_refresh())
+            self.entry.async_create_background_task(
+                self.hass, self.async_request_refresh(), "washwise_refresh"
+            )
             return
 
         # Cold start -> primary triggers the first decision.
         if active is None and eid == primary:
-            self.hass.async_create_task(self.async_request_refresh())
+            self.entry.async_create_background_task(
+                self.hass, self.async_request_refresh(), "washwise_refresh"
+            )
             return
 
         # Fallback path: primary is sick, anything in the chain may unstick it.
@@ -601,12 +606,16 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
                 None,
             )
             if primary_dead:
-                self.hass.async_create_task(self.async_request_refresh())
+                self.entry.async_create_background_task(
+                    self.hass, self.async_request_refresh(), "washwise_refresh"
+                )
 
     @callback
     def _handle_gauge_change(self, event: Event) -> None:
         """Trigger immediate refresh when the rain gauge sensor value changes."""
-        self.hass.async_create_task(self.async_request_refresh())
+        self.entry.async_create_background_task(
+            self.hass, self.async_request_refresh(), "washwise_refresh"
+        )
 
     @callback
     def _handle_registry_updated(self, event: Event) -> None:

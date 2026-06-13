@@ -294,6 +294,7 @@ def compute(
                 "temp_max": tmax,
                 "blocked": is_blocked,
                 "blockers": day_blockers,
+                "day_score": max(0, round(100 - day_score_penalty)),
             }
         )
 

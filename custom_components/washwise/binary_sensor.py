@@ -40,6 +40,7 @@ from .const import (
     CONF_DAYS,
     CONF_FREEZE_CHECK,
     CONF_FREEZE_WEIGHT,
+    CONF_IRRIGATION_SWITCH_ENTITY,
     CONF_PRECIP_THRESHOLD,
     CONF_PRECIP_WEIGHT,
     DEFAULT_CATEGORY,
@@ -228,11 +229,8 @@ class WashWiseDayOkBinarySensor(_WashWiseBinarySensorBase):
         if not isinstance(entry, dict):
             return None
         # ``blocked`` is the canonical field set by ``decision.compute``.
-        # Fallback to ``can_wash`` on dicts that pre-date the rename.
         if "blocked" in entry:
             return not bool(entry.get("blocked"))
-        if "can_wash" in entry:
-            return bool(entry.get("can_wash"))
         return None
 
     @property
@@ -385,7 +383,7 @@ class IrrigationSwitchStateBinarySensor(_WashWiseBinarySensorBase):
         """Expose the switch entity id for reference."""
         options = self._entry.options or {}
         data = self._entry.data or {}
-        switch_entity = options.get("irrigation_switch_entity") or data.get(
-            "irrigation_switch_entity"
+        switch_entity = options.get(CONF_IRRIGATION_SWITCH_ENTITY) or data.get(
+            CONF_IRRIGATION_SWITCH_ENTITY
         )
         return {"switch_entity_id": switch_entity}

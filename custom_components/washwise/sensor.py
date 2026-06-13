@@ -595,7 +595,7 @@ class DayScoreSensor(WashWiseSensorBase):
 
     @property
     def native_value(self) -> int | None:
-        """Return 100 when the day is unblocked, 0 when it blocks washing."""
+        """Return the per-day score (0-100) from the decision summary."""
         decision = self._decision
         if decision is None:
             return None
@@ -603,8 +603,7 @@ class DayScoreSensor(WashWiseSensorBase):
         if self._index >= len(summary):
             return None
         day = summary[self._index]
-        blocked = bool(day.get("blocked", False))
-        return 0 if blocked else 100
+        return int(day.get("day_score", 0 if day.get("blocked") else 100))
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
