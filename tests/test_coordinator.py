@@ -1076,7 +1076,7 @@ async def test_handle_registry_updated_entity_id_rename_rewrites_and_reloads(
 
     scheduled: list[Any] = []
 
-    def fake_create_task(coro, *_a, **_kw):
+    def fake_create_background_task(_hass, coro, *_a, **_kw):
         with contextlib.suppress(Exception):
             coro.close()
         scheduled.append(coro)
@@ -1085,7 +1085,9 @@ async def test_handle_registry_updated_entity_id_rename_rewrites_and_reloads(
     with (
         patch.object(hass.config_entries, "async_update_entry") as mock_update,
         patch.object(hass.config_entries, "async_reload", new=AsyncMock()) as mock_reload,
-        patch.object(hass, "async_create_task", side_effect=fake_create_task),
+        patch.object(
+            entry, "async_create_background_task", side_effect=fake_create_background_task
+        ),
     ):
         fake_event = type(
             "E",
@@ -1106,7 +1108,7 @@ async def test_handle_registry_updated_entity_id_rename_rewrites_and_reloads(
         "weather.primary_renamed",
         "weather.backup",
     ]
-    # Reload coroutine scheduled (closed by fake_create_task to suppress warning).
+    # Reload coroutine scheduled (closed by fake_create_background_task to suppress warning).
     assert len(scheduled) == 1
     mock_reload.assert_called_once()
 
@@ -1121,7 +1123,7 @@ async def test_handle_registry_updated_remove_drops_entity_and_reloads(
 
     scheduled: list[Any] = []
 
-    def fake_create_task(coro, *_a, **_kw):
+    def fake_create_background_task(_hass, coro, *_a, **_kw):
         with contextlib.suppress(Exception):
             coro.close()
         scheduled.append(coro)
@@ -1130,7 +1132,9 @@ async def test_handle_registry_updated_remove_drops_entity_and_reloads(
     with (
         patch.object(hass.config_entries, "async_update_entry") as mock_update,
         patch.object(hass.config_entries, "async_reload", new=AsyncMock()),
-        patch.object(hass, "async_create_task", side_effect=fake_create_task),
+        patch.object(
+            entry, "async_create_background_task", side_effect=fake_create_background_task
+        ),
     ):
         fake_event = type(
             "E",

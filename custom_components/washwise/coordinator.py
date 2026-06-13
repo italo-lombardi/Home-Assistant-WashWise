@@ -658,7 +658,11 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         self.hass.config_entries.async_update_entry(self.entry, data=new_data)
         # Reload re-runs setup, which re-instantiates the coordinator with
         # the updated weather_ids and re-attaches the registry listener.
-        self.hass.async_create_task(self.hass.config_entries.async_reload(self.entry.entry_id))
+        self.entry.async_create_background_task(
+            self.hass,
+            self.hass.config_entries.async_reload(self.entry.entry_id),
+            "washwise_reload",
+        )
 
 
 __all__ = ["WashWiseCoordinator"]

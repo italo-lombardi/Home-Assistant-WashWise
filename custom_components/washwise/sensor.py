@@ -603,6 +603,8 @@ class DayScoreSensor(WashWiseSensorBase):
         if self._index >= len(summary):
             return None
         day = summary[self._index]
+        # Fallback to binary 0/100 for Decision objects loaded from storage
+        # that pre-date v0.2.0 (forecast_summary dicts without ``day_score``).
         return int(day.get("day_score", 0 if day.get("blocked") else 100))
 
     @property
