@@ -41,6 +41,20 @@
           "condition_weight": "How much bad weather conditions (storms, hail, snow) subtract from the 0–100 score. Severity is per-condition."
         }
       },
+      "irrigation": {
+        "title": "Irrigation settings",
+        "description": "Configure the rain gauge and irrigation program switch for the Garden Irrigation advisor.",
+        "data": {
+          "rain_gauge_entity": "Rain gauge sensor",
+          "rain_gauge_threshold_mm": "Rain threshold (mm)",
+          "irrigation_switch_entity": "Irrigation program switch"
+        },
+        "data_description": {
+          "rain_gauge_entity": "A sensor entity that reports measured rainfall in mm (e.g. from a weather station pluviometer). Leave empty to use forecast-only suppression.",
+          "rain_gauge_threshold_mm": "When the rain gauge reads at or above this value the irrigation program is suppressed automatically.",
+          "irrigation_switch_entity": "The switch, input_boolean, or automation that starts your irrigation program. WashWise will turn it off when rain suppresses irrigation and back on when conditions clear."
+        }
+      },
       "reconfigure": {
         "title": "Reconfigure WashWise",
         "description": "Change the weather sources, name, category, or threshold customization for this instance.",
@@ -79,7 +93,8 @@
           "thresholds": "Thresholds",
           "scoring": "Scoring weights",
           "conditions": "Blocking conditions",
-          "advanced": "Advanced"
+          "advanced": "Advanced",
+          "irrigation": "Irrigation settings"
         }
       },
       "providers": {
@@ -136,14 +151,26 @@
         "title": "Advanced",
         "description": "Less common settings.",
         "data": {
-          "scan_interval_minutes": "Update interval (minutes)",
           "snooze_default_hours": "Default snooze duration (hours)",
           "temperature_unit": "Temperature unit"
         },
         "data_description": {
-          "scan_interval_minutes": "How often the coordinator pulls a fresh forecast as a floor; the integration also recomputes immediately when the active weather entity changes state, so 15 minutes is plenty.",
           "snooze_default_hours": "Default duration applied when the snooze service is called without an explicit duration.",
           "temperature_unit": "Override the unit used to interpret forecast temperatures. Auto reads it from the source weather entity (recommended). Pick Celsius / Fahrenheit / Kelvin only when a provider's metadata is wrong or missing."
+        }
+      },
+      "irrigation": {
+        "title": "Irrigation settings",
+        "description": "Configure the rain gauge sensor and irrigation program switch.",
+        "data": {
+          "rain_gauge_entity": "Rain gauge sensor",
+          "rain_gauge_threshold_mm": "Rain threshold (mm)",
+          "irrigation_switch_entity": "Irrigation program switch"
+        },
+        "data_description": {
+          "rain_gauge_entity": "A sensor entity reporting measured rainfall in mm. Leave empty to rely on forecast only.",
+          "rain_gauge_threshold_mm": "Measured rain at or above this value suppresses irrigation automatically.",
+          "irrigation_switch_entity": "The switch or automation that starts your irrigation program. WashWise turns it off when suppressed and back on when conditions clear."
         }
       }
     }
@@ -186,6 +213,20 @@
           "description": "WashWise configuration entry to target."
         }
       }
+    },
+    "set_irrigation_switch": {
+      "name": "Set irrigation switch",
+      "description": "Manually override the irrigation program switch state.",
+      "fields": {
+        "entry_id": {
+          "name": "Configuration",
+          "description": "WashWise garden_irrigation configuration entry to target."
+        },
+        "state": {
+          "name": "State",
+          "description": "Turn the irrigation switch on or off."
+        }
+      }
     }
   },
   "selector": {
@@ -199,6 +240,7 @@
         "windows_house": "House windows",
         "solar_panels": "Solar panels",
         "patio_deck": "Patio / deck",
+        "garden_irrigation": "Garden irrigation",
         "custom": "Custom"
       }
     },
@@ -238,6 +280,15 @@
       },
       "freeze_risk": {
         "name": "Freeze risk in forecast"
+      },
+      "irrigation_suppressed": {
+        "name": "Irrigation suppressed"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Forecast blocks irrigation"
+      },
+      "irrigation_switch_state": {
+        "name": "Irrigation switch state"
       }
     },
     "sensor": {
@@ -300,12 +351,33 @@
         "name": "Day {day} score"
       },
       "category": {
-        "name": "Category"
+        "name": "Category",
+        "state": {
+          "car": "Car",
+          "motorcycle": "Motorcycle",
+          "bicycle": "Bicycle",
+          "boat": "Boat",
+          "rv_camper": "RV / Camper",
+          "windows_house": "House windows",
+          "solar_panels": "Solar panels",
+          "patio_deck": "Patio / Deck",
+          "garden_irrigation": "Garden irrigation",
+          "custom": "Custom"
+        }
+      },
+      "measured_rain_mm": {
+        "name": "Measured rainfall"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Rain gauge threshold"
       }
     },
     "button": {
       "mark_washed": {
         "name": "Mark washed"
+      },
+      "mark_irrigated": {
+        "name": "Mark irrigated"
       }
     }
   }
