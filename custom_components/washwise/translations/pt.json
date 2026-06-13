@@ -178,29 +178,39 @@
   "services": {
     "mark_washed": {
       "name": "Marcar como lavado",
-      "description": "Adiciona uma entrada de lavagem ao registro de lavagens da instância WashWise selecionada.",
+      "description": "Adiciona uma entrada ao registro de lavagens da instância WashWise selecionada.",
       "fields": {
         "entry_id": {
-          "name": "Entrada de configuração",
-          "description": "Entrada de configuração WashWise a atualizar. Opcional quando o alvo é uma entidade."
-        },
-        "entity_id": {
-          "name": "Entidade",
-          "description": "Qualquer entidade pertencente à instância WashWise a atualizar."
+          "name": "Configuração",
+          "description": "Entrada de configuração WashWise a atualizar."
         },
         "timestamp": {
-          "name": "Data e hora",
-          "description": "Quando a lavagem ocorreu. O padrão é agora."
+          "name": "Carimbo de data/hora",
+          "description": "Quando a lavagem aconteceu. Padrão: agora."
         }
       }
     },
     "snooze": {
       "name": "Adiar",
-      "description": "Pausa os vereditos do WashWise por um período ou até um determinado horário.",
+      "description": "Pausa os veredictos WashWise por um número de horas. Padrão: 24 horas.",
       "fields": {
+        "entry_id": {
+          "name": "Configuração",
+          "description": "Entrada de configuração WashWise a atualizar."
+        },
         "hours": {
-          "name": "Hours",
-          "description": "How many hours to snooze."
+          "name": "Horas",
+          "description": "Número de horas de pausa (mínimo 1). Padrão: 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Cancelar adiamento",
+      "description": "Cancela o adiamento ativo.",
+      "fields": {
+        "entry_id": {
+          "name": "Configuração",
+          "description": "Entrada de configuração WashWise a atualizar."
         }
       }
     },

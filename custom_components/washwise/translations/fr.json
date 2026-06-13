@@ -181,12 +181,8 @@
       "description": "Ajoute une entrée de lavage au journal de lavage de l'instance WashWise sélectionnée.",
       "fields": {
         "entry_id": {
-          "name": "Entrée de configuration",
-          "description": "Entrée de configuration WashWise à mettre à jour. Facultative lorsqu'une entité est ciblée."
-        },
-        "entity_id": {
-          "name": "Entité",
-          "description": "Toute entité appartenant à l'instance WashWise à mettre à jour."
+          "name": "Configuration",
+          "description": "Entrée de configuration WashWise à mettre à jour."
         },
         "timestamp": {
           "name": "Horodatage",
@@ -196,11 +192,25 @@
     },
     "snooze": {
       "name": "Mettre en pause",
-      "description": "Suspend les verdicts WashWise pendant une durée ou jusqu'à une heure donnée.",
+      "description": "Suspend les verdicts WashWise pendant un nombre d'heures. Par défaut : 24 heures.",
       "fields": {
+        "entry_id": {
+          "name": "Configuration",
+          "description": "Entrée de configuration WashWise à mettre à jour."
+        },
         "hours": {
           "name": "Heures",
-          "description": "Nombre d'heures de pause."
+          "description": "Nombre d'heures de pause (minimum 1). Par défaut : 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Annuler la pause",
+      "description": "Annule la pause active.",
+      "fields": {
+        "entry_id": {
+          "name": "Configuration",
+          "description": "Entrée de configuration WashWise à mettre à jour."
         }
       }
     },

@@ -178,29 +178,39 @@
   "services": {
     "mark_washed": {
       "name": "Marcar como lavado",
-      "description": "Añade una entrada al registro de lavados de la instancia de WashWise seleccionada.",
+      "description": "Añade una entrada al registro de lavados de la instancia WashWise seleccionada.",
       "fields": {
         "entry_id": {
-          "name": "Entrada de configuración",
-          "description": "Entrada de configuración de WashWise que se va a actualizar. Opcional cuando se apunta a una entidad."
-        },
-        "entity_id": {
-          "name": "Entidad",
-          "description": "Cualquier entidad perteneciente a la instancia de WashWise que se va a actualizar."
+          "name": "Configuración",
+          "description": "Entrada de configuración WashWise a actualizar."
         },
         "timestamp": {
           "name": "Marca de tiempo",
-          "description": "Cuándo se realizó el lavado. Por defecto, el momento actual."
+          "description": "Cuándo ocurrió el lavado. Por defecto: ahora."
         }
       }
     },
     "snooze": {
       "name": "Posponer",
-      "description": "Pausa los veredictos de WashWise durante un tiempo o hasta una hora determinada.",
+      "description": "Pausa los veredictos de WashWise durante un número de horas. Por defecto: 24 horas.",
       "fields": {
+        "entry_id": {
+          "name": "Configuración",
+          "description": "Entrada de configuración WashWise a actualizar."
+        },
         "hours": {
           "name": "Horas",
-          "description": "Cuántas horas posponer."
+          "description": "Número de horas de pausa (mínimo 1). Por defecto: 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Cancelar posposición",
+      "description": "Cancela la posposición activa.",
+      "fields": {
+        "entry_id": {
+          "name": "Configuración",
+          "description": "Entrada de configuración WashWise a actualizar."
         }
       }
     },

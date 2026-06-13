@@ -970,7 +970,7 @@ class WashWiseCardEditor extends LitElement {
             @change=${(e) => this._set("mode", e.target.value)}
           >
             <option value="wash" ?selected=${(cfg.mode ?? "wash") === "wash"}>Wash advisor</option>
-            <option value="irrigation" ?selected=${cfg.mode === "irrigation"}>Garden irrigation</option>
+            <option value="irrigation" ?selected=${(cfg.mode ?? "wash") === "irrigation"}>Garden irrigation</option>
           </select>
           <span class="helper">
             Irrigation mode relabels the verdict badge and shows rain gauge data when available.

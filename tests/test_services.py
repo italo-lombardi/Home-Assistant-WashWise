@@ -26,6 +26,7 @@ from custom_components.washwise.services import (
     ATTR_TIMESTAMP,
     SERVICE_CLEAR_SNOOZE,
     SERVICE_MARK_WASHED,
+    SERVICE_SET_IRRIGATION_SWITCH,
     SERVICE_SNOOZE,
     async_register_services,
     async_unregister_services,
@@ -51,7 +52,12 @@ async def stub_coordinator(hass: HomeAssistant, mock_config_entry: MockConfigEnt
 
 async def test_all_services_registered(stub_coordinator) -> None:
     hass, _, _ = stub_coordinator
-    for name in (SERVICE_MARK_WASHED, SERVICE_SNOOZE, SERVICE_CLEAR_SNOOZE):
+    for name in (
+        SERVICE_MARK_WASHED,
+        SERVICE_SNOOZE,
+        SERVICE_CLEAR_SNOOZE,
+        SERVICE_SET_IRRIGATION_SWITCH,
+    ):
         assert hass.services.has_service(DOMAIN, name)
 
 

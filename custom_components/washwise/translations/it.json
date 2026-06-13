@@ -178,15 +178,11 @@
   "services": {
     "mark_washed": {
       "name": "Segna come lavato",
-      "description": "Aggiunge una voce nel registro dei lavaggi per l'istanza WashWise selezionata.",
+      "description": "Aggiunge una voce al registro dei lavaggi dell'istanza WashWise selezionata.",
       "fields": {
         "entry_id": {
-          "name": "Voce di configurazione",
-          "description": "Voce di configurazione WashWise da aggiornare. Opzionale quando si specifica un'entità."
-        },
-        "entity_id": {
-          "name": "Entità",
-          "description": "Una qualsiasi entità appartenente all'istanza WashWise da aggiornare."
+          "name": "Configurazione",
+          "description": "Voce di configurazione WashWise da aggiornare."
         },
         "timestamp": {
           "name": "Data e ora",
@@ -195,12 +191,26 @@
       }
     },
     "snooze": {
-      "name": "Posponi",
-      "description": "Mette in pausa i verdetti di WashWise per una durata o fino a un orario specificato.",
+      "name": "Sospendi",
+      "description": "Sospende i verdetti WashWise per un numero di ore. Predefinito: 24 ore.",
       "fields": {
+        "entry_id": {
+          "name": "Configurazione",
+          "description": "Voce di configurazione WashWise da aggiornare."
+        },
         "hours": {
           "name": "Ore",
-          "description": "Numero di ore di sospensione."
+          "description": "Numero di ore di sospensione (minimo 1). Predefinito: 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Rimuovi sospensione",
+      "description": "Annulla la sospensione attiva.",
+      "fields": {
+        "entry_id": {
+          "name": "Configurazione",
+          "description": "Voce di configurazione WashWise da aggiornare."
         }
       }
     },

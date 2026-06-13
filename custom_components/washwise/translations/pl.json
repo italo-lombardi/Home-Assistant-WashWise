@@ -178,29 +178,39 @@
   "services": {
     "mark_washed": {
       "name": "Oznacz jako umyte",
-      "description": "Dodaje wpis do dziennika myć dla wybranej instancji WashWise.",
+      "description": "Dodaje wpis mycia do dziennika mycia wybranej instancji WashWise.",
       "fields": {
         "entry_id": {
-          "name": "Wpis konfiguracji",
-          "description": "Wpis konfiguracji WashWise do zaktualizowania. Opcjonalny, gdy wskazujesz encję."
-        },
-        "entity_id": {
-          "name": "Encja",
-          "description": "Dowolna encja należąca do instancji WashWise, którą chcesz zaktualizować."
+          "name": "Konfiguracja",
+          "description": "Wpis konfiguracji WashWise do zaktualizowania."
         },
         "timestamp": {
-          "name": "Znacznik czasu",
-          "description": "Kiedy nastąpiło mycie. Domyślnie teraz."
+          "name": "Sygnatura czasowa",
+          "description": "Kiedy odbyło się mycie. Domyślnie: teraz."
         }
       }
     },
     "snooze": {
-      "name": "Drzemka",
-      "description": "Wstrzymuje werdykty WashWise na określony czas lub do wskazanego momentu.",
+      "name": "Odłóż",
+      "description": "Wstrzymuje werdykty WashWise na określoną liczbę godzin. Domyślnie: 24 godziny.",
       "fields": {
+        "entry_id": {
+          "name": "Konfiguracja",
+          "description": "Wpis konfiguracji WashWise do zaktualizowania."
+        },
         "hours": {
-          "name": "Hours",
-          "description": "How many hours to snooze."
+          "name": "Godziny",
+          "description": "Liczba godzin wstrzymania (minimum 1). Domyślnie: 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Anuluj wstrzymanie",
+      "description": "Anuluje aktywne wstrzymanie.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfiguracja",
+          "description": "Wpis konfiguracji WashWise do zaktualizowania."
         }
       }
     },

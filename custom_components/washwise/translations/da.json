@@ -177,16 +177,12 @@
   },
   "services": {
     "mark_washed": {
-      "name": "Marker som vasket",
+      "name": "Markér som vasket",
       "description": "Tilføj en vaskepost til vaskeloggen for den valgte WashWise-instans.",
       "fields": {
         "entry_id": {
-          "name": "Konfigurationspost",
-          "description": "WashWise-konfigurationspost, der skal opdateres. Valgfri, når du angiver en entitet."
-        },
-        "entity_id": {
-          "name": "Entitet",
-          "description": "En vilkårlig entitet, der tilhører den WashWise-instans, som skal opdateres."
+          "name": "Konfiguration",
+          "description": "WashWise-konfigurationspost der skal opdateres."
         },
         "timestamp": {
           "name": "Tidsstempel",
@@ -195,12 +191,26 @@
       }
     },
     "snooze": {
-      "name": "Udsæt",
-      "description": "Sæt WashWise-vurderinger på pause i en periode eller indtil et givet tidspunkt.",
+      "name": "Sæt på pause",
+      "description": "Sæt WashWise-vurderinger på pause i et antal timer. Standard er 24 timer.",
       "fields": {
+        "entry_id": {
+          "name": "Konfiguration",
+          "description": "WashWise-konfigurationspost der skal opdateres."
+        },
         "hours": {
           "name": "Timer",
-          "description": "Antal timer vurderingen skal udsættes."
+          "description": "Antal timer til pause (minimum 1). Standard er 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Annuller pause",
+      "description": "Annuller den aktive pause.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfiguration",
+          "description": "WashWise-konfigurationspost der skal opdateres."
         }
       }
     },

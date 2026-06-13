@@ -178,29 +178,39 @@
   "services": {
     "mark_washed": {
       "name": "Als gewaschen markieren",
-      "description": "Hängt einen Wascheintrag an das Waschprotokoll der ausgewählten WashWise-Instanz an.",
+      "description": "Fügt einen Wasch-Eintrag in das Waschprotokoll der ausgewählten WashWise-Instanz ein.",
       "fields": {
         "entry_id": {
-          "name": "Konfigurationseintrag",
-          "description": "Zu aktualisierender WashWise-Konfigurationseintrag. Optional, wenn eine Entität angegeben wird."
-        },
-        "entity_id": {
-          "name": "Entität",
-          "description": "Eine beliebige Entität, die zur zu aktualisierenden WashWise-Instanz gehört."
+          "name": "Konfiguration",
+          "description": "Zu aktualisierende WashWise-Konfiguration."
         },
         "timestamp": {
           "name": "Zeitstempel",
-          "description": "Wann der Waschvorgang stattgefunden hat. Standard ist „jetzt“."
+          "description": "Wann der Waschgang stattfand. Standard: jetzt."
         }
       }
     },
     "snooze": {
-      "name": "Schlummern",
-      "description": "Pausiert WashWise-Bewertungen für eine bestimmte Dauer oder bis zu einem bestimmten Zeitpunkt.",
+      "name": "Pausieren",
+      "description": "Hält WashWise-Urteile für eine Anzahl von Stunden an. Standard: 24 Stunden.",
       "fields": {
+        "entry_id": {
+          "name": "Konfiguration",
+          "description": "Zu aktualisierende WashWise-Konfiguration."
+        },
         "hours": {
           "name": "Stunden",
-          "description": "Wie viele Stunden geschlummert werden soll."
+          "description": "Anzahl der Stunden zum Pausieren (mindestens 1). Standard: 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Pause aufheben",
+      "description": "Bricht die aktive Pause ab.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfiguration",
+          "description": "Zu aktualisierende WashWise-Konfiguration."
         }
       }
     },

@@ -177,30 +177,40 @@
   },
   "services": {
     "mark_washed": {
-      "name": "Markeren als gewassen",
-      "description": "Voeg een wasinvoer toe aan het waslogboek voor de geselecteerde WashWise-instantie.",
+      "name": "Markeer als gewassen",
+      "description": "Voeg een wasbeurt toe aan het waslogboek van de geselecteerde WashWise-instantie.",
       "fields": {
         "entry_id": {
-          "name": "Configuratie-item",
-          "description": "WashWise-configuratie-item om bij te werken. Optioneel als je een entiteit als doel gebruikt."
-        },
-        "entity_id": {
-          "name": "Entiteit",
-          "description": "Een entiteit die bij de bij te werken WashWise-instantie hoort."
+          "name": "Configuratie",
+          "description": "Te updaten WashWise-configuratie-invoer."
         },
         "timestamp": {
           "name": "Tijdstempel",
-          "description": "Wanneer de wasbeurt plaatsvond. Standaard is nu."
+          "description": "Wanneer de wasbeurt plaatsvond. Standaard: nu."
         }
       }
     },
     "snooze": {
-      "name": "Sluimeren",
-      "description": "Pauzeer WashWise-oordelen voor een bepaalde duur of tot een opgegeven tijd.",
+      "name": "Uitstellen",
+      "description": "Pauzeert WashWise-uitspraken gedurende een aantal uren. Standaard: 24 uur.",
       "fields": {
+        "entry_id": {
+          "name": "Configuratie",
+          "description": "Te updaten WashWise-configuratie-invoer."
+        },
         "hours": {
-          "name": "Hours",
-          "description": "How many hours to snooze."
+          "name": "Uren",
+          "description": "Aantal uren pauze (minimum 1). Standaard: 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Uitstel annuleren",
+      "description": "Annuleert het actieve uitstel.",
+      "fields": {
+        "entry_id": {
+          "name": "Configuratie",
+          "description": "Te updaten WashWise-configuratie-invoer."
         }
       }
     },

@@ -178,29 +178,39 @@
   "services": {
     "mark_washed": {
       "name": "Merk som vasket",
-      "description": "Legg til en vaskeoppføring i vaskeloggen for valgt WashWise-instans.",
+      "description": "Legg til en vaskeoppføring i vaskeloggen for den valgte WashWise-instansen.",
       "fields": {
         "entry_id": {
-          "name": "Konfigurasjonsoppføring",
-          "description": "WashWise-konfigurasjonsoppføring som skal oppdateres. Valgfritt når du retter mot en entitet."
-        },
-        "entity_id": {
-          "name": "Entitet",
-          "description": "Hvilken som helst entitet som tilhører WashWise-instansen som skal oppdateres."
+          "name": "Konfigurasjon",
+          "description": "WashWise-konfigurasjonsoppføring som skal oppdateres."
         },
         "timestamp": {
           "name": "Tidsstempel",
-          "description": "Når vasken skjedde. Standard er nå."
+          "description": "Når vaskingen skjedde. Standard: nå."
         }
       }
     },
     "snooze": {
-      "name": "Slumre",
-      "description": "Sett WashWise-avgjørelser på pause i en periode eller til et gitt tidspunkt.",
+      "name": "Sett på pause",
+      "description": "Pauser WashWise-vurderinger i et antall timer. Standard: 24 timer.",
       "fields": {
+        "entry_id": {
+          "name": "Konfigurasjon",
+          "description": "WashWise-konfigurasjonsoppføring som skal oppdateres."
+        },
         "hours": {
           "name": "Timer",
-          "description": "Antall timer avgjørelsen skal slumres."
+          "description": "Antall timer med pause (minimum 1). Standard: 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Fjern pause",
+      "description": "Avbryter den aktive pausen.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurasjon",
+          "description": "WashWise-konfigurasjonsoppføring som skal oppdateres."
         }
       }
     },

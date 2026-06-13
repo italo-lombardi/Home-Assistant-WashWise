@@ -94,6 +94,11 @@ async def _handle_set_irrigation_switch(hass: HomeAssistant, call: ServiceCall) 
         raise HomeAssistantError(
             "No irrigation switch entity configured for this WashWise instance."
         )
+    if "." not in switch_entity:
+        raise HomeAssistantError(
+            f"Invalid irrigation switch entity ID '{switch_entity}'"
+            " — expected 'domain.object_id' format."
+        )
     domain, _ = switch_entity.split(".", 1)
     service = "turn_on" if state == "on" else "turn_off"
     await hass.services.async_call(domain, service, {"entity_id": switch_entity}, blocking=True)

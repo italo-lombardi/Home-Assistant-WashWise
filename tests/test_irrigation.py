@@ -547,6 +547,41 @@ async def test_set_irrigation_switch_no_entity_raises(hass: HomeAssistant) -> No
     async_unregister_services(hass)
 
 
+@pytest.mark.asyncio
+async def test_set_irrigation_switch_invalid_entity_id_raises(hass: HomeAssistant) -> None:
+    """Service raises HomeAssistantError when switch entity has no '.' separator."""
+    from custom_components.washwise.const import CONF_IRRIGATION_SWITCH_ENTITY
+
+    entry = MockConfigEntry(
+        version=1,
+        domain=DOMAIN,
+        title="Garden",
+        data={
+            CONF_NAME: "Garden",
+            CONF_WEATHER_ENTITIES: ["weather.home"],
+            CONF_CATEGORY: "garden_irrigation",
+            CONF_IRRIGATION_SWITCH_ENTITY: "no_dot_entity",
+        },
+        options={},
+        entry_id="irr_bad_entity",
+    )
+    entry.add_to_hass(hass)
+    coord = AsyncMock(spec=WashWiseCoordinator)
+    coord.entry = entry
+    hass.data.setdefault(DOMAIN, {})["irr_bad_entity"] = coord
+    await async_register_services(hass)
+
+    with pytest.raises(HomeAssistantError, match="Invalid irrigation switch entity ID"):
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_SET_IRRIGATION_SWITCH,
+            {"entry_id": "irr_bad_entity", "state": "on"},
+            blocking=True,
+        )
+
+    async_unregister_services(hass)
+
+
 async def test_set_irrigation_switch_service_registered(irr_service_stub) -> None:
     hass, _ = irr_service_stub
     assert hass.services.has_service(DOMAIN, SERVICE_SET_IRRIGATION_SWITCH)

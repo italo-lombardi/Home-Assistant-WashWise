@@ -178,29 +178,39 @@
   "services": {
     "mark_washed": {
       "name": "Markera som tvättad",
-      "description": "Lägg till en tvättpost i tvättloggen för vald WashWise-instans.",
+      "description": "Lägger till en tvättposta i tvättloggen för den valda WashWise-instansen.",
       "fields": {
         "entry_id": {
-          "name": "Konfigurationspost",
-          "description": "WashWise-konfigurationspost att uppdatera. Valfri om du anger en entitet."
-        },
-        "entity_id": {
-          "name": "Entitet",
-          "description": "Vilken entitet som helst som tillhör WashWise-instansen som ska uppdateras."
+          "name": "Konfiguration",
+          "description": "WashWise-konfigurationspost att uppdatera."
         },
         "timestamp": {
           "name": "Tidsstämpel",
-          "description": "När tvätten ägde rum. Standard är nu."
+          "description": "När tvätten skedde. Standard: nu."
         }
       }
     },
     "snooze": {
-      "name": "Pausa",
-      "description": "Pausa WashWise-bedömningar under en viss tid eller fram till en angiven tidpunkt.",
+      "name": "Snooze",
+      "description": "Pausar WashWise-utlåtanden under ett antal timmar. Standard: 24 timmar.",
       "fields": {
+        "entry_id": {
+          "name": "Konfiguration",
+          "description": "WashWise-konfigurationspost att uppdatera."
+        },
         "hours": {
           "name": "Timmar",
-          "description": "Antal timmar bedömningen ska pausas."
+          "description": "Antal timmar att pausa (minst 1). Standard: 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Rensa snooze",
+      "description": "Avbryter den aktiva pausen.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfiguration",
+          "description": "WashWise-konfigurationspost att uppdatera."
         }
       }
     },
