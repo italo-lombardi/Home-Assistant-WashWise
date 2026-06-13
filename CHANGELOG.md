@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0b1] - 2026-06-13
+
+### Added
+- **Garden irrigation** category preset (`garden_irrigation`) — inverted logic where `can_wash=True` means rain is forecast, so irrigation should be skipped.
+- Rain gauge / pluviometer support: configure a `sensor` or `input_number` entity; measured rain suppresses irrigation automatically when it meets or exceeds a configurable mm threshold (default 5 mm).
+- Irrigation switch control: configure an `input_boolean` or `switch` entity; the coordinator automatically turns it off when irrigation is suppressed (rain gauge threshold met or rain forecast) and on when conditions are dry.
+- Event-driven updates for `garden_irrigation`: coordinator uses `update_interval=None` and subscribes to state-change events on the rain gauge entity, delivering instant updates with no polling.
+- New binary sensors (garden irrigation only): `irrigation_suppressed` (primary — ON when irrigation should be skipped), `forecast_blocks_irrigation` (diagnostic), `irrigation_switch_state` (diagnostic mirror of the controlled switch).
+- New sensors (garden irrigation only): `measured_rain_mm` (live reading from rain gauge; attribute: `threshold_mm`), `rain_gauge_threshold_mm` (diagnostic).
+- `set_irrigation_switch` service: manually override the irrigation switch state via `entry_id` + `state` (on/off).
+- Irrigation config step in config flow and options flow: `rain_gauge_entity`, `rain_gauge_threshold_mm`, `irrigation_switch_entity`.
+- `mark_irrigated` button translation key for garden irrigation instances (replaces "Mark washed" label).
+- Translations for all 11 languages updated: new irrigation step, irrigation entity names, `garden_irrigation` category label, `set_irrigation_switch` service descriptor.
+
+### Changed
+- **Advanced options step**: removed `scan_interval_minutes` — no longer exposed to users; garden irrigation is fully event-driven and other categories use a fixed sensible default.
+- **Thresholds options step**: removed redundant `customize_thresholds` toggle.
+- Category selector order: `garden_irrigation` inserted before `custom` (logical grouping; `custom` always last).
+- Rain gauge entity selector accepts `sensor` and `input_number` domains (previously sensor-only).
+
 ## [0.1.0] - 2026-06-12
 
 ### Added

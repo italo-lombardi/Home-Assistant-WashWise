@@ -41,6 +41,20 @@
           "condition_weight": "Quanto le condizioni meteo avverse (temporali, grandine, neve) sottraggono dal punteggio 0–100. La gravità è specifica per ogni condizione."
         }
       },
+      "irrigation": {
+        "title": "Impostazioni irrigazione",
+        "description": "Configura il pluviometro e il programma di irrigazione per il consulente Irrigazione giardino.",
+        "data": {
+          "rain_gauge_entity": "Sensore pluviometro",
+          "rain_gauge_threshold_mm": "Soglia pioggia (mm)",
+          "irrigation_switch_entity": "Switch del programma di irrigazione"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Un'entità sensore che riporta le precipitazioni misurate in mm (ad esempio da un pluviometro di una stazione meteo). Lascia vuoto per usare solo la soppressione basata sulle previsioni.",
+          "rain_gauge_threshold_mm": "Quando il pluviometro raggiunge o supera questo valore, il programma di irrigazione viene soppresso automaticamente.",
+          "irrigation_switch_entity": "Lo switch, input_boolean o automazione che avvia il programma di irrigazione. WashWise lo disattiverà quando la pioggia sopprime l'irrigazione e lo riattiversà quando le condizioni migliorano."
+        }
+      },
       "reconfigure": {
         "title": "Riconfigura WashWise",
         "description": "Modifica le sorgenti meteo, il nome, la categoria o la personalizzazione delle soglie per questa istanza.",
@@ -79,7 +93,8 @@
           "thresholds": "Soglie",
           "scoring": "Pesi del punteggio",
           "conditions": "Condizioni bloccanti",
-          "advanced": "Avanzate"
+          "advanced": "Avanzate",
+          "irrigation": "Impostazioni irrigazione"
         }
       },
       "providers": {
@@ -136,14 +151,26 @@
         "title": "Avanzate",
         "description": "Impostazioni meno comuni.",
         "data": {
-          "scan_interval_minutes": "Intervallo di aggiornamento (minuti)",
           "snooze_default_hours": "Durata predefinita della pausa (ore)",
           "temperature_unit": "Unità di temperatura"
         },
         "data_description": {
-          "scan_interval_minutes": "Frequenza minima con cui il coordinatore recupera una previsione aggiornata; l'integrazione ricalcola anche immediatamente quando l'entità meteo attiva cambia stato, quindi 15 minuti sono più che sufficienti.",
           "snooze_default_hours": "Durata predefinita applicata quando il servizio di pausa viene richiamato senza una durata esplicita.",
           "temperature_unit": "Sovrascrive l'unità usata per interpretare le temperature delle previsioni. Auto la legge dall'entità meteo di origine (consigliato). Scegli Celsius / Fahrenheit / Kelvin solo quando i metadati di un fornitore sono errati o mancanti."
+        }
+      },
+      "irrigation": {
+        "title": "Impostazioni irrigazione",
+        "description": "Configura il sensore pluviometro e lo switch del programma di irrigazione.",
+        "data": {
+          "rain_gauge_entity": "Sensore pluviometro",
+          "rain_gauge_threshold_mm": "Soglia pioggia (mm)",
+          "irrigation_switch_entity": "Switch del programma di irrigazione"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Un'entità sensore che riporta le precipitazioni misurate in mm. Lascia vuoto per affidarsi solo alle previsioni.",
+          "rain_gauge_threshold_mm": "Le precipitazioni misurate pari o superiori a questo valore sopprimono automaticamente l'irrigazione.",
+          "irrigation_switch_entity": "Lo switch o l'automazione che avvia il programma di irrigazione. WashWise lo disattiverà quando l'irrigazione è soppressa e lo riattiversà quando le condizioni migliorano."
         }
       }
     }
@@ -176,6 +203,20 @@
           "description": "How many hours to snooze."
         }
       }
+    },
+    "set_irrigation_switch": {
+      "name": "Imposta switch irrigazione",
+      "description": "Sovrascrive manualmente lo stato dello switch del programma di irrigazione.",
+      "fields": {
+        "entry_id": {
+          "name": "Configurazione",
+          "description": "Voce di configurazione WashWise garden_irrigation da impostare come destinazione."
+        },
+        "state": {
+          "name": "Stato",
+          "description": "Attiva o disattiva lo switch di irrigazione."
+        }
+      }
     }
   },
   "selector": {
@@ -189,6 +230,7 @@
         "windows_house": "Finestre di casa",
         "solar_panels": "Pannelli solari",
         "patio_deck": "Patio / terrazza",
+        "garden_irrigation": "Irrigazione giardino",
         "custom": "Personalizzata"
       }
     },
@@ -228,6 +270,15 @@
       },
       "freeze_risk": {
         "name": "Rischio gelo nelle previsioni"
+      },
+      "irrigation_suppressed": {
+        "name": "Irrigazione soppressa"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Previsione blocca irrigazione"
+      },
+      "irrigation_switch_state": {
+        "name": "Stato switch irrigazione"
       }
     },
     "sensor": {
@@ -288,11 +339,23 @@
       },
       "day_score": {
         "name": "Punteggio giorno {day}"
+      },
+      "measured_rain_mm": {
+        "name": "Pioggia misurata"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Soglia pluviometro"
+      },
+      "category": {
+        "name": "Categoria"
       }
     },
     "button": {
       "mark_washed": {
         "name": "Segna come lavato"
+      },
+      "mark_irrigated": {
+        "name": "Segna come irrigato"
       }
     }
   }

@@ -41,6 +41,20 @@
           "condition_weight": "O ile złe warunki pogodowe (burze, grad, śnieg) obniżają wynik w skali 0–100. Dotkliwość jest indywidualna dla każdego warunku."
         }
       },
+      "irrigation": {
+        "title": "Ustawienia nawadniania",
+        "description": "Skonfiguruj deszczomierz i przełącznik programu nawadniania dla doradcy Nawadnianie ogrodu.",
+        "data": {
+          "rain_gauge_entity": "Czujnik deszczomierza",
+          "rain_gauge_threshold_mm": "Próg opadów (mm)",
+          "irrigation_switch_entity": "Przełącznik programu nawadniania"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Wybierz czujnik raportujący zmierzone opady w milimetrach. Gdy zmierzona wartość przekroczy próg opadów, nawadnianie zostanie wstrzymane.",
+          "rain_gauge_threshold_mm": "Łączne zmierzone opady (mm), po przekroczeniu których nawadnianie jest uznawane za zbędne i zostaje wstrzymane.",
+          "irrigation_switch_entity": "Encja przełącznika HA włączająca lub wyłączająca program nawadniania. WashWise może wyłączyć ten przełącznik, gdy deszcz jest wystarczający."
+        }
+      },
       "reconfigure": {
         "title": "Rekonfiguracja WashWise",
         "description": "Zmień źródła pogody, nazwę, kategorię lub dostosowanie progów dla tej instancji.",
@@ -79,6 +93,7 @@
           "thresholds": "Progi",
           "scoring": "Wagi punktacji",
           "conditions": "Warunki blokujące",
+          "irrigation": "Ustawienia nawadniania",
           "advanced": "Zaawansowane"
         }
       },
@@ -132,16 +147,28 @@
           "bad_conditions": "Gdy którykolwiek z tych warunków pojawi się jako warunek bieżący lub w jednym z dni prognozy, werdykt zostaje zablokowany."
         }
       },
+      "irrigation": {
+        "title": "Ustawienia nawadniania",
+        "description": "Skonfiguruj deszczomierz i przełącznik programu nawadniania dla doradcy Nawadnianie ogrodu.",
+        "data": {
+          "rain_gauge_entity": "Czujnik deszczomierza",
+          "rain_gauge_threshold_mm": "Próg opadów (mm)",
+          "irrigation_switch_entity": "Przełącznik programu nawadniania"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Wybierz czujnik raportujący zmierzone opady w milimetrach. Gdy zmierzona wartość przekroczy próg opadów, nawadnianie zostanie wstrzymane.",
+          "rain_gauge_threshold_mm": "Łączne zmierzone opady (mm), po przekroczeniu których nawadnianie jest uznawane za zbędne i zostaje wstrzymane.",
+          "irrigation_switch_entity": "Encja przełącznika HA włączająca lub wyłączająca program nawadniania. WashWise może wyłączyć ten przełącznik, gdy deszcz jest wystarczający."
+        }
+      },
       "advanced": {
         "title": "Zaawansowane",
         "description": "Rzadziej używane ustawienia.",
         "data": {
-          "scan_interval_minutes": "Interwał aktualizacji (minuty)",
           "snooze_default_hours": "Domyślny czas drzemki (godziny)",
           "temperature_unit": "Jednostka temperatury"
         },
         "data_description": {
-          "scan_interval_minutes": "Jak często koordynator pobiera świeżą prognozę jako minimum; integracja przelicza również od razu, gdy aktywna encja pogody zmieni stan, więc 15 minut w zupełności wystarczy.",
           "snooze_default_hours": "Domyślny czas trwania stosowany, gdy usługa drzemki zostanie wywołana bez podanego czasu trwania.",
           "temperature_unit": "Nadpisuje jednostkę używaną do interpretacji temperatur z prognozy. Auto odczytuje ją ze źródłowej encji pogody (zalecane). Wybierz Celsius / Fahrenheit / Kelvin tylko wtedy, gdy metadane dostawcy są błędne lub ich brakuje."
         }
@@ -176,6 +203,20 @@
           "description": "How many hours to snooze."
         }
       }
+    },
+    "set_irrigation_switch": {
+      "name": "Ustaw przełącznik nawadniania",
+      "description": "Ręcznie włącza lub wyłącza program nawadniania dla wybranej instancji WashWise.",
+      "fields": {
+        "entry_id": {
+          "name": "Wpis konfiguracji",
+          "description": "Wpis konfiguracji WashWise, którego przełącznik nawadniania ma zostać zmieniony."
+        },
+        "state": {
+          "name": "Stan",
+          "description": "Żądany stan przełącznika nawadniania: true — włącz, false — wyłącz."
+        }
+      }
     }
   },
   "selector": {
@@ -189,6 +230,7 @@
         "windows_house": "Okna domu",
         "solar_panels": "Panele słoneczne",
         "patio_deck": "Taras",
+        "garden_irrigation": "Nawadnianie ogrodu",
         "custom": "Niestandardowa"
       }
     },
@@ -228,6 +270,15 @@
       },
       "freeze_risk": {
         "name": "Ryzyko mrozu w prognozie"
+      },
+      "irrigation_suppressed": {
+        "name": "Nawadnianie wstrzymane"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Prognoza blokuje nawadnianie"
+      },
+      "irrigation_switch_state": {
+        "name": "Stan przełącznika nawadniania"
       }
     },
     "sensor": {
@@ -288,11 +339,23 @@
       },
       "day_score": {
         "name": "Wynik dnia {day}"
+      },
+      "measured_rain_mm": {
+        "name": "Zmierzone opady"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Próg deszczomierza"
+      },
+      "category": {
+        "name": "Kategoria"
       }
     },
     "button": {
       "mark_washed": {
         "name": "Oznacz jako umyte"
+      },
+      "mark_irrigated": {
+        "name": "Oznacz jako podlane"
       }
     }
   }

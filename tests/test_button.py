@@ -130,3 +130,23 @@ async def test_async_setup_entry_registers_one_button(hass) -> None:
 
     assert len(added) == 1
     assert added[0].unique_id == f"{entry.entry_id}_mark_washed"
+
+
+@pytest.mark.asyncio
+async def test_mark_irrigated_translation_key_for_garden_irrigation(hass) -> None:
+    """Button uses mark_irrigated translation key for garden_irrigation category."""
+    store = WashWiseStore(hass, "irr_entry")
+    coordinator = _CoordinatorStub(store)
+    entry = _make_entry(entry_id="irr_entry", category="garden_irrigation")
+    button = WashWiseMarkWashedButton(coordinator, entry)
+    assert button._attr_translation_key == "mark_irrigated"
+
+
+@pytest.mark.asyncio
+async def test_mark_washed_translation_key_for_non_irrigation(hass) -> None:
+    """Button uses mark_washed translation key for non-irrigation categories."""
+    store = WashWiseStore(hass, "car_entry")
+    coordinator = _CoordinatorStub(store)
+    entry = _make_entry(entry_id="car_entry", category="car")
+    button = WashWiseMarkWashedButton(coordinator, entry)
+    assert button._attr_translation_key == "mark_washed"

@@ -51,3 +51,25 @@ clear_snooze:
       selector:
         config_entry:
           integration: washwise
+
+set_irrigation_switch:
+  name: Set irrigation switch
+  description: Manually turn the configured irrigation program switch on or off, overriding the automatic suppression logic.
+  fields:
+    entry_id:
+      name: Configuration
+      description: WashWise garden_irrigation configuration entry to target.
+      required: true
+      selector:
+        config_entry:
+          integration: washwise
+    state:
+      name: State
+      description: Turn the irrigation switch on or off.
+      required: true
+      example: "off"
+      selector:
+        select:
+          options:
+            - "on"
+            - "off"

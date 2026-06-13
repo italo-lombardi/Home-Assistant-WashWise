@@ -41,6 +41,20 @@
           "condition_weight": "Wie stark schlechte Wetterlagen (Sturm, Hagel, Schnee) den Score (0–100) reduzieren. Der Schweregrad wird je Wetterlage festgelegt."
         }
       },
+      "irrigation": {
+        "title": "Bewässerungseinstellungen",
+        "description": "Konfigurieren Sie den Regenmesser und den Bewässerungsprogramm-Schalter für den Gartenbewässerungs-Assistenten.",
+        "data": {
+          "rain_gauge_entity": "Regenmesser-Sensor",
+          "rain_gauge_threshold_mm": "Regenschwelle (mm)",
+          "irrigation_switch_entity": "Bewässerungsprogramm-Schalter"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Eine Sensor-Entität, die den gemessenen Niederschlag in mm meldet (z. B. von einem Pluviometer einer Wetterstation). Leer lassen, um nur die Vorhersage zur Unterdrückung zu verwenden.",
+          "rain_gauge_threshold_mm": "Wenn der Regenmesser diesen Wert erreicht oder überschreitet, wird das Bewässerungsprogramm automatisch unterdrückt.",
+          "irrigation_switch_entity": "Der Schalter, input_boolean oder die Automatisierung, die Ihr Bewässerungsprogramm startet. WashWise schaltet ihn ab, wenn Regen die Bewässerung unterdrückt, und wieder ein, wenn sich die Bedingungen verbessern."
+        }
+      },
       "reconfigure": {
         "title": "WashWise neu konfigurieren",
         "description": "Ändern Sie die Wetterquellen, den Namen, die Kategorie oder die Schwellenwert-Anpassung dieser Instanz.",
@@ -79,6 +93,7 @@
           "thresholds": "Schwellenwerte",
           "scoring": "Score-Gewichtungen",
           "conditions": "Blockierende Wetterlagen",
+          "irrigation": "Bewässerungseinstellungen",
           "advanced": "Erweitert"
         }
       },
@@ -132,16 +147,28 @@
           "bad_conditions": "Sobald eine dieser Wetterlagen als aktuelle Wetterlage oder an einem Vorhersagetag auftritt, wird die Bewertung blockiert."
         }
       },
+      "irrigation": {
+        "title": "Bewässerungseinstellungen",
+        "description": "Passen Sie den Regenmesser und den Bewässerungsprogramm-Schalter für den Gartenbewässerungs-Assistenten an.",
+        "data": {
+          "rain_gauge_entity": "Regenmesser-Sensor",
+          "rain_gauge_threshold_mm": "Regenschwelle (mm)",
+          "irrigation_switch_entity": "Bewässerungsprogramm-Schalter"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Sensor-Entität, die den gemessenen Niederschlag in mm meldet. Leer lassen, um nur die Vorhersage zu verwenden.",
+          "rain_gauge_threshold_mm": "Wird dieser Wert am Regenmesser erreicht oder überschritten, wird die Bewässerung automatisch unterdrückt.",
+          "irrigation_switch_entity": "Schalter, input_boolean oder Automatisierung, die das Bewässerungsprogramm startet. WashWise schaltet ihn bei Regen ab und wieder ein, wenn die Bedingungen es erlauben."
+        }
+      },
       "advanced": {
         "title": "Erweitert",
         "description": "Weniger gebräuchliche Einstellungen.",
         "data": {
-          "scan_interval_minutes": "Aktualisierungsintervall (Minuten)",
           "snooze_default_hours": "Standard-Schlummerdauer (Stunden)",
           "temperature_unit": "Temperatureinheit"
         },
         "data_description": {
-          "scan_interval_minutes": "Wie oft der Koordinator als Untergrenze eine neue Vorhersage abruft; die Integration berechnet außerdem sofort neu, sobald die aktive Wetterentität ihren Zustand ändert, daher reichen 15 Minuten völlig aus.",
           "snooze_default_hours": "Standarddauer, die angewendet wird, wenn der Schlummer-Service ohne explizite Dauer aufgerufen wird.",
           "temperature_unit": "Überschreibt die Einheit, mit der Vorhersagetemperaturen interpretiert werden. „Auto“ liest sie aus der Quell-Wetterentität (empfohlen). Wählen Sie Celsius / Fahrenheit / Kelvin nur dann, wenn die Metadaten eines Anbieters falsch sind oder fehlen."
         }
@@ -172,8 +199,22 @@
       "description": "Pausiert WashWise-Bewertungen für eine bestimmte Dauer oder bis zu einem bestimmten Zeitpunkt.",
       "fields": {
         "hours": {
-          "name": "Hours",
-          "description": "How many hours to snooze."
+          "name": "Stunden",
+          "description": "Wie viele Stunden geschlummert werden soll."
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "Bewässerungsschalter setzen",
+      "description": "Überschreibt den Zustand des Bewässerungsprogramm-Schalters manuell.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfiguration",
+          "description": "WashWise-Konfigurationseintrag für Gartenbewässerung, der angesteuert werden soll."
+        },
+        "state": {
+          "name": "Zustand",
+          "description": "Den Bewässerungsschalter ein- oder ausschalten."
         }
       }
     }
@@ -189,6 +230,7 @@
         "windows_house": "Hausfenster",
         "solar_panels": "Solarmodule",
         "patio_deck": "Terrasse / Deck",
+        "garden_irrigation": "Gartenbewässerung",
         "custom": "Benutzerdefiniert"
       }
     },
@@ -228,6 +270,15 @@
       },
       "freeze_risk": {
         "name": "Frostrisiko in der Vorhersage"
+      },
+      "irrigation_suppressed": {
+        "name": "Bewässerung unterdrückt"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Vorhersage blockiert Bewässerung"
+      },
+      "irrigation_switch_state": {
+        "name": "Bewässerungsschalter-Status"
       }
     },
     "sensor": {
@@ -288,11 +339,23 @@
       },
       "day_score": {
         "name": "Score Tag {day}"
+      },
+      "measured_rain_mm": {
+        "name": "Gemessener Niederschlag"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Regenmesser-Schwelle"
+      },
+      "category": {
+        "name": "Kategorie"
       }
     },
     "button": {
       "mark_washed": {
         "name": "Als gewaschen markieren"
+      },
+      "mark_irrigated": {
+        "name": "Als bewässert markieren"
       }
     }
   }

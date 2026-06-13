@@ -41,6 +41,20 @@
           "condition_weight": "Hvor mye dårlige værforhold (uvær, hagl, snø) trekker fra poengsummen (0–100). Alvorlighetsgrad varierer per værforhold."
         }
       },
+      "irrigation": {
+        "title": "Vanningsinnstillinger",
+        "description": "Konfigurer regnmåleren og bryteren for hageanleggsprogrammet til rådgiveren Havevanning.",
+        "data": {
+          "rain_gauge_entity": "Regnmålersensor",
+          "rain_gauge_threshold_mm": "Regnterskel (mm)",
+          "irrigation_switch_entity": "Bryter for vanning"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Velg sensoren som måler faktisk nedbør. Brukes til å avgjøre om det allerede har falt nok regn til å hoppe over vanning.",
+          "rain_gauge_threshold_mm": "Nedbørsmengde (i mm) målt av regnmåleren som kreves for å undertrykke vanning. Vanning hoppes over når målt nedbør overskrider denne terskelen.",
+          "irrigation_switch_entity": "Bryteren som aktiverer eller deaktiverer vanningsprogrammet. WashWise vil slå den av når regnterskelen er nådd."
+        }
+      },
       "reconfigure": {
         "title": "Konfigurer WashWise på nytt",
         "description": "Endre værkildene, navnet, kategorien eller terskeltilpasningen for denne instansen.",
@@ -79,6 +93,7 @@
           "thresholds": "Terskler",
           "scoring": "Poengvekter",
           "conditions": "Blokkerende forhold",
+          "irrigation": "Vanningsinnstillinger",
           "advanced": "Avansert"
         }
       },
@@ -132,16 +147,28 @@
           "bad_conditions": "Når noen av disse forholdene dukker opp som nåværende værforhold eller på en varseldag, blokkeres avgjørelsen."
         }
       },
+      "irrigation": {
+        "title": "Vanningsinnstillinger",
+        "description": "Konfigurer regnmåleren og bryteren for hageanleggsprogrammet til rådgiveren Havevanning.",
+        "data": {
+          "rain_gauge_entity": "Regnmålersensor",
+          "rain_gauge_threshold_mm": "Regnterskel (mm)",
+          "irrigation_switch_entity": "Bryter for vanning"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Velg sensoren som måler faktisk nedbør. Brukes til å avgjøre om det allerede har falt nok regn til å hoppe over vanning.",
+          "rain_gauge_threshold_mm": "Nedbørsmengde (i mm) målt av regnmåleren som kreves for å undertrykke vanning. Vanning hoppes over når målt nedbør overskrider denne terskelen.",
+          "irrigation_switch_entity": "Bryteren som aktiverer eller deaktiverer vanningsprogrammet. WashWise vil slå den av når regnterskelen er nådd."
+        }
+      },
       "advanced": {
         "title": "Avansert",
         "description": "Mindre vanlige innstillinger.",
         "data": {
-          "scan_interval_minutes": "Oppdateringsintervall (minutter)",
           "snooze_default_hours": "Standard slumrevarighet (timer)",
           "temperature_unit": "Temperaturenhet"
         },
         "data_description": {
-          "scan_interval_minutes": "Minimumsfrekvens for hvor ofte koordinatoren henter et ferskt værvarsel; integrasjonen beregner også på nytt umiddelbart når den aktive værentiteten endrer tilstand, så 15 minutter er mer enn nok.",
           "snooze_default_hours": "Standardvarighet som brukes når slumretjenesten kalles uten en eksplisitt varighet.",
           "temperature_unit": "Overstyr enheten som brukes for å tolke prognose-temperaturer. Auto leser den fra værkildens entitet (anbefalt). Velg Celsius / Fahrenheit / Kelvin bare når en leverandørs metadata er feil eller mangler."
         }
@@ -172,8 +199,22 @@
       "description": "Sett WashWise-avgjørelser på pause i en periode eller til et gitt tidspunkt.",
       "fields": {
         "hours": {
-          "name": "Hours",
-          "description": "How many hours to snooze."
+          "name": "Timer",
+          "description": "Antall timer avgjørelsen skal slumres."
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "Sett vanningsbryter",
+      "description": "Slå vanningsprogrammets bryter på eller av for valgt WashWise-instans.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurasjonsoppføring",
+          "description": "WashWise-konfigurasjonsoppføring som skal oppdateres. Valgfritt når du retter mot en entitet."
+        },
+        "state": {
+          "name": "Tilstand",
+          "description": "Ønsket tilstand for vanningsbryteren: true for på, false for av."
         }
       }
     }
@@ -189,6 +230,7 @@
         "windows_house": "Husvinduer",
         "solar_panels": "Solcellepaneler",
         "patio_deck": "Terrasse / platting",
+        "garden_irrigation": "Havevanning",
         "custom": "Egendefinert"
       }
     },
@@ -228,6 +270,15 @@
       },
       "freeze_risk": {
         "name": "Frostrisiko i værvarselet"
+      },
+      "irrigation_suppressed": {
+        "name": "Vanning undertrykket"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Værvarsling blokkerer vanning"
+      },
+      "irrigation_switch_state": {
+        "name": "Status for vanningsbryter"
       }
     },
     "sensor": {
@@ -288,11 +339,23 @@
       },
       "day_score": {
         "name": "Poengsum dag {day}"
+      },
+      "measured_rain_mm": {
+        "name": "Målt nedbør (mm)"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Regnmålerterskel"
+      },
+      "category": {
+        "name": "Kategori"
       }
     },
     "button": {
       "mark_washed": {
         "name": "Merk som vasket"
+      },
+      "mark_irrigated": {
+        "name": "Marker som vannet"
       }
     }
   }

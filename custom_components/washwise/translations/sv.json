@@ -41,6 +41,20 @@
           "condition_weight": "Hur mycket dåligt väder (åska, hagel, snö) drar av från poängen 0–100. Hur allvarligt det är beror på respektive förhållande."
         }
       },
+      "irrigation": {
+        "title": "Bevattningsinställningar",
+        "description": "Konfigurera regnmätaren och brytaren för trädgårdsbevattningsprogrammet till rådgivaren Trädgårdsbevattning.",
+        "data": {
+          "rain_gauge_entity": "Regnmätarsensor",
+          "rain_gauge_threshold_mm": "Regntröskel (mm)",
+          "irrigation_switch_entity": "Brytare för bevattningsprogram"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Välj sensorn som mäter faktisk nederbörd. Används för att avgöra om det redan har fallit tillräckligt med regn för att hoppa över bevattningen.",
+          "rain_gauge_threshold_mm": "Nederbördsmängd (i mm) uppmätt av regnmätaren som krävs för att undertrycka bevattning. Bevattningen hoppas över när uppmätt nederbörd överstiger det här tröskelvärdet.",
+          "irrigation_switch_entity": "Brytaren som aktiverar eller inaktiverar bevattningsprogrammet. WashWise stänger av den när regntröskeln är nådd."
+        }
+      },
       "reconfigure": {
         "title": "Konfigurera om WashWise",
         "description": "Ändra väderkällor, namn, kategori eller tröskelanpassning för instansen.",
@@ -79,6 +93,7 @@
           "thresholds": "Tröskelvärden",
           "scoring": "Poängvikter",
           "conditions": "Blockerande förhållanden",
+          "irrigation": "Bevattningsinställningar",
           "advanced": "Avancerat"
         }
       },
@@ -132,16 +147,28 @@
           "bad_conditions": "När något av dessa förhållanden förekommer som aktuellt väder eller på en prognosdag blockeras bedömningen."
         }
       },
+      "irrigation": {
+        "title": "Bevattningsinställningar",
+        "description": "Konfigurera regnmätaren och brytaren för trädgårdsbevattningsprogrammet till rådgivaren Trädgårdsbevattning.",
+        "data": {
+          "rain_gauge_entity": "Regnmätarsensor",
+          "rain_gauge_threshold_mm": "Regntröskel (mm)",
+          "irrigation_switch_entity": "Brytare för bevattningsprogram"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Välj sensorn som mäter faktisk nederbörd. Används för att avgöra om det redan har fallit tillräckligt med regn för att hoppa över bevattningen.",
+          "rain_gauge_threshold_mm": "Nederbördsmängd (i mm) uppmätt av regnmätaren som krävs för att undertrycka bevattning. Bevattningen hoppas över när uppmätt nederbörd överstiger det här tröskelvärdet.",
+          "irrigation_switch_entity": "Brytaren som aktiverar eller inaktiverar bevattningsprogrammet. WashWise stänger av den när regntröskeln är nådd."
+        }
+      },
       "advanced": {
         "title": "Avancerat",
         "description": "Mindre vanliga inställningar.",
         "data": {
-          "scan_interval_minutes": "Uppdateringsintervall (minuter)",
           "snooze_default_hours": "Standardlängd för paus (timmar)",
           "temperature_unit": "Temperaturenhet"
         },
         "data_description": {
-          "scan_interval_minutes": "Som lägst hur ofta koordinatorn hämtar en ny prognos; integrationen räknar dessutom om direkt när den aktiva väderentiteten byter tillstånd, så 15 minuter räcker gott och väl.",
           "snooze_default_hours": "Standardvaraktighet som tillämpas när paustjänsten anropas utan att en uttrycklig varaktighet anges.",
           "temperature_unit": "Åsidosätter enheten som används för att tolka prognostemperaturer. Auto läser den från källväderentiteten (rekommenderas). Välj Celsius / Fahrenheit / Kelvin endast när en leverantörs metadata är felaktiga eller saknas."
         }
@@ -172,8 +199,22 @@
       "description": "Pausa WashWise-bedömningar under en viss tid eller fram till en angiven tidpunkt.",
       "fields": {
         "hours": {
-          "name": "Hours",
-          "description": "How many hours to snooze."
+          "name": "Timmar",
+          "description": "Antal timmar bedömningen ska pausas."
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "Ställ in bevattningsbrytare",
+      "description": "Slå bevattningsprogrammets brytare på eller av för vald WashWise-instans.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurationspost",
+          "description": "WashWise-konfigurationspost att uppdatera. Valfri om du anger en entitet."
+        },
+        "state": {
+          "name": "Tillstånd",
+          "description": "Önskat tillstånd för bevattningsbrytaren: true för på, false för av."
         }
       }
     }
@@ -189,6 +230,7 @@
         "windows_house": "Husfönster",
         "solar_panels": "Solpaneler",
         "patio_deck": "Uteplats/altan",
+        "garden_irrigation": "Trädgårdsbevattning",
         "custom": "Anpassad"
       }
     },
@@ -228,6 +270,15 @@
       },
       "freeze_risk": {
         "name": "Frostrisk i prognosen"
+      },
+      "irrigation_suppressed": {
+        "name": "Bevattning undertryckt"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Prognos blockerar bevattning"
+      },
+      "irrigation_switch_state": {
+        "name": "Status för bevattningsbrytare"
       }
     },
     "sensor": {
@@ -288,11 +339,23 @@
       },
       "day_score": {
         "name": "Poäng dag {day}"
+      },
+      "measured_rain_mm": {
+        "name": "Uppmätt nederbörd (mm)"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Regnmätartröskel"
+      },
+      "category": {
+        "name": "Kategori"
       }
     },
     "button": {
       "mark_washed": {
         "name": "Markera som tvättad"
+      },
+      "mark_irrigated": {
+        "name": "Markera som bevattnad"
       }
     }
   }

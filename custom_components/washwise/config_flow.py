@@ -26,9 +26,12 @@ from .const import (
     CONF_FORECAST_TYPE,
     CONF_FREEZE_CHECK,
     CONF_FREEZE_WEIGHT,
+    CONF_IRRIGATION_SWITCH_ENTITY,
     CONF_NAME,
     CONF_PRECIP_THRESHOLD,
     CONF_PRECIP_WEIGHT,
+    CONF_RAIN_GAUGE_ENTITY,
+    CONF_RAIN_GAUGE_THRESHOLD_MM,
     CONF_SCAN_INTERVAL_MINUTES,
     CONF_TEMPERATURE_UNIT,
     CONF_WEATHER_ENTITIES,
@@ -37,6 +40,7 @@ from .const import (
     DEFAULT_FORECAST_TYPE,
     DEFAULT_FREEZE_WEIGHT,
     DEFAULT_PRECIP_WEIGHT,
+    DEFAULT_RAIN_GAUGE_THRESHOLD_MM,
     DEFAULT_TEMPERATURE_UNIT,
     DOMAIN,
     TEMPERATURE_UNIT_OPTIONS,
@@ -150,6 +154,9 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                 if self._data[CONF_CUSTOMIZE_THRESHOLDS]:
                     return await self.async_step_thresholds()
 
+                if category == "garden_irrigation":
+                    return await self.async_step_irrigation()
+
                 title = name or _category_label(category)
                 return self.async_create_entry(title=title, data=self._data)
 
@@ -181,6 +188,8 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             self._data.update(user_input)
+            if category == "garden_irrigation":
+                return await self.async_step_irrigation()
             title = (self._data.get(CONF_NAME) or "").strip() or _category_label(category)
             return self.async_create_entry(title=title, data=self._data)
 
@@ -253,6 +262,43 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
         )
 
         return self.async_show_form(step_id="thresholds", data_schema=data_schema)
+
+    # ------------------------------------------------------ irrigation setup
+
+    async def async_step_irrigation(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Step for garden_irrigation: configure rain gauge + switch entities."""
+        category = self._data.get(CONF_CATEGORY, DEFAULT_CATEGORY)
+
+        if user_input is not None:
+            self._data.update(user_input)
+            title = (self._data.get(CONF_NAME) or "").strip() or _category_label(category)
+            return self.async_create_entry(title=title, data=self._data)
+
+        data_schema = vol.Schema(
+            {
+                vol.Optional(CONF_RAIN_GAUGE_ENTITY): selector.EntitySelector(
+                    selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+                ),
+                vol.Optional(
+                    CONF_RAIN_GAUGE_THRESHOLD_MM, default=DEFAULT_RAIN_GAUGE_THRESHOLD_MM
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0,
+                        max=200,
+                        step=0.5,
+                        mode=selector.NumberSelectorMode.BOX,
+                        unit_of_measurement="mm",
+                    )
+                ),
+                vol.Optional(CONF_IRRIGATION_SWITCH_ENTITY): selector.EntitySelector(
+                    selector.EntitySelectorConfig(domain=["switch", "input_boolean", "automation"])
+                ),
+            }
+        )
+
+        return self.async_show_form(step_id="irrigation", data_schema=data_schema)
 
     # -------------------------------------------------------- reconfigure
 
@@ -355,15 +401,20 @@ class WashWiseOptionsFlow(OptionsFlow):
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Top-level menu — pick which group of options to edit."""
+        current = self._current()
+        category = current.get(CONF_CATEGORY, DEFAULT_CATEGORY)
+        menu_options = [
+            "providers",
+            "thresholds",
+            "scoring",
+            "conditions",
+            "advanced",
+        ]
+        if category == "garden_irrigation":
+            menu_options.append("irrigation")
         return self.async_show_menu(
             step_id="init",
-            menu_options=[
-                "providers",
-                "thresholds",
-                "scoring",
-                "conditions",
-                "advanced",
-            ],
+            menu_options=menu_options,
         )
 
     # --------------------------------------------------------------- providers
@@ -412,10 +463,6 @@ class WashWiseOptionsFlow(OptionsFlow):
 
         data_schema = vol.Schema(
             {
-                vol.Required(
-                    CONF_CUSTOMIZE_THRESHOLDS,
-                    default=current.get(CONF_CUSTOMIZE_THRESHOLDS, False),
-                ): selector.BooleanSelector(),
                 vol.Required(
                     CONF_DAYS,
                     default=current.get(CONF_DAYS, preset["days"]),
@@ -534,7 +581,7 @@ class WashWiseOptionsFlow(OptionsFlow):
     async def async_step_advanced(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Edit advanced runtime options (scan interval, snooze defaults)."""
+        """Edit advanced runtime options (snooze defaults, temperature unit)."""
         current = self._current()
 
         if user_input is not None:
@@ -542,18 +589,6 @@ class WashWiseOptionsFlow(OptionsFlow):
 
         data_schema = vol.Schema(
             {
-                vol.Required(
-                    CONF_SCAN_INTERVAL_MINUTES,
-                    default=current.get(CONF_SCAN_INTERVAL_MINUTES, 15),
-                ): selector.NumberSelector(
-                    selector.NumberSelectorConfig(
-                        min=1,
-                        max=240,
-                        step=1,
-                        mode=selector.NumberSelectorMode.BOX,
-                        unit_of_measurement="minutes",
-                    )
-                ),
                 vol.Required(
                     "snooze_default_hours",
                     default=current.get("snooze_default_hours", 24),
@@ -574,3 +609,47 @@ class WashWiseOptionsFlow(OptionsFlow):
         )
 
         return self.async_show_form(step_id="advanced", data_schema=data_schema)
+
+    # --------------------------------------------------------------- irrigation
+
+    async def async_step_irrigation(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Edit irrigation-specific options (rain gauge entity, threshold, switch)."""
+        current = self._current()
+
+        if user_input is not None:
+            return self._save(user_input)
+
+        data_schema = vol.Schema(
+            {
+                vol.Optional(
+                    CONF_RAIN_GAUGE_ENTITY,
+                ): selector.EntitySelector(
+                    selector.EntitySelectorConfig(domain=["sensor", "input_number"])
+                ),
+                vol.Optional(
+                    CONF_RAIN_GAUGE_THRESHOLD_MM,
+                    default=current.get(
+                        CONF_RAIN_GAUGE_THRESHOLD_MM, DEFAULT_RAIN_GAUGE_THRESHOLD_MM
+                    ),
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0,
+                        max=200,
+                        step=0.5,
+                        mode=selector.NumberSelectorMode.BOX,
+                        unit_of_measurement="mm",
+                    )
+                ),
+                vol.Optional(
+                    CONF_IRRIGATION_SWITCH_ENTITY,
+                ): selector.EntitySelector(
+                    selector.EntitySelectorConfig(
+                        domain=["switch", "input_boolean", "automation"]
+                    )
+                ),
+            }
+        )
+
+        return self.async_show_form(step_id="irrigation", data_schema=data_schema)

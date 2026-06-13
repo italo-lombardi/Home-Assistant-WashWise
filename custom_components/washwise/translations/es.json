@@ -41,6 +41,20 @@
           "condition_weight": "Cuánto restan a la puntuación de 0–100 las condiciones meteorológicas adversas (tormentas, granizo, nieve). La gravedad depende de cada condición."
         }
       },
+      "irrigation": {
+        "title": "Configuración del riego",
+        "description": "Configura el pluviómetro y el interruptor del programa de riego para el asesor de Riego del jardín.",
+        "data": {
+          "rain_gauge_entity": "Sensor del pluviómetro",
+          "rain_gauge_threshold_mm": "Umbral de lluvia (mm)",
+          "irrigation_switch_entity": "Interruptor del programa de riego"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Una entidad de sensor que informa la lluvia medida en mm (p. ej., el pluviómetro de una estación meteorológica). Déjalo vacío para usar solo la supresión basada en previsión.",
+          "rain_gauge_threshold_mm": "Cuando el pluviómetro alcanza o supera este valor, el programa de riego se suprime automáticamente.",
+          "irrigation_switch_entity": "El interruptor, input_boolean o automatización que inicia tu programa de riego. WashWise lo apagará cuando la lluvia suprima el riego y lo volverá a encender cuando las condiciones mejoren."
+        }
+      },
       "reconfigure": {
         "title": "Reconfigurar WashWise",
         "description": "Cambia las fuentes meteorológicas, el nombre, la categoría o la personalización de umbrales para esta instancia.",
@@ -79,6 +93,7 @@
           "thresholds": "Umbrales",
           "scoring": "Pesos de puntuación",
           "conditions": "Condiciones que bloquean",
+          "irrigation": "Configuración del riego",
           "advanced": "Avanzado"
         }
       },
@@ -132,16 +147,28 @@
           "bad_conditions": "Cuando cualquiera de estas condiciones aparece como condición actual o en un día de la previsión, el veredicto se bloquea."
         }
       },
+      "irrigation": {
+        "title": "Configuración del riego",
+        "description": "Ajusta el pluviómetro y el interruptor del programa de riego para el asesor de Riego del jardín.",
+        "data": {
+          "rain_gauge_entity": "Sensor del pluviómetro",
+          "rain_gauge_threshold_mm": "Umbral de lluvia (mm)",
+          "irrigation_switch_entity": "Interruptor del programa de riego"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Entidad de sensor que informa la lluvia medida en mm. Déjalo vacío para usar solo la previsión.",
+          "rain_gauge_threshold_mm": "Cuando el pluviómetro alcanza o supera este valor, el riego se suprime automáticamente.",
+          "irrigation_switch_entity": "Interruptor, input_boolean o automatización que inicia el programa de riego. WashWise lo apagará con lluvia y lo volverá a encender cuando las condiciones lo permitan."
+        }
+      },
       "advanced": {
         "title": "Avanzado",
         "description": "Ajustes menos habituales.",
         "data": {
-          "scan_interval_minutes": "Intervalo de actualización (minutos)",
           "snooze_default_hours": "Duración predeterminada de la posposición (horas)",
           "temperature_unit": "Unidad de temperatura"
         },
         "data_description": {
-          "scan_interval_minutes": "Con qué frecuencia el coordinador obtiene como mínimo una nueva previsión; la integración también recalcula de inmediato cuando la entidad meteorológica activa cambia de estado, así que 15 minutos son más que suficientes.",
           "snooze_default_hours": "Duración predeterminada que se aplica cuando se llama al servicio de posposición sin una duración explícita.",
           "temperature_unit": "Anula la unidad utilizada para interpretar las temperaturas de la previsión. Auto la lee desde la entidad meteorológica de origen (recomendado). Elige Celsius / Fahrenheit / Kelvin solo cuando los metadatos del proveedor sean incorrectos o falten."
         }
@@ -172,8 +199,22 @@
       "description": "Pausa los veredictos de WashWise durante un tiempo o hasta una hora determinada.",
       "fields": {
         "hours": {
-          "name": "Hours",
-          "description": "How many hours to snooze."
+          "name": "Horas",
+          "description": "Cuántas horas posponer."
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "Establecer interruptor de riego",
+      "description": "Anula manualmente el estado del interruptor del programa de riego.",
+      "fields": {
+        "entry_id": {
+          "name": "Configuración",
+          "description": "Entrada de configuración de WashWise para riego_jardín a la que apuntar."
+        },
+        "state": {
+          "name": "Estado",
+          "description": "Encender o apagar el interruptor de riego."
         }
       }
     }
@@ -189,6 +230,7 @@
         "windows_house": "Ventanas de la casa",
         "solar_panels": "Paneles solares",
         "patio_deck": "Patio / terraza",
+        "garden_irrigation": "Riego del jardín",
         "custom": "Personalizado"
       }
     },
@@ -228,6 +270,15 @@
       },
       "freeze_risk": {
         "name": "Riesgo de heladas en la previsión"
+      },
+      "irrigation_suppressed": {
+        "name": "Riego suprimido"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Pronóstico bloquea el riego"
+      },
+      "irrigation_switch_state": {
+        "name": "Estado interruptor de riego"
       }
     },
     "sensor": {
@@ -288,11 +339,23 @@
       },
       "day_score": {
         "name": "Puntuación del día {day}"
+      },
+      "measured_rain_mm": {
+        "name": "Lluvia medida"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Umbral pluviómetro"
+      },
+      "category": {
+        "name": "Categoría"
       }
     },
     "button": {
       "mark_washed": {
         "name": "Marcar como lavado"
+      },
+      "mark_irrigated": {
+        "name": "Marcar como regado"
       }
     }
   }

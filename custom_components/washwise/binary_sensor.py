@@ -121,6 +121,12 @@ async def async_setup_entry(
     for i in range(int(thresholds.get("days", 0) or 0)):
         entities.append(WashWiseDayOkBinarySensor(coordinator, entry, i))
 
+    category = entry.data.get(CONF_CATEGORY, DEFAULT_CATEGORY)
+    if category == "garden_irrigation":
+        entities.append(IrrigationSuppressedBinarySensor(coordinator, entry))
+        entities.append(ForecastBlocksIrrigationBinarySensor(coordinator, entry))
+        entities.append(IrrigationSwitchStateBinarySensor(coordinator, entry))
+
     async_add_entities(entities)
 
 
@@ -246,6 +252,9 @@ class WashWiseDayOkBinarySensor(_WashWiseBinarySensorBase):
 
 
 __all__ = [
+    "ForecastBlocksIrrigationBinarySensor",
+    "IrrigationSuppressedBinarySensor",
+    "IrrigationSwitchStateBinarySensor",
     "WashWiseCanWashBinarySensor",
     "WashWiseDayOkBinarySensor",
     "WashWiseFreezeRiskBinarySensor",
@@ -290,3 +299,91 @@ class WashWiseFreezeRiskBinarySensor(_WashWiseBinarySensorBase):
             if low is None and high is not None and high <= 0:
                 return True
         return False
+
+
+class IrrigationSuppressedBinarySensor(_WashWiseBinarySensorBase):
+    """Binary sensor: ON when irrigation should be suppressed.
+
+    Suppression triggers when measured rain >= gauge threshold OR when the
+    forecast blocks irrigation (rain expected within the horizon). Only
+    registered when category == 'garden_irrigation'.
+    """
+
+    _attr_translation_key = "irrigation_suppressed"
+    _attr_icon = "mdi:sprinkler-variant"
+    _attr_device_class = BinarySensorDeviceClass.MOISTURE
+
+    def __init__(self, coordinator: WashWiseCoordinator, entry: ConfigEntry) -> None:
+        """Register the irrigation-suppressed binary sensor."""
+        super().__init__(coordinator, entry, "irrigation_suppressed")
+
+    @property
+    def is_on(self) -> bool | None:
+        """Return True when irrigation is suppressed."""
+        if self.coordinator.data is None:
+            return None
+        return bool(self.coordinator.irrigation_suppressed)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Expose measured rain and suppression reason."""
+        measured = self.coordinator.measured_rain_mm
+        decision = self.coordinator.data
+        return {
+            "measured_rain_mm": measured,
+            "forecast_blocks": bool(decision.can_wash) if decision is not None else None,
+        }
+
+
+class ForecastBlocksIrrigationBinarySensor(_WashWiseBinarySensorBase):
+    """Diagnostic binary sensor: ON when the forecast alone blocks irrigation.
+
+    Separate from gauge suppression — ON means rain is expected in the forecast
+    horizon, regardless of measured rainfall. Only registered for garden_irrigation.
+    """
+
+    _attr_translation_key = "forecast_blocks_irrigation"
+    _attr_icon = "mdi:cloud-alert"
+    _attr_device_class = BinarySensorDeviceClass.MOISTURE
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator: WashWiseCoordinator, entry: ConfigEntry) -> None:
+        """Register the forecast-blocks-irrigation binary sensor."""
+        super().__init__(coordinator, entry, "forecast_blocks_irrigation")
+
+    @property
+    def is_on(self) -> bool | None:
+        """Return True when forecast predicts rain (irrigation should be skipped)."""
+        if self.coordinator.data is None:
+            return None
+        return bool(self.coordinator.forecast_blocks_irrigation)
+
+
+class IrrigationSwitchStateBinarySensor(_WashWiseBinarySensorBase):
+    """Diagnostic binary sensor: mirrors the configured irrigation switch state.
+
+    Useful for debugging — shows whether the irrigation program switch is currently
+    ON or OFF without leaving the WashWise device page. Only registered for garden_irrigation.
+    """
+
+    _attr_translation_key = "irrigation_switch_state"
+    _attr_icon = "mdi:toggle-switch"
+    _attr_device_class = BinarySensorDeviceClass.RUNNING
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator: WashWiseCoordinator, entry: ConfigEntry) -> None:
+        """Register the irrigation switch state binary sensor."""
+        super().__init__(coordinator, entry, "irrigation_switch_state")
+
+    @property
+    def is_on(self) -> bool | None:
+        """Return current state of the configured irrigation switch."""
+        return self.coordinator.irrigation_switch_state
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Expose the switch entity id for reference."""
+        options = self._entry.options or {}
+        data = self._entry.data or {}
+        switch_entity = options.get("irrigation_switch_entity") or data.get("irrigation_switch_entity")
+        return {"switch_entity_id": switch_entity}

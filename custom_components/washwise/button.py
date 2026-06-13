@@ -16,7 +16,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .const import CONF_CATEGORY, DOMAIN
 from .coordinator import WashWiseCoordinator
 from .device import device_info
 
@@ -55,6 +55,12 @@ class WashWiseMarkWashedButton(_WashWiseButtonBase):
     """Append a manual entry to the persisted wash log."""
 
     _KEY = "mark_washed"
+
+    def __init__(self, coordinator: WashWiseCoordinator, entry: ConfigEntry) -> None:
+        """Use irrigation-specific label when category is garden_irrigation."""
+        super().__init__(coordinator, entry)
+        if entry.data.get(CONF_CATEGORY) == "garden_irrigation":
+            self._attr_translation_key = "mark_irrigated"
 
     async def async_press(self) -> None:
         """Record a wash and refresh the coordinator."""
