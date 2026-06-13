@@ -347,7 +347,19 @@
         "name": "Regnmätartröskel"
       },
       "category": {
-        "name": "Kategori"
+        "name": "Kategori",
+        "state": {
+          "car": "Bil",
+          "motorcycle": "Motorcykel",
+          "bicycle": "Cykel",
+          "boat": "Båt",
+          "rv_camper": "Husbil",
+          "windows_house": "Husfönster",
+          "solar_panels": "Solpaneler",
+          "patio_deck": "Uteplats",
+          "garden_irrigation": "Trädgårdsbevattning",
+          "custom": "Anpassad"
+        }
       }
     },
     "button": {

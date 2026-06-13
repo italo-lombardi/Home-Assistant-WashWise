@@ -347,7 +347,19 @@
         "name": "Soglia pluviometro"
       },
       "category": {
-        "name": "Categoria"
+        "name": "Categoria",
+        "state": {
+          "car": "Auto",
+          "motorcycle": "Moto",
+          "bicycle": "Bicicletta",
+          "boat": "Barca",
+          "rv_camper": "Camper",
+          "windows_house": "Finestre di casa",
+          "solar_panels": "Pannelli solari",
+          "patio_deck": "Terrazza",
+          "garden_irrigation": "Irrigazione del giardino",
+          "custom": "Personalizzata"
+        }
       }
     },
     "button": {

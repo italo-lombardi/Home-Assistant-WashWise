@@ -351,7 +351,19 @@
         "name": "Day {day} score"
       },
       "category": {
-        "name": "Category"
+        "name": "Category",
+        "state": {
+          "car": "Car",
+          "motorcycle": "Motorcycle",
+          "bicycle": "Bicycle",
+          "boat": "Boat",
+          "rv_camper": "RV / Camper",
+          "windows_house": "House windows",
+          "solar_panels": "Solar panels",
+          "patio_deck": "Patio / Deck",
+          "garden_irrigation": "Garden irrigation",
+          "custom": "Custom"
+        }
       },
       "measured_rain_mm": {
         "name": "Measured rainfall"

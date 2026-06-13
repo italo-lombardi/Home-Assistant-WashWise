@@ -347,7 +347,19 @@
         "name": "Drempel regenmeter"
       },
       "category": {
-        "name": "Categorie"
+        "name": "Categorie",
+        "state": {
+          "car": "Auto",
+          "motorcycle": "Motor",
+          "bicycle": "Fiets",
+          "boat": "Boot",
+          "rv_camper": "Camper",
+          "windows_house": "Huisramen",
+          "solar_panels": "Zonnepanelen",
+          "patio_deck": "Terras",
+          "garden_irrigation": "Tuinberegening",
+          "custom": "Aangepast"
+        }
       }
     },
     "button": {

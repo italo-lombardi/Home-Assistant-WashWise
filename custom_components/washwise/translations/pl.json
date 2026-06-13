@@ -347,7 +347,19 @@
         "name": "Próg deszczomierza"
       },
       "category": {
-        "name": "Kategoria"
+        "name": "Kategoria",
+        "state": {
+          "car": "Samochód",
+          "motorcycle": "Motocykl",
+          "bicycle": "Rower",
+          "boat": "Łódź",
+          "rv_camper": "Kamper",
+          "windows_house": "Okna domu",
+          "solar_panels": "Panele słoneczne",
+          "patio_deck": "Taras",
+          "garden_irrigation": "Nawadnianie ogrodu",
+          "custom": "Niestandardowa"
+        }
       }
     },
     "button": {

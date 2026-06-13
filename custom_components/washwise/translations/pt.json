@@ -347,7 +347,19 @@
         "name": "Limite do pluviómetro"
       },
       "category": {
-        "name": "Categoria"
+        "name": "Categoria",
+        "state": {
+          "car": "Carro",
+          "motorcycle": "Moto",
+          "bicycle": "Bicicleta",
+          "boat": "Barco",
+          "rv_camper": "Motorhome",
+          "windows_house": "Janelas de casa",
+          "solar_panels": "Painéis solares",
+          "patio_deck": "Varanda",
+          "garden_irrigation": "Irrigação do jardim",
+          "custom": "Personalizado"
+        }
       }
     },
     "button": {

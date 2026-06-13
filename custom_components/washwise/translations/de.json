@@ -347,7 +347,19 @@
         "name": "Regenmesser-Schwelle"
       },
       "category": {
-        "name": "Kategorie"
+        "name": "Kategorie",
+        "state": {
+          "car": "Auto",
+          "motorcycle": "Motorrad",
+          "bicycle": "Fahrrad",
+          "boat": "Boot",
+          "rv_camper": "Wohnmobil",
+          "windows_house": "Hausfenster",
+          "solar_panels": "Solaranlage",
+          "patio_deck": "Terrasse",
+          "garden_irrigation": "Gartenbewässerung",
+          "custom": "Benutzerdefiniert"
+        }
       }
     },
     "button": {

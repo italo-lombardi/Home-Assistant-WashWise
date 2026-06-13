@@ -347,7 +347,19 @@
         "name": "Regnmålerterskel"
       },
       "category": {
-        "name": "Kategori"
+        "name": "Kategori",
+        "state": {
+          "car": "Bil",
+          "motorcycle": "Motorsykkel",
+          "bicycle": "Sykkel",
+          "boat": "Båt",
+          "rv_camper": "Bobil",
+          "windows_house": "Husvinduer",
+          "solar_panels": "Solcellepaneler",
+          "patio_deck": "Terrasse",
+          "garden_irrigation": "Hagevanningsanlegg",
+          "custom": "Egendefinert"
+        }
       }
     },
     "button": {

@@ -347,7 +347,19 @@
         "name": "Seuil pluviomètre"
       },
       "category": {
-        "name": "Catégorie"
+        "name": "Catégorie",
+        "state": {
+          "car": "Voiture",
+          "motorcycle": "Moto",
+          "bicycle": "Vélo",
+          "boat": "Bateau",
+          "rv_camper": "Camping-car",
+          "windows_house": "Fenêtres de la maison",
+          "solar_panels": "Panneaux solaires",
+          "patio_deck": "Terrasse",
+          "garden_irrigation": "Irrigation du jardin",
+          "custom": "Personnalisé"
+        }
       }
     },
     "button": {

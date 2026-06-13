@@ -347,7 +347,19 @@
         "name": "Regnmåler-grænse"
       },
       "category": {
-        "name": "Kategori"
+        "name": "Kategori",
+        "state": {
+          "car": "Bil",
+          "motorcycle": "Motorcykel",
+          "bicycle": "Cykel",
+          "boat": "Båd",
+          "rv_camper": "Autocamper",
+          "windows_house": "Husvinduer",
+          "solar_panels": "Solpaneler",
+          "patio_deck": "Terrasse",
+          "garden_irrigation": "Havevanding",
+          "custom": "Brugerdefineret"
+        }
       }
     },
     "button": {

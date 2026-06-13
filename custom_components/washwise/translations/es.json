@@ -347,7 +347,19 @@
         "name": "Umbral pluviómetro"
       },
       "category": {
-        "name": "Categoría"
+        "name": "Categoría",
+        "state": {
+          "car": "Coche",
+          "motorcycle": "Moto",
+          "bicycle": "Bicicleta",
+          "boat": "Barco",
+          "rv_camper": "Autocaravana",
+          "windows_house": "Ventanas de casa",
+          "solar_panels": "Paneles solares",
+          "patio_deck": "Terraza",
+          "garden_irrigation": "Riego del jardín",
+          "custom": "Personalizado"
+        }
       }
     },
     "button": {
