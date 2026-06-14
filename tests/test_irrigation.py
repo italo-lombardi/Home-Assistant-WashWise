@@ -1084,6 +1084,41 @@ async def test_irrigation_skips_switch_call_when_unavailable(
     await coord.async_shutdown()
 
 
+# ---------------------------------------------------------------------------
+# options flow irrigation step pre-populates existing entity defaults (config_flow.py:640)
+# ---------------------------------------------------------------------------
+
+
+async def test_options_flow_irrigation_step_shows_existing_defaults(
+    hass: HomeAssistant,
+) -> None:
+    """Options flow irrigation step schema pre-populates entity fields from current config."""
+    from homeassistant.data_entry_flow import FlowResultType
+
+    entry = _make_irrigation_entry(
+        gauge_entity="sensor.my_rain",
+        gauge_threshold=3.0,
+        switch_entity="switch.my_irrigation",
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result2 = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "irrigation"}
+    )
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["step_id"] == "irrigation"
+
+    schema = result2["data_schema"].schema
+    defaults: dict[str, object] = {}
+    for marker in schema:
+        defaults[str(marker)] = marker.default() if callable(marker.default) else marker.default
+
+    assert defaults[CONF_RAIN_GAUGE_ENTITY] == "sensor.my_rain"
+    assert defaults[CONF_RAIN_GAUGE_THRESHOLD_MM] == 3.0
+    assert defaults[CONF_IRRIGATION_SWITCH_ENTITY] == "switch.my_irrigation"
+
+
 @pytest.mark.asyncio
 async def test_irrigation_skips_switch_call_when_unknown(
     hass: HomeAssistant,
@@ -1103,3 +1138,135 @@ async def test_irrigation_skips_switch_call_when_unknown(
         await coord._async_handle_irrigation(_NO_RAIN)
         mock_call.assert_not_called()
     await coord.async_shutdown()
+
+
+# ---------------------------------------------------------------------------
+# IrrigationSwitchStateBinarySensor — live switch tracking
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_irrigation_switch_state_sensor_subscribes_on_add(hass: HomeAssistant) -> None:
+    """async_added_to_hass subscribes to switch state changes."""
+    from unittest.mock import patch
+
+    from custom_components.washwise.binary_sensor import IrrigationSwitchStateBinarySensor
+
+    entry = _make_irrigation_entry(switch_entity="input_boolean.irrigation")
+    entry.add_to_hass(hass)
+    coord = AsyncMock(spec=WashWiseCoordinator)
+    coord.irrigation_switch_state = True
+    coord.data = _NO_RAIN
+    coord.config_entry = entry
+    coord.async_add_listener = MagicMock(return_value=lambda: None)
+    coord.hass = hass
+
+    sensor = IrrigationSwitchStateBinarySensor(coord, entry)
+    sensor.hass = hass
+
+    subscribed_entities = []
+
+    def fake_track(hass, entity_ids, callback):
+        subscribed_entities.extend(entity_ids)
+        return lambda: None
+
+    with patch(
+        "custom_components.washwise.binary_sensor.async_track_state_change_event",
+        side_effect=fake_track,
+    ):
+        await sensor.async_added_to_hass()
+
+    assert "input_boolean.irrigation" in subscribed_entities
+
+
+@pytest.mark.asyncio
+async def test_irrigation_switch_state_sensor_unsubscribes_on_remove(
+    hass: HomeAssistant,
+) -> None:
+    """async_will_remove_from_hass calls unsub and clears it."""
+    from unittest.mock import patch
+
+    from custom_components.washwise.binary_sensor import IrrigationSwitchStateBinarySensor
+
+    entry = _make_irrigation_entry(switch_entity="input_boolean.irrigation")
+    entry.add_to_hass(hass)
+    coord = AsyncMock(spec=WashWiseCoordinator)
+    coord.irrigation_switch_state = True
+    coord.data = _NO_RAIN
+    coord.config_entry = entry
+    coord.async_add_listener = MagicMock(return_value=lambda: None)
+    coord.hass = hass
+
+    sensor = IrrigationSwitchStateBinarySensor(coord, entry)
+    sensor.hass = hass
+
+    unsub_called = []
+    unsub = MagicMock(side_effect=lambda: unsub_called.append(True))
+
+    with patch(
+        "custom_components.washwise.binary_sensor.async_track_state_change_event",
+        return_value=unsub,
+    ):
+        await sensor.async_added_to_hass()
+
+    assert sensor._unsub_switch is unsub
+    await sensor.async_will_remove_from_hass()
+    assert unsub_called  # unsub was called
+    assert sensor._unsub_switch is None
+
+
+@pytest.mark.asyncio
+async def test_irrigation_switch_state_sensor_no_subscribe_without_switch(
+    hass: HomeAssistant,
+) -> None:
+    """async_added_to_hass does not subscribe when no switch configured."""
+    from unittest.mock import patch
+
+    from custom_components.washwise.binary_sensor import IrrigationSwitchStateBinarySensor
+
+    entry = _make_irrigation_entry()  # no switch_entity
+    entry.add_to_hass(hass)
+    coord = AsyncMock(spec=WashWiseCoordinator)
+    coord.irrigation_switch_state = None
+    coord.data = _NO_RAIN
+    coord.config_entry = entry
+    coord.async_add_listener = MagicMock(return_value=lambda: None)
+    coord.hass = hass
+
+    sensor = IrrigationSwitchStateBinarySensor(coord, entry)
+    sensor.hass = hass
+
+    with patch(
+        "custom_components.washwise.binary_sensor.async_track_state_change_event",
+    ) as mock_track:
+        await sensor.async_added_to_hass()
+
+    mock_track.assert_not_called()
+    assert sensor._unsub_switch is None
+
+
+@pytest.mark.asyncio
+async def test_irrigation_switch_state_sensor_handle_state_change(
+    hass: HomeAssistant,
+) -> None:
+    """_handle_switch_state_change calls async_write_ha_state."""
+    from unittest.mock import patch
+
+    from custom_components.washwise.binary_sensor import IrrigationSwitchStateBinarySensor
+
+    entry = _make_irrigation_entry(switch_entity="input_boolean.irrigation")
+    entry.add_to_hass(hass)
+    coord = AsyncMock(spec=WashWiseCoordinator)
+    coord.irrigation_switch_state = True
+    coord.data = _NO_RAIN
+    coord.config_entry = entry
+    coord.async_add_listener = MagicMock(return_value=lambda: None)
+    coord.hass = hass
+
+    sensor = IrrigationSwitchStateBinarySensor(coord, entry)
+    sensor.hass = hass
+
+    with patch.object(sensor, "async_write_ha_state") as mock_write:
+        sensor._handle_switch_state_change(MagicMock())
+
+    mock_write.assert_called_once()

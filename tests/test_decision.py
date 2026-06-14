@@ -342,12 +342,12 @@ def test_days_analyzed_equals_min_of_horizon_and_forecast_len(
 
 
 def test_empty_forecast_returns_can_wash_true() -> None:
-    """No forecast data == no blockers == verdict True (with reason=clear)."""
+    """No forecast data == no blockers == verdict False (treat as unavailable)."""
     cur = CurrentWeather(condition="sunny", temperature_c=18.0)
 
     result = compute(cur, [], _thresholds(), invert=False, now=NOW)
 
-    assert result.can_wash is True
+    assert result.can_wash is False
     assert result.reason == REASON_CLEAR
     assert result.days_analyzed == 0
     assert result.blocking_days == []
@@ -359,7 +359,7 @@ def test_zero_horizon_returns_can_wash_true() -> None:
 
     result = compute(cur, forecast, _thresholds(days=0), invert=False, now=NOW)
 
-    assert result.can_wash is True
+    assert result.can_wash is False
     assert result.reason == REASON_CLEAR
     assert result.days_analyzed == 0
 
@@ -424,3 +424,46 @@ def test_compute_naive_now_yields_naive_window_ts() -> None:
     compute(cur, forecast, _thresholds(days=1), invert=False, now=naive_now)
 
     # window is today → None
+
+
+# ---------------------------------------------------------------------------
+# tmax carry-forward branch (decision.py lines 257-260)
+# ---------------------------------------------------------------------------
+
+
+def test_freeze_tmax_carry_forward_clears_next_day() -> None:
+    """tmax is available: carry tmax forward so next iteration uses it (not tmin)."""
+    # Start frozen (temp=-2), day0 has tmax=3 (thaw via tmax).
+    # temp_check after day0 becomes tmax=3 (>0), so day1 should NOT re-trigger freeze.
+    cur = CurrentWeather(condition="sunny", temperature_c=-2.0)
+    forecast = [
+        # day0: tmin=None, tmax=3 → temp_check=-2 < 0 <= tmax=3 → freeze blocker
+        _day(0, condition="sunny", precip=0.0, tmin=None, tmax=3.0),
+        # day1: tmin=None, tmax=8 → temp_check=3 (carried from day0 tmax) → no freeze
+        _day(1, condition="sunny", precip=0.0, tmin=None, tmax=8.0),
+    ]
+
+    result = compute(cur, forecast, _thresholds(days=2), invert=False, now=NOW)
+
+    assert result.reason == REASON_FREEZE
+    # Only day0 blocked; day1 is clear because tmax carry-forward sets temp_check=3.
+    assert forecast[0].date in result.blocking_days
+    assert forecast[1].date not in result.blocking_days
+
+
+def test_freeze_tmin_only_carry_forward() -> None:
+    """When tmax is None but tmin is available, tmin is used for carry-forward."""
+    cur = CurrentWeather(condition="sunny", temperature_c=-2.0)
+    forecast = [
+        # day0: tmin=1, tmax=None → temp_check=-2 < 0 <= tmin=1 → freeze blocker
+        # After day0: tmax=None, tmin=1 → temp_check becomes tmin=1.
+        _day(0, condition="sunny", precip=0.0, tmin=1.0, tmax=None),
+        # day1: tmin=5, tmax=None → temp_check=1 (>0) → no freeze
+        _day(1, condition="sunny", precip=0.0, tmin=5.0, tmax=None),
+    ]
+
+    result = compute(cur, forecast, _thresholds(days=2), invert=False, now=NOW)
+
+    assert result.reason == REASON_FREEZE
+    assert forecast[0].date in result.blocking_days
+    assert forecast[1].date not in result.blocking_days

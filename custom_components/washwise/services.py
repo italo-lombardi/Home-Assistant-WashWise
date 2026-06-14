@@ -83,6 +83,14 @@ async def _handle_clear_snooze(hass: HomeAssistant, call: ServiceCall) -> None:
 
 
 async def _handle_set_irrigation_switch(hass: HomeAssistant, call: ServiceCall) -> None:
+    """Manually override the irrigation switch state.
+
+    Note: this override is transient. The coordinator's automatic suppression
+    logic (_async_handle_irrigation) re-evaluates on every gauge or weather
+    state change and will override the manual state if suppression conditions
+    are (or are not) met. Use this service for one-off manual adjustments, not
+    as a persistent lock.
+    """
     from .const import CONF_IRRIGATION_SWITCH_ENTITY
 
     coord = _resolve_coordinator(hass, call)

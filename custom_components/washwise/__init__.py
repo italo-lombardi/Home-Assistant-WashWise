@@ -50,6 +50,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     entry.async_on_unload(entry.add_update_listener(_update_listener))
+    entry.async_on_unload(coordinator.async_shutdown)
 
     await async_register_services(hass)
     await _async_install_card(hass)
@@ -64,14 +65,14 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unload_ok:
         hass.data.get(DOMAIN, {}).pop(entry.entry_id, None)
 
-    remaining = [
-        e
-        for e in hass.config_entries.async_entries(DOMAIN)
-        if e.entry_id != entry.entry_id and e.entry_id in hass.data.get(DOMAIN, {})
-    ]
-    if not remaining:
-        async_unregister_services(hass)
-        hass.data.get(DOMAIN, {}).pop(_CARD_INSTALLED_KEY, None)
+        remaining = [
+            e
+            for e in hass.config_entries.async_entries(DOMAIN)
+            if e.entry_id != entry.entry_id and e.entry_id in hass.data.get(DOMAIN, {})
+        ]
+        if not remaining:
+            async_unregister_services(hass)
+            hass.data.get(DOMAIN, {}).pop(_CARD_INSTALLED_KEY, None)
 
     return unload_ok
 

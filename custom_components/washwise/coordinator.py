@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import contextlib
 import logging
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -94,6 +94,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         self._irrigation_suppressed: bool = False
         self._rain_gauge_threshold_mm: float | None = None
         self._forecast_blocks_irrigation: bool = False
+        self._update_count: int = 0
         # Seed ``last_update_success_time`` so the ``last_update`` sensor has
         # a real timestamp the moment the entry is created, rather than
         # ``Unknown`` until the first coordinator tick lands.
@@ -275,7 +276,9 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         if data.snooze_until:
             try:
                 snooze_dt = datetime.fromisoformat(data.snooze_until)
-            except ValueError:
+                if snooze_dt.tzinfo is None:
+                    snooze_dt = snooze_dt.replace(tzinfo=UTC)
+            except (ValueError, TypeError):
                 snooze_dt = None
             if snooze_dt is not None and snooze_dt > now:
                 snooze_decision = Decision(
@@ -362,6 +365,9 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
             self._active_weather_entity = eid
             self._last_decision = decision
             await self._async_handle_irrigation(decision)
+            self._update_count += 1
+            if self._update_count % 50 == 0:
+                await self._store.gc_stale_health()
             return decision
 
         # Step 5: every provider failed.
@@ -428,7 +434,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         self._irrigation_suppressed = suppressed
 
         # Toggle irrigation switch when suppression state changes.
-        if switch_entity:
+        if switch_entity and "." in switch_entity:
             current_switch_state = self.hass.states.get(switch_entity)
             if current_switch_state is not None:
                 state_val = current_switch_state.state

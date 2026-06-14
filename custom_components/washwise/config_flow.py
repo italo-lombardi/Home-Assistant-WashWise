@@ -191,6 +191,14 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
             if category == "garden_irrigation":
                 return await self.async_step_irrigation()
             title = (self._data.get(CONF_NAME) or "").strip() or _category_label(category)
+            if self.source == SOURCE_RECONFIGURE:
+                entry = self._get_reconfigure_entry()
+                return self.async_update_reload_and_abort(
+                    entry,
+                    title=title,
+                    data=self._data,
+                    reason="reconfigure_successful",
+                )
             return self.async_create_entry(title=title, data=self._data)
 
         data_schema = vol.Schema(
@@ -345,6 +353,9 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                         ),
                     }
                     title = name or _category_label(category)
+                    if new_data[CONF_CUSTOMIZE_THRESHOLDS]:
+                        self._data = new_data
+                        return await self.async_step_thresholds()
                     if category == "garden_irrigation":
                         self._data = new_data
                         return await self.async_step_irrigation()
@@ -387,15 +398,11 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> WashWiseOptionsFlow:
         """Return the options flow handler."""
-        return WashWiseOptionsFlow(config_entry)
+        return WashWiseOptionsFlow()
 
 
 class WashWiseOptionsFlow(OptionsFlow):
     """Handle the options flow for a WashWise config entry."""
-
-    def __init__(self, config_entry: ConfigEntry) -> None:
-        """Initialise the options flow."""
-        self._config_entry = config_entry
 
     # ---------------------------------------------------------------- helpers
 
@@ -632,11 +639,23 @@ class WashWiseOptionsFlow(OptionsFlow):
         if user_input is not None:
             return self._save(user_input)
 
+        gauge_entity = current.get(CONF_RAIN_GAUGE_ENTITY)
+        switch_entity = current.get(CONF_IRRIGATION_SWITCH_ENTITY)
+
+        gauge_key = (
+            vol.Optional(CONF_RAIN_GAUGE_ENTITY, default=gauge_entity)
+            if gauge_entity
+            else vol.Optional(CONF_RAIN_GAUGE_ENTITY)
+        )
+        switch_key = (
+            vol.Optional(CONF_IRRIGATION_SWITCH_ENTITY, default=switch_entity)
+            if switch_entity
+            else vol.Optional(CONF_IRRIGATION_SWITCH_ENTITY)
+        )
+
         data_schema = vol.Schema(
             {
-                vol.Optional(
-                    CONF_RAIN_GAUGE_ENTITY,
-                ): selector.EntitySelector(
+                gauge_key: selector.EntitySelector(
                     selector.EntitySelectorConfig(domain=["sensor", "input_number"])
                 ),
                 vol.Optional(
@@ -653,9 +672,7 @@ class WashWiseOptionsFlow(OptionsFlow):
                         unit_of_measurement="mm",
                     )
                 ),
-                vol.Optional(
-                    CONF_IRRIGATION_SWITCH_ENTITY,
-                ): selector.EntitySelector(
+                switch_key: selector.EntitySelector(
                     selector.EntitySelectorConfig(domain=["switch", "input_boolean", "automation"])
                 ),
             }

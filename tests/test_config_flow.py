@@ -337,3 +337,74 @@ async def test_reconfigure_rejects_duplicate_name_against_other_entry(
 
     assert result["type"] == FlowResultType.FORM
     assert result["errors"] == {CONF_NAME: "duplicate_name"}
+
+
+# ---------------------------------------------------------------------------
+# reconfigure + customize_thresholds → thresholds step → reconfigure_successful
+# covers config_flow.py:195-196 and config_flow.py:357-358
+# ---------------------------------------------------------------------------
+
+
+async def test_reconfigure_with_customize_thresholds_routes_to_thresholds_step(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """Reconfigure with customize_thresholds=True routes through the thresholds step."""
+    mock_config_entry.add_to_hass(hass)
+
+    with (
+        patch(
+            "custom_components.washwise.async_setup_entry",
+            return_value=True,
+        ),
+        patch(
+            "custom_components.washwise.async_unload_entry",
+            return_value=True,
+        ),
+    ):
+        result = await mock_config_entry.start_reconfigure_flow(hass)
+        assert result["type"] == FlowResultType.FORM
+        assert result["step_id"] == "reconfigure"
+
+        # Submit reconfigure step with customize_thresholds=True.
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.home"],
+                CONF_NAME: "Test Wash",
+                CONF_CATEGORY: "car",
+                CONF_CUSTOMIZE_THRESHOLDS: True,
+            },
+        )
+
+    # Should land on the thresholds step.
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "thresholds"
+
+    with (
+        patch(
+            "custom_components.washwise.async_setup_entry",
+            return_value=True,
+        ),
+        patch(
+            "custom_components.washwise.async_unload_entry",
+            return_value=True,
+        ),
+    ):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_DAYS: 3,
+                CONF_PRECIP_THRESHOLD: 0.5,
+                CONF_FREEZE_CHECK: True,
+                CONF_FORECAST_TYPE: DEFAULT_FORECAST_TYPE,
+                "bad_conditions": ["rainy", "pouring"],
+                "precip_weight": 50,
+                "freeze_weight": 25,
+                "condition_weight": 25,
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
