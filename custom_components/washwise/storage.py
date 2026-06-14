@@ -30,7 +30,10 @@ def _parse_ts(value: str | None) -> datetime | None:
     if not value:
         return None
     try:
-        return datetime.fromisoformat(value)
+        parsed = datetime.fromisoformat(value)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=UTC)
+        return parsed
     except (TypeError, ValueError):
         return None
 
@@ -152,7 +155,7 @@ class WashWiseStore:
                 failure_count=existing.failure_count + (0 if ok else 1),
                 last_success_ts=now_iso if ok else existing.last_success_ts,
                 last_failure_ts=existing.last_failure_ts if ok else now_iso,
-                last_error=existing.last_error if ok else error,
+                last_error=None if ok else error,
                 last_seen_ts=now_iso,
             )
         health[entity_id] = new_health
@@ -176,7 +179,8 @@ class WashWiseStore:
         changed = False
         for entity_id, record in data.provider_health.items():
             seen = _parse_ts(record.last_seen_ts)
-            if seen is None or seen >= cutoff:
+            # Keep only records seen within the TTL; expire missing/unparseable timestamps.
+            if seen is not None and seen >= cutoff:
                 kept[entity_id] = record
             else:
                 changed = True

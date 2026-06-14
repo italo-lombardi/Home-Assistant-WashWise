@@ -23,7 +23,7 @@ from custom_components.washwise.models import (
     StoredData,
     WashEntry,
 )
-from custom_components.washwise.storage import WashWiseStore
+from custom_components.washwise.storage import WashWiseStore, _parse_ts
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -315,7 +315,7 @@ async def test_gc_stale_health_keeps_all_when_within_ttl(
 async def test_gc_stale_health_unparseable_seen_kept(
     store: WashWiseStore, utc_now: datetime
 ) -> None:
-    """Records whose last_seen_ts cannot be parsed are kept (defensive)."""
+    """Records whose last_seen_ts cannot be parsed are expired (defensive)."""
     bad = ProviderHealth(
         entity_id="weather.weird",
         success_count=1,
@@ -331,7 +331,7 @@ async def test_gc_stale_health_unparseable_seen_kept(
         await store.gc_stale_health()
 
     data = await store.load()
-    assert "weather.weird" in data.provider_health
+    assert "weather.weird" not in data.provider_health
 
 
 # ---------------------------------------------------------------------------
@@ -405,6 +405,40 @@ async def test_remove_deletes_file(store: WashWiseStore, utc_now: datetime) -> N
     await store.remove()
     data = await store.load()
     assert data == StoredData.empty()
+
+
+# ---------------------------------------------------------------------------
+# _parse_ts — naive ISO string gets UTC tzinfo attached (storage.py:35)
+# ---------------------------------------------------------------------------
+
+
+def test_parse_ts_naive_iso_string_becomes_utc() -> None:
+    """A naive ISO string (no tz suffix) is made tz-aware with UTC."""
+    result = _parse_ts("2026-06-10T00:00:00")
+    assert result is not None
+    assert result.tzinfo is not None
+    assert result.tzinfo == UTC
+    assert result.year == 2026
+    assert result.month == 6
+    assert result.day == 10
+
+
+def test_parse_ts_aware_iso_string_preserved() -> None:
+    """An already tz-aware ISO string is returned as-is."""
+    result = _parse_ts("2026-06-10T00:00:00+00:00")
+    assert result is not None
+    assert result.tzinfo is not None
+
+
+def test_parse_ts_none_returns_none() -> None:
+    """None/empty input returns None."""
+    assert _parse_ts(None) is None
+    assert _parse_ts("") is None
+
+
+def test_parse_ts_invalid_returns_none() -> None:
+    """Non-ISO strings return None."""
+    assert _parse_ts("not-a-timestamp") is None
 
 
 # ---------------------------------------------------------------------------

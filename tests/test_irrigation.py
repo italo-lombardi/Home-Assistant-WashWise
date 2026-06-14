@@ -1084,6 +1084,41 @@ async def test_irrigation_skips_switch_call_when_unavailable(
     await coord.async_shutdown()
 
 
+# ---------------------------------------------------------------------------
+# options flow irrigation step pre-populates existing entity defaults (config_flow.py:640)
+# ---------------------------------------------------------------------------
+
+
+async def test_options_flow_irrigation_step_shows_existing_defaults(
+    hass: HomeAssistant,
+) -> None:
+    """Options flow irrigation step schema pre-populates entity fields from current config."""
+    from homeassistant.data_entry_flow import FlowResultType
+
+    entry = _make_irrigation_entry(
+        gauge_entity="sensor.my_rain",
+        gauge_threshold=3.0,
+        switch_entity="switch.my_irrigation",
+    )
+    entry.add_to_hass(hass)
+
+    result = await hass.config_entries.options.async_init(entry.entry_id)
+    result2 = await hass.config_entries.options.async_configure(
+        result["flow_id"], user_input={"next_step_id": "irrigation"}
+    )
+    assert result2["type"] == FlowResultType.FORM
+    assert result2["step_id"] == "irrigation"
+
+    schema = result2["data_schema"].schema
+    defaults: dict[str, object] = {}
+    for marker in schema:
+        defaults[str(marker)] = marker.default() if callable(marker.default) else marker.default
+
+    assert defaults[CONF_RAIN_GAUGE_ENTITY] == "sensor.my_rain"
+    assert defaults[CONF_RAIN_GAUGE_THRESHOLD_MM] == 3.0
+    assert defaults[CONF_IRRIGATION_SWITCH_ENTITY] == "switch.my_irrigation"
+
+
 @pytest.mark.asyncio
 async def test_irrigation_skips_switch_call_when_unknown(
     hass: HomeAssistant,
