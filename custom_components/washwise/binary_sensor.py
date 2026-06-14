@@ -26,9 +26,10 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
@@ -362,6 +363,10 @@ class IrrigationSwitchStateBinarySensor(_WashWiseBinarySensorBase):
 
     Useful for debugging — shows whether the irrigation program switch is currently
     ON or OFF without leaving the WashWise device page. Only registered for garden_irrigation.
+
+    Subscribes to direct state-change events on the switch entity so the sensor
+    updates immediately when the switch is toggled outside of WashWise (e.g. manually
+    via the HA UI), not only on the next coordinator refresh.
     """
 
     _attr_translation_key = "irrigation_switch_state"
@@ -372,6 +377,33 @@ class IrrigationSwitchStateBinarySensor(_WashWiseBinarySensorBase):
     def __init__(self, coordinator: WashWiseCoordinator, entry: ConfigEntry) -> None:
         """Register the irrigation switch state binary sensor."""
         super().__init__(coordinator, entry, "irrigation_switch_state")
+        self._unsub_switch: callback | None = None
+
+    async def async_added_to_hass(self) -> None:
+        """Subscribe to switch state changes for live updates."""
+        await super().async_added_to_hass()
+        options = self._entry.options or {}
+        data = self._entry.data or {}
+        switch_entity = options.get(CONF_IRRIGATION_SWITCH_ENTITY) or data.get(
+            CONF_IRRIGATION_SWITCH_ENTITY
+        )
+        if switch_entity:
+            self._unsub_switch = async_track_state_change_event(
+                self.hass,
+                [switch_entity],
+                self._handle_switch_state_change,
+            )
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Unsubscribe switch listener on removal."""
+        if self._unsub_switch is not None:
+            self._unsub_switch()
+            self._unsub_switch = None
+
+    @callback
+    def _handle_switch_state_change(self, event) -> None:  # type: ignore[override]
+        """Trigger a state write when the switch entity changes."""
+        self.async_write_ha_state()
 
     @property
     def is_on(self) -> bool | None:

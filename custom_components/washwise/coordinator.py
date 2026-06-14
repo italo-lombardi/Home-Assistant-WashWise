@@ -434,7 +434,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         self._irrigation_suppressed = suppressed
 
         # Toggle irrigation switch when suppression state changes.
-        if switch_entity:
+        if switch_entity and "." in switch_entity:
             current_switch_state = self.hass.states.get(switch_entity)
             if current_switch_state is not None:
                 state_val = current_switch_state.state
