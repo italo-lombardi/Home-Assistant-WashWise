@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.1] - 2026-06-14
+## [0.2.0b2] - 2026-06-14
 
 ### Fixed
 - **Coordinator crash on naive snooze timestamp** — `fromisoformat()` could return a
