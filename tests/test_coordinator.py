@@ -938,6 +938,99 @@ def test_resolve_scan_interval_default_when_unset(hass: HomeAssistant) -> None:
     assert WashWiseCoordinator._resolve_scan_interval(entry) == SCAN_INTERVAL
 
 
+# ---------------------------------------------------------------------------
+# Snooze with naive ISO string (coordinator.py:280)
+# ---------------------------------------------------------------------------
+
+
+@freeze_time(FROZEN_NOW)
+async def test_snooze_naive_iso_string_treated_as_utc(hass: HomeAssistant) -> None:
+    """A naive (no tzinfo) snooze_until string is treated as UTC and still snoozes."""
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, stub = _build_coordinator(hass, entry)
+
+    # Store a naive ISO string (no +00:00) for a time well in the future.
+    naive_future = (FROZEN_NOW + timedelta(hours=1)).replace(tzinfo=None).isoformat()
+    stub.data = StoredData(
+        wash_log=[],
+        snooze_until=naive_future,
+        last_failover_ts=None,
+        last_failover_from=None,
+        last_failover_to=None,
+        provider_health={},
+    )
+
+    with patch(
+        "custom_components.washwise.coordinator.weather_source.is_available",
+        new=AsyncMock(return_value=True),
+    ) as mock_avail:
+        decision = await coord._async_update_data()
+
+    assert decision.can_wash is False
+    assert decision.reason == "snoozed"
+    mock_avail.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# gc_stale_health every 50 updates (coordinator.py:370)
+# ---------------------------------------------------------------------------
+
+
+@freeze_time(FROZEN_NOW)
+async def test_gc_stale_health_called_at_50th_update(hass: HomeAssistant) -> None:
+    """gc_stale_health is called when _update_count reaches a multiple of 50."""
+    from unittest.mock import AsyncMock as _AsyncMock
+
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, stub = _build_coordinator(hass, entry)
+
+    gc_mock = _AsyncMock()
+    stub.gc_stale_health = gc_mock
+
+    # Run 49 updates — gc must NOT be called.
+    with (
+        patch(
+            "custom_components.washwise.coordinator.weather_source.is_available",
+            new=AsyncMock(return_value=True),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_current",
+            new=AsyncMock(return_value=_sunny_current()),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_forecast",
+            new=AsyncMock(return_value=_clear_forecast(3)),
+        ),
+    ):
+        for _ in range(49):
+            await coord._async_update_data()
+
+    gc_mock.assert_not_called()
+    assert coord._update_count == 49
+
+    # 50th update triggers gc.
+    with (
+        patch(
+            "custom_components.washwise.coordinator.weather_source.is_available",
+            new=AsyncMock(return_value=True),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_current",
+            new=AsyncMock(return_value=_sunny_current()),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_forecast",
+            new=AsyncMock(return_value=_clear_forecast(3)),
+        ),
+    ):
+        await coord._async_update_data()
+
+    gc_mock.assert_awaited_once()
+    assert coord._update_count == 50
+
+
 def test_resolve_scan_interval_from_options(hass: HomeAssistant) -> None:
     """Options value wins and produces a timedelta."""
     entry = MockConfigEntry(

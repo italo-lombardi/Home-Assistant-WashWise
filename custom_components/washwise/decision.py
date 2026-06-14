@@ -251,13 +251,13 @@ def compute(
         if freeze_blocker:
             day_blockers.append("freeze")
 
-        # Update temp_check for the *next* iteration: use today's tmin if
-        # available, else tmax (per plan: "Carry temp_check across days
-        # using temp_min then temp_max").
-        if tmin is not None:
-            temp_check = tmin
-        elif tmax is not None:
+        # Update temp_check for the *next* iteration: carry the highest
+        # available temperature (prefer tmax) so a day that thawed via tmax
+        # does not re-trigger a freeze blocker on the next iteration.
+        if tmax is not None:
             temp_check = tmax
+        elif tmin is not None:
+            temp_check = tmin
         # else: leave temp_check unchanged so we keep the last known value.
 
         is_blocked = bool(day_blockers)
@@ -266,9 +266,12 @@ def compute(
             if first_blocker_reason is None:
                 first_blocker_reason = _reason_from_blockers(day_blockers, cond)
 
-        # Track rainy days for invert mode.
-        if (precip is not None and precip > precip_threshold) or (
-            cond is not None and cond in bad_conditions
+        # Track rainy/blocked days for invert mode (includes freeze-blocked days
+        # so sub-zero conditions also suppress irrigation/solar-clean signals).
+        if (
+            (precip is not None and precip > precip_threshold)
+            or (cond is not None and cond in bad_conditions)
+            or freeze_blocker
         ):
             rainy_days.append(day.date)
 
@@ -287,7 +290,7 @@ def compute(
 
         forecast_summary.append(
             {
-                "date": day.date,
+                "date": day.date.isoformat() if day.date is not None else None,
                 "condition": cond,
                 "precipitation": precip,
                 "temp_min": tmin,
@@ -324,10 +327,10 @@ def compute(
                 forecast_summary=forecast_summary,
                 days_analyzed=days_analyzed,
             )
-        # No rain in horizon -> panels stay dirty.
+        # No rain in horizon -> panels stay dirty; invert score for consistency.
         return Decision(
             can_wash=False,
-            score=score_int,
+            score=100 - score_int,
             reason=REASON_CLEAR,
             days_until_wash=None,
             blocking_days=[],
@@ -348,7 +351,8 @@ def compute(
         reason = REASON_CLEAR
     elif days_analyzed == 0:
         reason = REASON_CLEAR
-        can_wash = True
+        # No forecast data — do not grant permission; treat as unavailable.
+        can_wash = False
     else:
         reason = first_blocker_reason or REASON_BAD_CONDITION
 
