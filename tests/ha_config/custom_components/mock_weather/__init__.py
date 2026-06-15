@@ -1,1 +1,0 @@
-"""Mock weather custom component."""

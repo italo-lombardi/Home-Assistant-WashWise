@@ -45,3 +45,5 @@ coverage.xml
 # Claude
 .claude/
 
+# Local HA Docker test fixtures (see docs/TESTING_DOCKER.md)
+tests/ha_config/
