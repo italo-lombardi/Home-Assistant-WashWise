@@ -74,6 +74,7 @@ REASON_FREEZE = "freeze"
 REASON_SNOW = "snow"
 REASON_BAD_CONDITION = "bad_condition"
 REASON_BAD_CURRENT_CONDITION = "bad_current_condition"
+REASON_DIRTY_NOW = "dirty_now"
 
 _SNOW_CONDITIONS = frozenset({"snowy", "snowy-rainy"})
 
@@ -206,7 +207,7 @@ def compute(
         return Decision(
             can_wash=True,
             score=100,
-            reason=REASON_BAD_CURRENT_CONDITION,
+            reason=REASON_DIRTY_NOW,
             days_until_wash=0,
             blocking_days=[],
             forecast_summary=[],

@@ -203,6 +203,7 @@ class ReasonSensor(WashWiseSensorBase):
         "snow",
         "bad_condition",
         "bad_current_condition",
+        "dirty_now",
         "snoozed",
         "unavailable",
     ]

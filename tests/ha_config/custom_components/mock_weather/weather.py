@@ -49,11 +49,11 @@ Add to configuration.yaml:
 
 from __future__ import annotations
 
+import contextlib
 from datetime import timedelta
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant.components.weather import (
     PLATFORM_SCHEMA,
     Forecast,
@@ -159,9 +159,7 @@ class MockWeatherEntity(WeatherEntity):
             self._refresh_from_helpers()
             self.async_write_ha_state()
 
-        self.async_on_remove(
-            async_track_state_change_event(self.hass, watch, _state_changed)
-        )
+        self.async_on_remove(async_track_state_change_event(self.hass, watch, _state_changed))
         self._refresh_from_helpers()
         self.async_write_ha_state()
 
@@ -175,18 +173,14 @@ class MockWeatherEntity(WeatherEntity):
 
         temp_state = self.hass.states.get(self._temperature_entity)
         if temp_state and temp_state.state not in (STATE_UNKNOWN, "unavailable"):
-            try:
+            with contextlib.suppress(ValueError):
                 self._attr_native_temperature = float(temp_state.state)
-            except ValueError:
-                pass
 
         if self._precip_entity:
             precip_state = self.hass.states.get(self._precip_entity)
             if precip_state and precip_state.state not in (STATE_UNKNOWN, "unavailable"):
-                try:
+                with contextlib.suppress(ValueError):
                     self._precip_mm = float(precip_state.state)
-                except ValueError:
-                    pass
 
     def _make_forecast(self) -> list[Forecast]:
         now = dt_util.utcnow()
@@ -218,11 +212,12 @@ class MockWeatherEntity(WeatherEntity):
         temp = self._attr_native_temperature or 15.0
         for i in range(self._forecast_days * 24):
             dt = now + timedelta(hours=i)
+            tmax = max(temp + 1, 1.0) if temp < 0 else temp + 1
             forecasts.append(
                 Forecast(
                     datetime=dt.strftime("%Y-%m-%dT%H:00:00+00:00"),
                     condition=self._attr_condition,
-                    native_temperature=temp + 1,
+                    native_temperature=tmax,
                     native_templow=temp - 5,
                     native_precipitation=self._precip_mm / 24,
                     precipitation_probability=self._precip_prob,
