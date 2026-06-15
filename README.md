@@ -315,7 +315,7 @@ python -m pytest tests/ -v
 - [Entity Availability](https://github.com/italo-lombardi/Home-Assistant-EntityAvailability) — track offline entities, availability history, and degraded states with a custom dashboard card.
 - [Entity Guard](https://github.com/italo-lombardi/Home-Assistant-EntityGuard) — enforce entity state via declarative rules — replaces hand-written auto-off / auto-lock automations.
 - [Entity Distance](https://github.com/italo-lombardi/Home-Assistant-EntityDistance) — distance, direction, and ETA between 2–5 HA entities.
-- [Fuel Compare](https://github.com/italo-lombardi/Home-Assistant-FuelCompare) — live fuel prices from fuelcompare.ie.
+- [Fuel Compare](https://github.com/italo-lombardi/Home-Assistant-FuelCompare) — live fuel prices from 36 providers across 27 countries.
 
 ---
 
