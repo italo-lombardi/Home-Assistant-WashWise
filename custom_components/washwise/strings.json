@@ -304,6 +304,7 @@
           "snow": "Snow",
           "bad_condition": "Bad weather",
           "bad_current_condition": "Bad current weather",
+          "dirty_now": "Surface dirty — wash now",
           "snoozed": "Snoozed",
           "unavailable": "Unavailable"
         }

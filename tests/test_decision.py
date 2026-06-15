@@ -13,6 +13,7 @@ import pytest
 from custom_components.washwise.decision import (
     REASON_BAD_CURRENT_CONDITION,
     REASON_CLEAR,
+    REASON_DIRTY_NOW,
     REASON_FREEZE,
     REASON_RAIN,
     CurrentWeather,
@@ -187,19 +188,44 @@ def test_invert_mode_no_rain_returns_false() -> None:
     assert result.days_until_wash is None
 
 
-def test_invert_mode_with_bad_current_condition_does_not_short_circuit() -> None:
-    """Invert mode skips the bad-current-condition early-out."""
-    cur = CurrentWeather(condition="rainy", temperature_c=10.0)
-    forecast = [
-        _day(0, condition="rainy", precip=3.0),
-        _day(1),
-        _day(2),
-    ]
+def test_invert_mode_bad_current_condition_short_circuits_to_wash() -> None:
+    """Invert mode: bad current condition short-circuits to can_wash=True (panels dirty now)."""
+    cur = CurrentWeather(condition="exceptional", temperature_c=28.0)
+    forecast: list = []
+
+    result = compute(cur, forecast, _thresholds(days=0), invert=True, now=NOW)
+
+    assert result.can_wash is True
+    assert result.score == 100
+    assert result.reason == REASON_DIRTY_NOW
+    assert result.days_until_wash == 0
+
+
+def test_invert_mode_bad_current_condition_short_circuits_with_non_zero_horizon() -> None:
+    """Invert mode: bad current condition short-circuits regardless of horizon.
+
+    days=1 covers the garden_irrigation preset (const.py: days=1, invert=True).
+    """
+    cur = CurrentWeather(condition="rainy", temperature_c=12.0)
+    forecast = [_day(0, condition="sunny", precip=0.0)]
+
+    result = compute(cur, forecast, _thresholds(days=1), invert=True, now=NOW)
+
+    assert result.can_wash is True
+    assert result.reason == REASON_DIRTY_NOW
+    assert result.days_until_wash == 0
+    assert result.forecast_summary == []
+
+
+def test_invert_mode_clear_current_condition_and_forecast_returns_no_wash() -> None:
+    """Invert mode: clear sky and no rain in forecast → panels stay clean → no wash needed."""
+    cur = CurrentWeather(condition="sunny", temperature_c=28.0)
+    forecast = [_day(0), _day(1), _day(2)]
 
     result = compute(cur, forecast, _thresholds(), invert=True, now=NOW)
 
-    assert result.can_wash is True
-    assert result.reason != REASON_BAD_CURRENT_CONDITION
+    assert result.can_wash is False
+    assert result.reason == REASON_CLEAR
 
 
 # ---------------------------------------------------------------------------

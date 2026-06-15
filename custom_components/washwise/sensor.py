@@ -177,7 +177,6 @@ class ScoreSensor(WashWiseSensorBase):
 
     _attr_icon = "mdi:gauge"
     _attr_native_unit_of_measurement = PERCENTAGE
-    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(self, coordinator: WashWiseCoordinator, entry: ConfigEntry) -> None:
         """Register the score sensor."""
@@ -204,6 +203,7 @@ class ReasonSensor(WashWiseSensorBase):
         "snow",
         "bad_condition",
         "bad_current_condition",
+        "dirty_now",
         "snoozed",
         "unavailable",
     ]
@@ -570,7 +570,6 @@ class DayScoreSensor(WashWiseSensorBase):
 
     _attr_icon = "mdi:calendar-today"
     _attr_native_unit_of_measurement = PERCENTAGE
-    _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(
         self,
