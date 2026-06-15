@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.0b3] - 2026-06-15
+
+### Fixed
+- **Invert-mode bad-current-condition returned wrong verdict** — for `solar_panels`
+  and `garden_irrigation` (both `invert=True`), a bad current weather condition (e.g.
+  `exceptional`) was silently ignored and the algorithm fell through to the no-rain
+  forecast path, returning `can_wash=False, reason=clear`. The fix short-circuits
+  immediately with `can_wash=True, reason=dirty_now` — the surface is dirty or the
+  ground is dry, act now. (`decision.py`)
+- **Score sensor rendered as float** — `ScoreSensor` and `DayScoreSensor` had
+  `SensorStateClass.MEASUREMENT`, causing HA to store the 0–100 integer in long-term
+  statistics as a float and render it as `100.000…%` in card types that pull from
+  stats. Scores are point-in-time verdicts, not time-series measurements; the state
+  class is removed. (`sensor.py`)
+
+### Added
+- `REASON_DIRTY_NOW = "dirty_now"` reason key for the inverted short-circuit path,
+  with translation "Surface dirty — wash now". Distinct from `bad_current_condition`
+  (which blocks washing in non-inverted mode) so automations can branch on reason
+  without checking `can_wash`. (`decision.py`, `sensor.py`, `strings.json`,
+  `translations/en.json`)
+- `docs/TESTING_DOCKER.md` — step-by-step guide for live integration testing against
+  a local HA Docker dev container, covering all 6 test scenarios.
+
 ## [0.2.0b2] - 2026-06-14
 
 ### Fixed
