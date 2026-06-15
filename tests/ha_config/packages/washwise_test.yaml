@@ -1,0 +1,159 @@
+###############################################################################
+# WashWise Test Package
+#
+# Provides mock weather entities (via custom mock_weather platform), helpers,
+# and controllable knobs to exercise all major WashWise config scenarios:
+#
+#   Scenario 1  — car_clear      : sunny, no precip, 15°C   → WASH
+#   Scenario 2  — car_rainy      : rainy, 5mm precip         → NO WASH
+#   Scenario 3  — car_freezing   : clear, temp -3°C          → NO WASH (freeze)
+#   Scenario 4  — solar_exceptional: exceptional condition   → test invert logic
+#   Scenario 5  — garden_irrigation: rain gauge + switch     → test skip-irrigation
+#   Scenario 6  — multi_provider : car using 2 weather srcs  → fallback chain
+#
+# WashWise config entries must be added via the UI.  Entity IDs below are used
+# in the WashWise config entry setup.
+###############################################################################
+
+# ── Input helpers — controllable knobs ──────────────────────────────────────
+
+input_number:
+  washwise_temperature_clear:
+    name: "WashWise — Temperature clear (°C)"
+    icon: mdi:thermometer
+    min: -20
+    max: 40
+    step: 0.5
+    initial: 15
+    unit_of_measurement: "°C"
+    mode: box
+
+  washwise_temperature_freezing:
+    name: "WashWise — Temperature freezing (°C)"
+    icon: mdi:thermometer-minus
+    min: -20
+    max: 5
+    step: 0.5
+    initial: -3
+    unit_of_measurement: "°C"
+    mode: box
+
+  washwise_precip_clear:
+    name: "WashWise — Precipitation clear (mm)"
+    icon: mdi:water-off
+    min: 0
+    max: 1
+    step: 0.05
+    initial: 0
+    unit_of_measurement: "mm"
+    mode: box
+
+  washwise_precip_rainy:
+    name: "WashWise — Precipitation rainy (mm)"
+    icon: mdi:water
+    min: 0
+    max: 50
+    step: 0.5
+    initial: 5
+    unit_of_measurement: "mm"
+    mode: box
+
+  washwise_rain_gauge_mm:
+    name: "WashWise — Rain gauge (mm)"
+    icon: mdi:gauge
+    min: 0
+    max: 200
+    step: 0.5
+    initial: 0
+    unit_of_measurement: "mm"
+    mode: box
+
+input_boolean:
+  washwise_irrigation_switch:
+    name: "WashWise — Irrigation Switch (mock)"
+    icon: mdi:sprinkler
+
+input_select:
+  washwise_clear_condition:
+    name: "WashWise — Clear-sky condition"
+    icon: mdi:weather-sunny
+    options:
+      - sunny
+      - partlycloudy
+      - cloudy
+      - clear-night
+    initial: sunny
+
+  washwise_rainy_condition:
+    name: "WashWise — Rainy condition"
+    icon: mdi:weather-rainy
+    options:
+      - rainy
+      - pouring
+      - lightning-rainy
+      - snowy
+      - snowy-rainy
+      - hail
+      - exceptional
+      - sunny
+    initial: rainy
+
+  washwise_solar_condition:
+    name: "WashWise — Solar/exceptional condition"
+    icon: mdi:weather-dust
+    options:
+      - exceptional
+      - sunny
+      - cloudy
+      - rainy
+    initial: exceptional
+
+
+# ── Mock weather entities ─────────────────────────────────────────────────────
+# Powered by custom_components/mock_weather
+
+weather:
+  # Scenario 1: clear, safe to wash
+  - platform: mock_weather
+    name: "WashWise Clear Sky"
+    unique_id: washwise_mock_clear
+    condition_entity: input_select.washwise_clear_condition
+    temperature_entity: input_number.washwise_temperature_clear
+    precipitation_entity: input_number.washwise_precip_clear
+    precipitation_prob: 0
+
+  # Scenario 2: rainy, blocks washing
+  - platform: mock_weather
+    name: "WashWise Rainy"
+    unique_id: washwise_mock_rainy
+    condition_entity: input_select.washwise_rainy_condition
+    temperature_entity: input_number.washwise_temperature_clear
+    precipitation_entity: input_number.washwise_precip_rainy
+    precipitation_prob: 95
+
+  # Scenario 3: clear but freezing temp
+  - platform: mock_weather
+    name: "WashWise Freezing"
+    unique_id: washwise_mock_freezing
+    condition_entity: input_select.washwise_clear_condition
+    temperature_entity: input_number.washwise_temperature_freezing
+    precipitation_entity: input_number.washwise_precip_clear
+    precipitation_prob: 5
+
+  # Scenario 4: exceptional/dust — tests solar panel invert
+  - platform: mock_weather
+    name: "WashWise Exceptional"
+    unique_id: washwise_mock_exceptional
+    condition_entity: input_select.washwise_solar_condition
+    temperature_entity: input_number.washwise_temperature_clear
+    precipitation_entity: input_number.washwise_precip_clear
+    precipitation_prob: 0
+
+  # Scenario 6: second provider for multi-provider fallback
+  - platform: mock_weather
+    name: "WashWise Provider B"
+    unique_id: washwise_mock_provider_b
+    condition_entity: input_select.washwise_clear_condition
+    temperature_entity: input_number.washwise_temperature_clear
+    precipitation_entity: input_number.washwise_precip_clear
+    precipitation_prob: 15

@@ -187,14 +187,27 @@ def compute(
     today: date = now.date()
 
     # ------------------------------------------------------------------
-    # Step 1: short-circuit on current condition (non-inverted only).
+    # Step 1: short-circuit on current condition.
+    # Non-inverted: bad current condition → block immediately.
+    # Inverted (solar/irrigation): bad current condition → wash now (score=100).
     # ------------------------------------------------------------------
-    if not invert and current.condition is not None and current.condition in bad_conditions:
+    if current.condition is not None and current.condition in bad_conditions:
+        if not invert:
+            return Decision(
+                can_wash=False,
+                score=0,
+                reason=REASON_BAD_CURRENT_CONDITION,
+                days_until_wash=None,
+                blocking_days=[],
+                forecast_summary=[],
+                days_analyzed=0,
+            )
+        # Inverted: current bad condition means panels are dirty / ground is dry → wash.
         return Decision(
-            can_wash=False,
-            score=0,
+            can_wash=True,
+            score=100,
             reason=REASON_BAD_CURRENT_CONDITION,
-            days_until_wash=None,
+            days_until_wash=0,
             blocking_days=[],
             forecast_summary=[],
             days_analyzed=0,

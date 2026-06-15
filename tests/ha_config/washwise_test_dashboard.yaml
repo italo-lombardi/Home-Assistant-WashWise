@@ -1,0 +1,113 @@
+###############################################################################
+# WashWise Test Dashboard
+###############################################################################
+
+title: WashWise Test
+views:
+  - title: Scenarios
+    path: scenarios
+    icon: mdi:water
+    cards:
+      # ── Controls ──────────────────────────────────────────────────────────
+      - type: entities
+        title: "Test Controls"
+        entities:
+          - entity: input_number.washwise_temperature_clear
+          - entity: input_number.washwise_temperature_freezing
+          - entity: input_number.washwise_precip_clear
+          - entity: input_number.washwise_precip_rainy
+          - entity: input_number.washwise_rain_gauge_mm
+          - entity: input_select.washwise_clear_condition
+          - entity: input_select.washwise_rainy_condition
+          - entity: input_select.washwise_solar_condition
+          - entity: input_boolean.washwise_irrigation_switch
+
+      # ── Mock weather states ───────────────────────────────────────────────
+      - type: entities
+        title: "Mock Weather Entities"
+        entities:
+          - entity: weather.washwise_clear_sky
+          - entity: weather.washwise_rainy
+          - entity: weather.washwise_freezing
+          - entity: weather.washwise_exceptional
+          - entity: weather.washwise_provider_b
+
+      # ── Scenario 1: Car clear → should WASH ──────────────────────────────
+      - type: entities
+        title: "S1 — Car clear sky (expect: WASH)"
+        entities:
+          - entity: binary_sensor.washwise_test_car_clear_can_wash
+          - entity: sensor.washwise_test_car_clear_wash_score
+          - entity: sensor.washwise_test_car_clear_reason
+          - entity: sensor.washwise_test_car_clear_active_provider
+          - entity: binary_sensor.washwise_test_car_clear_day_1_ok
+          - entity: binary_sensor.washwise_test_car_clear_day_2_ok
+          - entity: binary_sensor.washwise_test_car_clear_day_3_ok
+          - entity: button.washwise_test_car_clear_mark_washed
+
+      # ── Scenario 2: Car rainy → should NOT WASH ──────────────────────────
+      - type: entities
+        title: "S2 — Car rainy (expect: NO WASH)"
+        entities:
+          - entity: binary_sensor.washwise_test_car_rainy_can_wash
+          - entity: sensor.washwise_test_car_rainy_wash_score
+          - entity: sensor.washwise_test_car_rainy_reason
+          - entity: sensor.washwise_test_car_rainy_most_severe_forecast_condition
+          - entity: sensor.washwise_test_car_rainy_forecast_rainfall_total
+          - entity: binary_sensor.washwise_test_car_rainy_day_1_ok
+          - entity: binary_sensor.washwise_test_car_rainy_day_2_ok
+          - entity: binary_sensor.washwise_test_car_rainy_day_3_ok
+          - entity: button.washwise_test_car_rainy_mark_washed
+
+      # ── Scenario 3: Car freezing → should NOT WASH ───────────────────────
+      - type: entities
+        title: "S3 — Car freezing (expect: NO WASH)"
+        entities:
+          - entity: binary_sensor.washwise_test_car_freezing_can_wash
+          - entity: binary_sensor.washwise_test_car_freezing_freeze_risk_in_forecast
+          - entity: sensor.washwise_test_car_freezing_wash_score
+          - entity: sensor.washwise_test_car_freezing_reason
+          - entity: sensor.washwise_test_car_freezing_minimum_forecast_temperature
+          - entity: binary_sensor.washwise_test_car_freezing_day_1_ok
+          - entity: binary_sensor.washwise_test_car_freezing_day_2_ok
+          - entity: binary_sensor.washwise_test_car_freezing_day_3_ok
+          - entity: button.washwise_test_car_freezing_mark_washed
+
+      # ── Scenario 4: Solar panels exceptional → invert logic ───────────────
+      - type: entities
+        title: "S4 — Solar panels exceptional (invert=true)"
+        entities:
+          - entity: binary_sensor.washwise_test_solar_panels_can_wash
+          - entity: sensor.washwise_test_solar_panels_wash_score
+          - entity: sensor.washwise_test_solar_panels_reason
+          - entity: sensor.washwise_test_solar_panels_most_severe_forecast_condition
+          - entity: sensor.washwise_test_solar_panels_category
+          - entity: button.washwise_test_solar_panels_mark_washed
+
+      # ── Scenario 5: Garden irrigation + rain gauge ────────────────────────
+      - type: entities
+        title: "S5 — Garden irrigation (rain gauge / switch)"
+        entities:
+          - entity: binary_sensor.washwise_test_irrigation_can_wash
+          - entity: binary_sensor.washwise_test_irrigation_irrigation_suppressed
+          - entity: binary_sensor.washwise_test_irrigation_forecast_blocks_irrigation
+          - entity: binary_sensor.washwise_test_irrigation_irrigation_switch_state
+          - entity: sensor.washwise_test_irrigation_wash_score
+          - entity: sensor.washwise_test_irrigation_reason
+          - entity: sensor.washwise_test_irrigation_measured_rainfall
+          - entity: sensor.washwise_test_irrigation_rain_gauge_threshold
+          - entity: button.washwise_test_irrigation_mark_irrigated
+
+      # ── Scenario 6: Multi-provider fallback ──────────────────────────────
+      - type: entities
+        title: "S6 — Multi-provider (2 weather sources)"
+        entities:
+          - entity: binary_sensor.washwise_test_multi_provider_can_wash
+          - entity: sensor.washwise_test_multi_provider_wash_score
+          - entity: sensor.washwise_test_multi_provider_reason
+          - entity: sensor.washwise_test_multi_provider_active_provider
+          - entity: sensor.washwise_test_multi_provider_primary_provider_uptime
+          - entity: binary_sensor.washwise_test_multi_provider_day_1_ok
+          - entity: binary_sensor.washwise_test_multi_provider_day_2_ok
+          - entity: binary_sensor.washwise_test_multi_provider_day_3_ok
+          - entity: button.washwise_test_multi_provider_mark_washed
