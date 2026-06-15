@@ -31,13 +31,13 @@ Create `tests/ha_config/` locally (gitignored — not committed):
 {
   "domain": "mock_weather",
   "name": "Mock Weather (WashWise testing)",
-  "version": "1.0.0",
-  "documentation": "https://github.com/italo-lombardi/Home-Assistant-WashWise",
-  "dependencies": [],
   "codeowners": [],
-  "requirements": [],
+  "config_flow": false,
+  "dependencies": [],
+  "documentation": "https://github.com/italo-lombardi/Home-Assistant-WashWise",
   "iot_class": "local_push",
-  "config_flow": false
+  "requirements": [],
+  "version": "1.0.0"
 }
 ```
 
