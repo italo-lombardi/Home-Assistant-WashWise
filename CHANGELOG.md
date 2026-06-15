@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2026-06-15
+
+### Fixed
+- **Score sensor state class restored** — `ScoreSensor` and `DayScoreSensor` had `MEASUREMENT` state class removed in v0.2.0, causing HA to warn that long-term statistics can no longer be tracked. State class restored: 0-100 score values fluctuate over time and are useful as historical trends.
+
 ## [0.2.0] - 2026-06-15
 
 ### Added
