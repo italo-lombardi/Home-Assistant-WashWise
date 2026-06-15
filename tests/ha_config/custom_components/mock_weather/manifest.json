@@ -2,7 +2,7 @@
   "domain": "mock_weather",
   "name": "Mock Weather (WashWise testing)",
   "version": "1.0.0",
-  "documentation": "",
+  "documentation": "https://github.com/italo-lombardi/Home-Assistant-WashWise",
   "dependencies": [],
   "codeowners": [],
   "requirements": [],
