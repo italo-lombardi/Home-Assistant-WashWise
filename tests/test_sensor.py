@@ -23,6 +23,7 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
+from homeassistant.components.sensor import SensorStateClass
 from homeassistant.helpers.entity import EntityCategory
 
 from custom_components.washwise.const import (
@@ -465,6 +466,20 @@ def test_day_score_attributes_expose_forecast_row() -> None:
     assert attrs["condition"] == "rainy"
     assert attrs["precipitation"] == 4.5
     assert attrs["blockers"] == ["precipitation"]
+
+
+def test_score_sensor_has_measurement_state_class() -> None:
+    """ScoreSensor must declare MEASUREMENT so HA tracks long-term statistics."""
+    coordinator = _make_coordinator(_make_decision())
+    sensor = ScoreSensor(coordinator, _make_entry())
+    assert sensor.state_class == SensorStateClass.MEASUREMENT
+
+
+def test_day_score_sensor_has_measurement_state_class() -> None:
+    """DayScoreSensor must declare MEASUREMENT so HA tracks long-term statistics."""
+    coordinator = _make_coordinator(_make_decision())
+    sensor = DayScoreSensor(coordinator, _make_entry(), 0)
+    assert sensor.state_class == SensorStateClass.MEASUREMENT
 
 
 # ----------------------------------------------------------------------
