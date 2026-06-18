@@ -191,10 +191,6 @@ class WashWiseCanWashBinarySensor(_WashWiseBinarySensorBase):
             "score": int(decision.score),
             "reason": decision.reason,
             "active_weather_entity": self.coordinator.active_weather_entity,
-            "blocking_days": [
-                d.isoformat() if hasattr(d, "isoformat") else d
-                for d in (decision.blocking_days or [])
-            ],
         }
 
 

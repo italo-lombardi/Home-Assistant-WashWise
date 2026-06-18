@@ -111,8 +111,89 @@ def test_bad_current_condition_rainy_blocks_immediately() -> None:
     assert result.can_wash is False
     assert result.reason == REASON_BAD_CURRENT_CONDITION
     assert result.score == 0
-    assert result.days_analyzed == 0
+    # Verdict is negative, but the forecast horizon is still walked so the
+    # diagnostic sensors (Day N OK, Day N score, forecast aggregates) keep
+    # rendering values instead of "Unknown".
+    assert result.days_analyzed == 3
+    assert len(result.forecast_summary) == 3
+    # Sunny forecast — no per-day blockers; first clear day is offset 0.
     assert result.blocking_days == []
+    assert result.days_until_wash == 0
+
+
+def test_bad_current_condition_still_populates_forecast_summary() -> None:
+    """Forecast walk must run even when current weather short-circuits the verdict.
+
+    Mixed forecast (rainy / sunny / rainy) -> the per-day summary still
+    flags the rainy days as blocked while the verdict stays negative.
+    blocking_days is kept empty for bad-current: per-day blocked state is
+    visible via forecast_summary[i]["blocked"] without mixing forecast
+    dates into a field whose reason is current-weather-derived.
+    """
+    cur = CurrentWeather(condition="rainy", temperature_c=10.0)
+    forecast = [
+        _day(0, condition="rainy", precip=5.0),
+        _day(1, condition="sunny", precip=0.0),
+        _day(2, condition="rainy", precip=4.0),
+    ]
+
+    result = compute(cur, forecast, _thresholds(), invert=False, now=NOW)
+
+    assert result.can_wash is False
+    assert result.reason == REASON_BAD_CURRENT_CONDITION
+    assert result.score == 0
+    assert result.days_analyzed == 3
+    assert len(result.forecast_summary) == 3
+    # blocking_days is empty — reason is current-weather, not forecast-derived.
+    assert result.blocking_days == []
+
+    day0, day1, day2 = result.forecast_summary
+    assert day0["blocked"] is True
+    assert day0["day_score"] < 100
+    assert day1["blocked"] is False
+    assert day1["day_score"] == 100
+    assert day2["blocked"] is True
+    assert day2["day_score"] < 100
+    # day1 is the first unblocked day (offset 1).
+    assert result.days_until_wash == 1
+
+
+def test_bad_current_condition_days_until_wash_set_when_forecast_has_clear_day() -> None:
+    """days_until_wash must resolve even under bad current weather.
+
+    When current weather is bad but the forecast has a clear window,
+    days_until_wash points to the first unblocked day so the sensor
+    renders a value instead of Unknown.
+    """
+    cur = CurrentWeather(condition="rainy", temperature_c=10.0)
+    forecast = [
+        _day(0, condition="rainy", precip=5.0),  # blocked
+        _day(1, condition="sunny", precip=0.0),  # clear — first window
+        _day(2, condition="sunny", precip=0.0),
+    ]
+
+    result = compute(cur, forecast, _thresholds(), invert=False, now=NOW)
+
+    assert result.can_wash is False
+    assert result.reason == REASON_BAD_CURRENT_CONDITION
+    # First clear day is day offset 1 → 1 day away.
+    assert result.days_until_wash == 1
+
+
+def test_bad_current_condition_days_until_wash_none_when_all_blocked() -> None:
+    """days_until_wash is None when every forecast day is also blocked."""
+    cur = CurrentWeather(condition="rainy", temperature_c=10.0)
+    forecast = [
+        _day(0, condition="rainy", precip=5.0),
+        _day(1, condition="rainy", precip=5.0),
+        _day(2, condition="rainy", precip=5.0),
+    ]
+
+    result = compute(cur, forecast, _thresholds(), invert=False, now=NOW)
+
+    assert result.can_wash is False
+    assert result.reason == REASON_BAD_CURRENT_CONDITION
+    assert result.days_until_wash is None
 
 
 # ---------------------------------------------------------------------------

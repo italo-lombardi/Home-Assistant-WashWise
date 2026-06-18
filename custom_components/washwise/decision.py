@@ -187,22 +187,14 @@ def compute(
 
     today: date = now.date()
 
+    walked: list[ForecastDay] = list(forecast[:horizon]) if horizon > 0 else []
+    days_analyzed = len(walked)
+
     # ------------------------------------------------------------------
-    # Step 1: short-circuit on current condition.
-    # Non-inverted: bad current condition → block immediately.
-    # Inverted (solar/irrigation): bad current condition → wash now (score=100).
+    # Step 1: invert short-circuit on current condition.
+    # Fires before the walk — no CPU wasted on a result that gets discarded.
     # ------------------------------------------------------------------
-    if current.condition is not None and current.condition in bad_conditions:
-        if not invert:
-            return Decision(
-                can_wash=False,
-                score=0,
-                reason=REASON_BAD_CURRENT_CONDITION,
-                days_until_wash=None,
-                blocking_days=[],
-                forecast_summary=[],
-                days_analyzed=0,
-            )
+    if invert and current.condition is not None and current.condition in bad_conditions:
         # Inverted: current bad condition means panels are dirty / ground is dry → wash.
         return Decision(
             can_wash=True,
@@ -215,23 +207,154 @@ def compute(
         )
 
     # ------------------------------------------------------------------
-    # Step 2: walk forecast days, collect blockers + per-day breakdown.
+    # Walk the forecast horizon. Always runs so per-day diagnostic sensors
+    # (Day N OK, Day N score, forecast rainfall total, min/max temp, worst
+    # condition) keep rendering values even when the current weather short-
+    # circuits the verdict below.
     # ------------------------------------------------------------------
-    walked: list[ForecastDay] = list(forecast[:horizon]) if horizon > 0 else []
-    days_analyzed = len(walked)
+    (
+        forecast_summary,
+        forecast_blocking_days,
+        walked_score,
+        rainy_days,
+        first_blocker_reason,
+    ) = _walk_forecast(
+        walked,
+        current_temperature_c=current.temperature_c,
+        precip_threshold=precip_threshold,
+        freeze_check_enabled=freeze_check_enabled,
+        bad_conditions=bad_conditions,
+        precip_weight=precip_weight,
+        freeze_weight=freeze_weight,
+        condition_weight=condition_weight,
+    )
+    score_int = round(walked_score)  # already clamped by _walk_forecast
 
+    # ------------------------------------------------------------------
+    # Non-inverted bad-current short-circuit. Verdict is locked to False
+    # because it's raining/snowing now — washing is pointless regardless
+    # of the forecast. blocking_days is left empty: the per-day blockers
+    # are visible via forecast_summary[i]["blocked"], and mixing forecast
+    # dates into blocking_days alongside a current-weather reason would be
+    # semantically misleading. days_until_wash is still computed so the
+    # "Days until possible wash" sensor can show a useful value.
+    # ------------------------------------------------------------------
+    if current.condition is not None and current.condition in bad_conditions:
+        # Find the first forecast day that is not blocked.
+        blocking_set = set(forecast_blocking_days)
+        days_until_wash_bc: int | None = None
+        for day in walked:
+            if day.date not in blocking_set:
+                days_until_wash_bc = (day.date - today).days
+                break
+        return Decision(
+            can_wash=False,
+            score=0,
+            reason=REASON_BAD_CURRENT_CONDITION,
+            days_until_wash=days_until_wash_bc,
+            blocking_days=[],
+            forecast_summary=forecast_summary,
+            days_analyzed=days_analyzed,
+        )
+
+    # ------------------------------------------------------------------
+    # Determine verdict + next wash window.
+    # ------------------------------------------------------------------
+    if invert:
+        # Solar mode: rain expected = clean panels = wash verdict True.
+        if rainy_days:
+            days_until_wash: int | None = (rainy_days[0] - today).days
+            can_wash = True
+            # Inverted scoring: invert the score so "lots of rain" = high.
+            score_int = 100 - score_int
+            reason = first_blocker_reason or REASON_RAIN
+            # When inverted, "blocking_days" semantics flip: the rainy days
+            # are positive signals, not blockers.
+            inverted_blocking_days = list(rainy_days)
+            return Decision(
+                can_wash=can_wash,
+                score=score_int,
+                reason=reason,
+                days_until_wash=days_until_wash,
+                blocking_days=inverted_blocking_days,
+                forecast_summary=forecast_summary,
+                days_analyzed=days_analyzed,
+            )
+        # No rain in horizon -> panels stay dirty; invert score for consistency.
+        return Decision(
+            can_wash=False,
+            score=100 - score_int,
+            reason=REASON_CLEAR,
+            days_until_wash=None,
+            blocking_days=[],
+            forecast_summary=forecast_summary,
+            days_analyzed=days_analyzed,
+        )
+
+    # Non-inverted mode: find the first non-blocking day.
+    blocking_set = set(forecast_blocking_days)
+    days_until_wash: int | None = None
+    for day in walked:
+        if day.date not in blocking_set:
+            days_until_wash = (day.date - today).days
+            break
+
+    can_wash = not forecast_blocking_days and days_analyzed > 0
+    if can_wash:
+        reason = REASON_CLEAR
+    elif days_analyzed == 0:
+        reason = REASON_CLEAR
+        # No forecast data — do not grant permission; treat as unavailable.
+        can_wash = False
+    else:
+        reason = first_blocker_reason or REASON_BAD_CONDITION
+
+    return Decision(
+        can_wash=can_wash,
+        score=score_int,
+        reason=reason,
+        days_until_wash=days_until_wash,
+        blocking_days=forecast_blocking_days,
+        forecast_summary=forecast_summary,
+        days_analyzed=days_analyzed,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def _walk_forecast(
+    walked: list[ForecastDay],
+    *,
+    current_temperature_c: float | None,
+    precip_threshold: float,
+    freeze_check_enabled: bool,
+    bad_conditions: tuple[str, ...],
+    precip_weight: float,
+    freeze_weight: float,
+    condition_weight: float,
+) -> tuple[list[dict[str, Any]], list[date], float, list[date], str | None]:
+    """Walk the forecast horizon and build per-day diagnostics.
+
+    Returns ``(forecast_summary, blocking_days, score, rainy_days,
+    first_blocker_reason)``. Pulled out of ``compute`` so the bad-current
+    short-circuit can still produce a populated ``forecast_summary`` for
+    diagnostic sensors instead of an empty list.
+
+    Mirrors plan §2 steps 2-4: precipitation / condition / freeze blockers
+    with temperature carry-forward, score penalties accumulated against a
+    100.0 baseline.
+    """
     forecast_summary: list[dict[str, Any]] = []
     blocking_days: list[date] = []
-    score = 100.0
-    first_blocker_reason: str | None = None  # tracks why "today" failed
-
-    # Carry-forward temperature seed for freeze check. Plan §2 step 2:
-    # "Carry temp_check across days using temp_min then temp_max."
-    temp_check: float | None = current.temperature_c
-
-    # For invert mode we also collect rainy days so we can pick the first
-    # one as the "next_window".
     rainy_days: list[date] = []
+    score = 100.0
+    first_blocker_reason: str | None = None
+
+    # Carry-forward temperature seed for freeze check.
+    temp_check: float | None = current_temperature_c
 
     for day in walked:
         day_blockers: list[str] = []
@@ -280,8 +403,9 @@ def compute(
             if first_blocker_reason is None:
                 first_blocker_reason = _reason_from_blockers(day_blockers, cond)
 
-        # Track rainy/blocked days for invert mode (includes freeze-blocked days
-        # so sub-zero conditions also suppress irrigation/solar-clean signals).
+        # Track rainy/blocked days for invert mode (includes freeze-blocked
+        # days so sub-zero conditions also suppress irrigation/solar-clean
+        # signals).
         if (
             (precip is not None and precip > precip_threshold)
             or (cond is not None and cond in bad_conditions)
@@ -289,9 +413,7 @@ def compute(
         ):
             rainy_days.append(day.date)
 
-        # ------------------------------------------------------------------
         # Score penalties (plan §2 step 4).
-        # ------------------------------------------------------------------
         day_score_penalty = 0.0
         if precip is not None and precip > 0:
             day_score_penalty += precip_weight * min(1.0, precip / max(0.1, precip_threshold))
@@ -315,75 +437,10 @@ def compute(
             }
         )
 
+    # Clamp here so callers receive a value in [0.0, 100.0] without needing
+    # to remember to do it themselves.
     score = max(0.0, min(100.0, score))
-    score_int = round(score)
-
-    # ------------------------------------------------------------------
-    # Step 5 + 6: next window + days_until_wash.
-    # ------------------------------------------------------------------
-    if invert:
-        # Solar mode: rain expected = clean panels = wash verdict True.
-        if rainy_days:
-            days_until_wash: int | None = (rainy_days[0] - today).days
-            can_wash = True
-            # Inverted scoring: invert the score so "lots of rain" = high.
-            score_int = 100 - score_int
-            reason = REASON_RAIN if first_blocker_reason is None else first_blocker_reason
-            # When inverted, "blocking_days" semantics flip: the rainy days
-            # are positive signals, not blockers.
-            inverted_blocking_days = list(rainy_days)
-            return Decision(
-                can_wash=can_wash,
-                score=score_int,
-                reason=reason,
-                days_until_wash=days_until_wash,
-                blocking_days=inverted_blocking_days,
-                forecast_summary=forecast_summary,
-                days_analyzed=days_analyzed,
-            )
-        # No rain in horizon -> panels stay dirty; invert score for consistency.
-        return Decision(
-            can_wash=False,
-            score=100 - score_int,
-            reason=REASON_CLEAR,
-            days_until_wash=None,
-            blocking_days=[],
-            forecast_summary=forecast_summary,
-            days_analyzed=days_analyzed,
-        )
-
-    # Non-inverted mode: find the first non-blocking day.
-    blocking_set = set(blocking_days)
-    days_until_wash: int | None = None
-    for day in walked:
-        if day.date not in blocking_set:
-            days_until_wash = (day.date - today).days
-            break
-
-    can_wash = not blocking_days and days_analyzed > 0
-    if can_wash:
-        reason = REASON_CLEAR
-    elif days_analyzed == 0:
-        reason = REASON_CLEAR
-        # No forecast data — do not grant permission; treat as unavailable.
-        can_wash = False
-    else:
-        reason = first_blocker_reason or REASON_BAD_CONDITION
-
-    return Decision(
-        can_wash=can_wash,
-        score=score_int,
-        reason=reason,
-        days_until_wash=days_until_wash,
-        blocking_days=blocking_days,
-        forecast_summary=forecast_summary,
-        days_analyzed=days_analyzed,
-    )
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
+    return forecast_summary, blocking_days, score, rainy_days, first_blocker_reason
 
 
 def _reason_from_blockers(blockers: list[str], condition: str | None) -> str:
@@ -403,6 +460,7 @@ __all__ = [
     "REASON_BAD_CONDITION",
     "REASON_BAD_CURRENT_CONDITION",
     "REASON_CLEAR",
+    "REASON_DIRTY_NOW",
     "REASON_FREEZE",
     "REASON_RAIN",
     "REASON_SNOW",

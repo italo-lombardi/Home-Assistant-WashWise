@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.2] - 2026-06-18
+
+### Fixed
+- **Forecast diagnostics frozen at "Unknown" when current weather is bad** — the bad-current-condition short-circuit returned an empty `forecast_summary`, causing Day 1/2/3 OK, per-day score, forecast rainfall total, min/max temp, and worst-condition sensors to render `Unknown` whenever it was raining at the time of the update. The horizon is now walked and these diagnostics populate even while the verdict stays `can_wash=False, reason=bad_current_condition`.
+- **`days_until_wash` sensor stuck at "Unknown" under bad current weather** — now resolves to the first unblocked forecast day even when the current condition short-circuits the verdict.
+- **`blocking_days` attribute on `can_wash` binary sensor mixed forecast dates with a current-weather reason** — `blocking_days` is now `[]` when reason is `bad_current_condition`; per-day blocked state is still visible via `forecast_summary[i]["blocked"]`. The top-level `blocking_days` attribute (duplicate of `decision_details.blocking_days`) was also removed from `extra_state_attributes`.
+
+### Changed
+- **Coordinator emits a debug log on every successful update** (active provider, can_wash, reason, score, days_analyzed). Lets users running `logger: custom_components.washwise: debug` confirm the integration is ticking even when nothing is wrong.
+
 ## [0.2.1] - 2026-06-15
 
 ### Fixed
