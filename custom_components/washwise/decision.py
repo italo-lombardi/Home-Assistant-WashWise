@@ -191,16 +191,30 @@ def compute(
     days_analyzed = len(walked)
 
     # ------------------------------------------------------------------
-    # Walk the forecast horizon up-front. We always populate
-    # ``forecast_summary`` even when a short-circuit verdict is applied
-    # later, so per-day diagnostic sensors (Day N OK, Day N score, forecast
-    # rainfall total, min/max temp, worst condition) keep rendering values
-    # instead of falling back to ``Unknown`` whenever the current weather
-    # is bad.
+    # Step 1: invert short-circuit on current condition.
+    # Fires before the walk — no CPU wasted on a result that gets discarded.
+    # ------------------------------------------------------------------
+    if invert and current.condition is not None and current.condition in bad_conditions:
+        # Inverted: current bad condition means panels are dirty / ground is dry → wash.
+        return Decision(
+            can_wash=True,
+            score=100,
+            reason=REASON_DIRTY_NOW,
+            days_until_wash=0,
+            blocking_days=[],
+            forecast_summary=[],
+            days_analyzed=0,
+        )
+
+    # ------------------------------------------------------------------
+    # Walk the forecast horizon. Always runs so per-day diagnostic sensors
+    # (Day N OK, Day N score, forecast rainfall total, min/max temp, worst
+    # condition) keep rendering values even when the current weather short-
+    # circuits the verdict below.
     # ------------------------------------------------------------------
     (
         forecast_summary,
-        blocking_days,
+        forecast_blocking_days,
         walked_score,
         rainy_days,
         first_blocker_reason,
@@ -217,31 +231,30 @@ def compute(
     score_int = round(walked_score)  # already clamped by _walk_forecast
 
     # ------------------------------------------------------------------
-    # Step 1: short-circuit on current condition.
-    # Non-inverted: bad current condition → block immediately, but keep the
-    # populated forecast_summary so diagnostics still work.
-    # Inverted (solar/irrigation): bad current condition → wash now.
+    # Non-inverted bad-current short-circuit. Verdict is locked to False
+    # because it's raining/snowing now — washing is pointless regardless
+    # of the forecast. blocking_days is left empty: the per-day blockers
+    # are visible via forecast_summary[i]["blocked"], and mixing forecast
+    # dates into blocking_days alongside a current-weather reason would be
+    # semantically misleading. days_until_wash is still computed so the
+    # "Days until possible wash" sensor can show a useful value.
     # ------------------------------------------------------------------
     if current.condition is not None and current.condition in bad_conditions:
-        if not invert:
-            return Decision(
-                can_wash=False,
-                score=0,
-                reason=REASON_BAD_CURRENT_CONDITION,
-                days_until_wash=None,
-                blocking_days=blocking_days,
-                forecast_summary=forecast_summary,
-                days_analyzed=days_analyzed,
-            )
-        # Inverted: current bad condition means panels are dirty / ground is dry → wash.
+        # Find the first forecast day that is not blocked.
+        blocking_set = set(forecast_blocking_days)
+        days_until_wash_bc: int | None = None
+        for day in walked:
+            if day.date not in blocking_set:
+                days_until_wash_bc = (day.date - today).days
+                break
         return Decision(
-            can_wash=True,
-            score=100,
-            reason=REASON_DIRTY_NOW,
-            days_until_wash=0,
+            can_wash=False,
+            score=0,
+            reason=REASON_BAD_CURRENT_CONDITION,
+            days_until_wash=days_until_wash_bc,
             blocking_days=[],
-            forecast_summary=[],
-            days_analyzed=0,
+            forecast_summary=forecast_summary,
+            days_analyzed=days_analyzed,
         )
 
     # ------------------------------------------------------------------
@@ -279,14 +292,14 @@ def compute(
         )
 
     # Non-inverted mode: find the first non-blocking day.
-    blocking_set = set(blocking_days)
+    blocking_set = set(forecast_blocking_days)
     days_until_wash: int | None = None
     for day in walked:
         if day.date not in blocking_set:
             days_until_wash = (day.date - today).days
             break
 
-    can_wash = not blocking_days and days_analyzed > 0
+    can_wash = not forecast_blocking_days and days_analyzed > 0
     if can_wash:
         reason = REASON_CLEAR
     elif days_analyzed == 0:
@@ -301,7 +314,7 @@ def compute(
         score=score_int,
         reason=reason,
         days_until_wash=days_until_wash,
-        blocking_days=blocking_days,
+        blocking_days=forecast_blocking_days,
         forecast_summary=forecast_summary,
         days_analyzed=days_analyzed,
     )

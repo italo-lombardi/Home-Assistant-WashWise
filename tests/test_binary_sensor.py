@@ -202,14 +202,15 @@ def test_can_wash_attributes_populated() -> None:
     assert details["score"] == 72
     assert details["reason"] == "clear"
     assert details["days_until_wash"] == 2
-    assert "blocking_days" in details
+    # blocking_days lives inside decision_details (ISO strings).
+    assert details["blocking_days"] == ["2026-06-12"]
+    # blocking_days is no longer duplicated at the top level.
+    assert "blocking_days" not in attrs
 
     assert attrs["days_analyzed"] == 3
     assert attrs["score"] == 72
     assert attrs["reason"] == "clear"
     assert attrs["active_weather_entity"] == "weather.home"
-    # Top-level blocking_days are ISO strings.
-    assert attrs["blocking_days"] == ["2026-06-12"]
 
 
 # ----------------------------------------------------------------------
