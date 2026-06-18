@@ -214,7 +214,7 @@ def compute(
         freeze_weight=freeze_weight,
         condition_weight=condition_weight,
     )
-    score_int = round(max(0.0, min(100.0, walked_score)))
+    score_int = round(walked_score)  # already clamped by _walk_forecast
 
     # ------------------------------------------------------------------
     # Step 1: short-circuit on current condition.
@@ -245,7 +245,7 @@ def compute(
         )
 
     # ------------------------------------------------------------------
-    # Step 5 + 6: next window + days_until_wash.
+    # Determine verdict + next wash window.
     # ------------------------------------------------------------------
     if invert:
         # Solar mode: rain expected = clean panels = wash verdict True.
@@ -424,6 +424,9 @@ def _walk_forecast(
             }
         )
 
+    # Clamp here so callers receive a value in [0.0, 100.0] without needing
+    # to remember to do it themselves.
+    score = max(0.0, min(100.0, score))
     return forecast_summary, blocking_days, score, rainy_days, first_blocker_reason
 
 
@@ -444,6 +447,7 @@ __all__ = [
     "REASON_BAD_CONDITION",
     "REASON_BAD_CURRENT_CONDITION",
     "REASON_CLEAR",
+    "REASON_DIRTY_NOW",
     "REASON_FREEZE",
     "REASON_RAIN",
     "REASON_SNOW",
