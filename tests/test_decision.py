@@ -154,6 +154,8 @@ def test_bad_current_condition_still_populates_forecast_summary() -> None:
     assert day1["day_score"] == 100
     assert day2["blocked"] is True
     assert day2["day_score"] < 100
+    # day1 is the first unblocked day (offset 1).
+    assert result.days_until_wash == 1
 
 
 def test_bad_current_condition_days_until_wash_set_when_forecast_has_clear_day() -> None:
