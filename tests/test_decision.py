@@ -111,8 +111,48 @@ def test_bad_current_condition_rainy_blocks_immediately() -> None:
     assert result.can_wash is False
     assert result.reason == REASON_BAD_CURRENT_CONDITION
     assert result.score == 0
-    assert result.days_analyzed == 0
+    # Verdict is negative, but the forecast horizon is still walked so the
+    # diagnostic sensors (Day N OK, Day N score, forecast aggregates) keep
+    # rendering values instead of "Unknown".
+    assert result.days_analyzed == 3
+    assert len(result.forecast_summary) == 3
+    # Sunny forecast — no per-day blockers.
     assert result.blocking_days == []
+
+
+def test_bad_current_condition_still_populates_forecast_summary() -> None:
+    """Forecast walk must run even when current weather short-circuits the verdict.
+
+    Mixed forecast (rainy / sunny / rainy) -> the per-day summary still
+    flags the rainy days as blocked while the verdict stays negative.
+    """
+    cur = CurrentWeather(condition="rainy", temperature_c=10.0)
+    forecast = [
+        _day(0, condition="rainy", precip=5.0),
+        _day(1, condition="sunny", precip=0.0),
+        _day(2, condition="rainy", precip=4.0),
+    ]
+
+    result = compute(cur, forecast, _thresholds(), invert=False, now=NOW)
+
+    assert result.can_wash is False
+    assert result.reason == REASON_BAD_CURRENT_CONDITION
+    assert result.score == 0
+    assert result.days_analyzed == 3
+    assert len(result.forecast_summary) == 3
+
+    day0, day1, day2 = result.forecast_summary
+    assert day0["blocked"] is True
+    assert day0["day_score"] < 100
+    assert day1["blocked"] is False
+    assert day1["day_score"] == 100
+    assert day2["blocked"] is True
+    assert day2["day_score"] < 100
+
+    # blocking_days lists the rainy dates so per-day binary sensors render.
+    assert forecast[0].date in result.blocking_days
+    assert forecast[2].date in result.blocking_days
+    assert forecast[1].date not in result.blocking_days
 
 
 # ---------------------------------------------------------------------------

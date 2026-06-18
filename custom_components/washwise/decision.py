@@ -187,10 +187,40 @@ def compute(
 
     today: date = now.date()
 
+    walked: list[ForecastDay] = list(forecast[:horizon]) if horizon > 0 else []
+    days_analyzed = len(walked)
+
+    # ------------------------------------------------------------------
+    # Walk the forecast horizon up-front. We always populate
+    # ``forecast_summary`` even when a short-circuit verdict is applied
+    # later, so per-day diagnostic sensors (Day N OK, Day N score, forecast
+    # rainfall total, min/max temp, worst condition) keep rendering values
+    # instead of falling back to ``Unknown`` whenever the current weather
+    # is bad.
+    # ------------------------------------------------------------------
+    (
+        forecast_summary,
+        blocking_days,
+        walked_score,
+        rainy_days,
+        first_blocker_reason,
+    ) = _walk_forecast(
+        walked,
+        current_temperature_c=current.temperature_c,
+        precip_threshold=precip_threshold,
+        freeze_check_enabled=freeze_check_enabled,
+        bad_conditions=bad_conditions,
+        precip_weight=precip_weight,
+        freeze_weight=freeze_weight,
+        condition_weight=condition_weight,
+    )
+    score_int = round(max(0.0, min(100.0, walked_score)))
+
     # ------------------------------------------------------------------
     # Step 1: short-circuit on current condition.
-    # Non-inverted: bad current condition → block immediately.
-    # Inverted (solar/irrigation): bad current condition → wash now (score=100).
+    # Non-inverted: bad current condition → block immediately, but keep the
+    # populated forecast_summary so diagnostics still work.
+    # Inverted (solar/irrigation): bad current condition → wash now.
     # ------------------------------------------------------------------
     if current.condition is not None and current.condition in bad_conditions:
         if not invert:
@@ -199,9 +229,9 @@ def compute(
                 score=0,
                 reason=REASON_BAD_CURRENT_CONDITION,
                 days_until_wash=None,
-                blocking_days=[],
-                forecast_summary=[],
-                days_analyzed=0,
+                blocking_days=blocking_days,
+                forecast_summary=forecast_summary,
+                days_analyzed=days_analyzed,
             )
         # Inverted: current bad condition means panels are dirty / ground is dry → wash.
         return Decision(
@@ -213,110 +243,6 @@ def compute(
             forecast_summary=[],
             days_analyzed=0,
         )
-
-    # ------------------------------------------------------------------
-    # Step 2: walk forecast days, collect blockers + per-day breakdown.
-    # ------------------------------------------------------------------
-    walked: list[ForecastDay] = list(forecast[:horizon]) if horizon > 0 else []
-    days_analyzed = len(walked)
-
-    forecast_summary: list[dict[str, Any]] = []
-    blocking_days: list[date] = []
-    score = 100.0
-    first_blocker_reason: str | None = None  # tracks why "today" failed
-
-    # Carry-forward temperature seed for freeze check. Plan §2 step 2:
-    # "Carry temp_check across days using temp_min then temp_max."
-    temp_check: float | None = current.temperature_c
-
-    # For invert mode we also collect rainy days so we can pick the first
-    # one as the "next_window".
-    rainy_days: list[date] = []
-
-    for day in walked:
-        day_blockers: list[str] = []
-
-        precip = day.precipitation_mm
-        cond = day.condition
-        tmin = day.temp_min_c
-        tmax = day.temp_max_c
-
-        # Precipitation blocker.
-        if precip is not None and precip > precip_threshold:
-            day_blockers.append("precip")
-
-        # Condition blocker.
-        if cond is not None and cond in bad_conditions:
-            day_blockers.append("condition")
-
-        # Freeze blocker (carry-forward across days). The wording in the
-        # plan -- "temp_check < 0 <= temp_min OR < 0 <= temp_max" -- means:
-        # the previous day's checkpoint temp is below freezing AND today's
-        # min (or max) is at/above freezing -> we crossed 0 °C, water on
-        # the surface freezes / re-thaws -> bad.
-        freeze_blocker = (
-            freeze_check_enabled
-            and temp_check is not None
-            and (
-                (tmin is not None and temp_check < 0 <= tmin)
-                or (tmax is not None and temp_check < 0 <= tmax)
-            )
-        )
-        if freeze_blocker:
-            day_blockers.append("freeze")
-
-        # Update temp_check for the *next* iteration: carry the highest
-        # available temperature (prefer tmax) so a day that thawed via tmax
-        # does not re-trigger a freeze blocker on the next iteration.
-        if tmax is not None:
-            temp_check = tmax
-        elif tmin is not None:
-            temp_check = tmin
-        # else: leave temp_check unchanged so we keep the last known value.
-
-        is_blocked = bool(day_blockers)
-        if is_blocked:
-            blocking_days.append(day.date)
-            if first_blocker_reason is None:
-                first_blocker_reason = _reason_from_blockers(day_blockers, cond)
-
-        # Track rainy/blocked days for invert mode (includes freeze-blocked days
-        # so sub-zero conditions also suppress irrigation/solar-clean signals).
-        if (
-            (precip is not None and precip > precip_threshold)
-            or (cond is not None and cond in bad_conditions)
-            or freeze_blocker
-        ):
-            rainy_days.append(day.date)
-
-        # ------------------------------------------------------------------
-        # Score penalties (plan §2 step 4).
-        # ------------------------------------------------------------------
-        day_score_penalty = 0.0
-        if precip is not None and precip > 0:
-            day_score_penalty += precip_weight * min(1.0, precip / max(0.1, precip_threshold))
-        if freeze_blocker:
-            day_score_penalty += freeze_weight
-        if cond is not None and cond in bad_conditions:
-            severity = BAD_CONDITION_SEVERITY.get(cond, 0.5)
-            day_score_penalty += condition_weight * severity
-        score -= day_score_penalty
-
-        forecast_summary.append(
-            {
-                "date": day.date.isoformat() if day.date is not None else None,
-                "condition": cond,
-                "precipitation": precip,
-                "temp_min": tmin,
-                "temp_max": tmax,
-                "blocked": is_blocked,
-                "blockers": day_blockers,
-                "day_score": max(0, round(100 - day_score_penalty)),
-            }
-        )
-
-    score = max(0.0, min(100.0, score))
-    score_int = round(score)
 
     # ------------------------------------------------------------------
     # Step 5 + 6: next window + days_until_wash.
@@ -384,6 +310,121 @@ def compute(
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
+def _walk_forecast(
+    walked: list[ForecastDay],
+    *,
+    current_temperature_c: float | None,
+    precip_threshold: float,
+    freeze_check_enabled: bool,
+    bad_conditions: tuple[str, ...],
+    precip_weight: float,
+    freeze_weight: float,
+    condition_weight: float,
+) -> tuple[list[dict[str, Any]], list[date], float, list[date], str | None]:
+    """Walk the forecast horizon and build per-day diagnostics.
+
+    Returns ``(forecast_summary, blocking_days, score, rainy_days,
+    first_blocker_reason)``. Pulled out of ``compute`` so the bad-current
+    short-circuit can still produce a populated ``forecast_summary`` for
+    diagnostic sensors instead of an empty list.
+
+    Mirrors plan §2 steps 2-4: precipitation / condition / freeze blockers
+    with temperature carry-forward, score penalties accumulated against a
+    100.0 baseline.
+    """
+    forecast_summary: list[dict[str, Any]] = []
+    blocking_days: list[date] = []
+    rainy_days: list[date] = []
+    score = 100.0
+    first_blocker_reason: str | None = None
+
+    # Carry-forward temperature seed for freeze check.
+    temp_check: float | None = current_temperature_c
+
+    for day in walked:
+        day_blockers: list[str] = []
+
+        precip = day.precipitation_mm
+        cond = day.condition
+        tmin = day.temp_min_c
+        tmax = day.temp_max_c
+
+        # Precipitation blocker.
+        if precip is not None and precip > precip_threshold:
+            day_blockers.append("precip")
+
+        # Condition blocker.
+        if cond is not None and cond in bad_conditions:
+            day_blockers.append("condition")
+
+        # Freeze blocker (carry-forward across days). The wording in the
+        # plan -- "temp_check < 0 <= temp_min OR < 0 <= temp_max" -- means:
+        # the previous day's checkpoint temp is below freezing AND today's
+        # min (or max) is at/above freezing -> we crossed 0 °C, water on
+        # the surface freezes / re-thaws -> bad.
+        freeze_blocker = (
+            freeze_check_enabled
+            and temp_check is not None
+            and (
+                (tmin is not None and temp_check < 0 <= tmin)
+                or (tmax is not None and temp_check < 0 <= tmax)
+            )
+        )
+        if freeze_blocker:
+            day_blockers.append("freeze")
+
+        # Update temp_check for the *next* iteration: carry the highest
+        # available temperature (prefer tmax) so a day that thawed via tmax
+        # does not re-trigger a freeze blocker on the next iteration.
+        if tmax is not None:
+            temp_check = tmax
+        elif tmin is not None:
+            temp_check = tmin
+        # else: leave temp_check unchanged so we keep the last known value.
+
+        is_blocked = bool(day_blockers)
+        if is_blocked:
+            blocking_days.append(day.date)
+            if first_blocker_reason is None:
+                first_blocker_reason = _reason_from_blockers(day_blockers, cond)
+
+        # Track rainy/blocked days for invert mode (includes freeze-blocked
+        # days so sub-zero conditions also suppress irrigation/solar-clean
+        # signals).
+        if (
+            (precip is not None and precip > precip_threshold)
+            or (cond is not None and cond in bad_conditions)
+            or freeze_blocker
+        ):
+            rainy_days.append(day.date)
+
+        # Score penalties (plan §2 step 4).
+        day_score_penalty = 0.0
+        if precip is not None and precip > 0:
+            day_score_penalty += precip_weight * min(1.0, precip / max(0.1, precip_threshold))
+        if freeze_blocker:
+            day_score_penalty += freeze_weight
+        if cond is not None and cond in bad_conditions:
+            severity = BAD_CONDITION_SEVERITY.get(cond, 0.5)
+            day_score_penalty += condition_weight * severity
+        score -= day_score_penalty
+
+        forecast_summary.append(
+            {
+                "date": day.date.isoformat() if day.date is not None else None,
+                "condition": cond,
+                "precipitation": precip,
+                "temp_min": tmin,
+                "temp_max": tmax,
+                "blocked": is_blocked,
+                "blockers": day_blockers,
+                "day_score": max(0, round(100 - day_score_penalty)),
+            }
+        )
+
+    return forecast_summary, blocking_days, score, rainy_days, first_blocker_reason
 
 
 def _reason_from_blockers(blockers: list[str], condition: str | None) -> str:

@@ -368,6 +368,14 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
             self._update_count += 1
             if self._update_count % 50 == 0:
                 await self._store.gc_stale_health()
+            _LOGGER.debug(
+                "WashWise update via %s: can_wash=%s reason=%s score=%s days_analyzed=%s",
+                eid,
+                decision.can_wash,
+                decision.reason,
+                decision.score,
+                decision.days_analyzed,
+            )
             return decision
 
         # Step 5: every provider failed.
