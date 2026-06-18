@@ -164,8 +164,8 @@ def test_bad_current_condition_days_until_wash_set_when_forecast_has_clear_day()
     """
     cur = CurrentWeather(condition="rainy", temperature_c=10.0)
     forecast = [
-        _day(0, condition="rainy", precip=5.0),   # blocked
-        _day(1, condition="sunny", precip=0.0),    # clear — first window
+        _day(0, condition="rainy", precip=5.0),  # blocked
+        _day(1, condition="sunny", precip=0.0),  # clear — first window
         _day(2, condition="sunny", precip=0.0),
     ]
 
