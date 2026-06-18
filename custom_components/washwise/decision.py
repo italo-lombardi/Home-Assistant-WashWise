@@ -267,7 +267,7 @@ def compute(
             can_wash = True
             # Inverted scoring: invert the score so "lots of rain" = high.
             score_int = 100 - score_int
-            reason = REASON_RAIN if first_blocker_reason is None else first_blocker_reason
+            reason = first_blocker_reason or REASON_RAIN
             # When inverted, "blocking_days" semantics flip: the rainy days
             # are positive signals, not blockers.
             inverted_blocking_days = list(rainy_days)

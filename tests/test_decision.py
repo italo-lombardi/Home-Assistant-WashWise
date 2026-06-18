@@ -116,8 +116,9 @@ def test_bad_current_condition_rainy_blocks_immediately() -> None:
     # rendering values instead of "Unknown".
     assert result.days_analyzed == 3
     assert len(result.forecast_summary) == 3
-    # Sunny forecast — no per-day blockers.
+    # Sunny forecast — no per-day blockers; first clear day is offset 0.
     assert result.blocking_days == []
+    assert result.days_until_wash == 0
 
 
 def test_bad_current_condition_still_populates_forecast_summary() -> None:
