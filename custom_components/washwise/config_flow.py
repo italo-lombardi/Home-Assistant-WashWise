@@ -118,12 +118,13 @@ def _existing_names(hass) -> list[str]:
     return names
 
 
-# Option keys that the customize_thresholds gate guards. When the user
-# unticks the toggle in the reconfigure flow, these are wiped from
-# entry.options so the category preset takes effect again instead of
-# being shadowed by stale override values left over from an earlier
-# options-flow auto-flip.
-_CUSTOMIZE_OPTION_KEYS: tuple[str, ...] = (
+# Option keys that reconfigure owns authoritatively. On every reconfigure
+# save these are wiped from entry.options so the freshly-submitted
+# entry.data values cannot be shadowed via _pick / OR-gate lookups in
+# the coordinator. Covers the customize_thresholds gate plus every
+# threshold/scoring/conditions/irrigation override the user can set
+# through the options menu.
+_RECONFIGURE_STRIPPED_OPTION_KEYS: tuple[str, ...] = (
     CONF_CUSTOMIZE_THRESHOLDS,
     CONF_DAYS,
     CONF_PRECIP_THRESHOLD,
@@ -133,6 +134,9 @@ _CUSTOMIZE_OPTION_KEYS: tuple[str, ...] = (
     CONF_PRECIP_WEIGHT,
     CONF_FREEZE_WEIGHT,
     CONF_CONDITION_WEIGHT,
+    CONF_RAIN_GAUGE_ENTITY,
+    CONF_RAIN_GAUGE_THRESHOLD_MM,
+    CONF_IRRIGATION_SWITCH_ENTITY,
 )
 
 
@@ -166,18 +170,20 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
         Always strips ``CONF_WEATHER_ENTITIES`` (reconfigure's new list
         lives in entry.data — see :meth:`_reconfigure_options_without_weather`).
 
-        Always strips the customize gate plus every threshold/scoring/
-        conditions key from options. Reconfigure is the authoritative
-        path: it re-asks for those values when the toggle is ticked, or
-        doesn't need them when unticked. Either way ``entry.data``
-        carries the fresh truth post-reconfigure, so any leftover
-        options key would only serve to shadow it via the OR-gate in
-        :meth:`WashWiseCoordinator._resolve_thresholds` or the
-        options-first ``_pick`` lookup. Symmetric strip closes both the
-        ``customize=False`` and ``customize=True`` shadow bugs.
+        Always strips every key in :data:`_RECONFIGURE_STRIPPED_OPTION_KEYS`
+        — the customize gate plus every threshold/scoring/conditions/
+        irrigation override the user can set through the options menu.
+        Reconfigure is the authoritative path: it re-asks for those
+        values when relevant or doesn't need them otherwise. Either way
+        ``entry.data`` carries the fresh truth post-reconfigure, so any
+        leftover options key would only serve to shadow it via the
+        OR-gate in :meth:`WashWiseCoordinator._resolve_thresholds` or
+        the options-first ``_pick`` lookup. Symmetric strip closes both
+        the ``customize=False`` and ``customize=True`` shadow bugs and
+        the analogous irrigation reconfigure shadow.
         """
         cleaned = self._reconfigure_options_without_weather(entry)
-        for key in _CUSTOMIZE_OPTION_KEYS:
+        for key in _RECONFIGURE_STRIPPED_OPTION_KEYS:
             cleaned.pop(key, None)
         return cleaned
 
