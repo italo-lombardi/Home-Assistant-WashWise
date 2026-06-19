@@ -270,6 +270,48 @@ async def test_first_provider_available_used(hass: HomeAssistant) -> None:
 
 
 @freeze_time(FROZEN_NOW)
+async def test_options_weather_entities_override_data_in_update(
+    hass: HomeAssistant,
+) -> None:
+    """Options-saved provider list wins over entry.data in the update walk.
+
+    Mirrors the headline fix: a user reorders providers via Options →
+    Providers (which lands in entry.options); the update pipeline must
+    walk that list, not the original entry.data list.
+    """
+    entry = _make_entry(
+        ["weather.primary", "weather.backup"],
+        options={CONF_WEATHER_ENTITIES: ["weather.backup", "weather.primary"]},
+    )
+    entry.add_to_hass(hass)
+    coord, stub = _build_coordinator(hass, entry)
+
+    with (
+        patch(
+            "custom_components.washwise.coordinator.weather_source.is_available",
+            new=AsyncMock(return_value=True),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_current",
+            new=AsyncMock(return_value=_sunny_current()),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_forecast",
+            new=AsyncMock(return_value=_clear_forecast(3)),
+        ),
+    ):
+        decision = await coord._async_update_data()
+
+    assert decision.can_wash is True
+    # The options list put backup first → it should be the active provider.
+    assert coord.active_weather_entity == "weather.backup"
+    backup_calls = [c for c in stub.health_calls if c[0] == "weather.backup"]
+    primary_calls = [c for c in stub.health_calls if c[0] == "weather.primary"]
+    assert backup_calls == [("weather.backup", True, None)]
+    assert primary_calls == []
+
+
+@freeze_time(FROZEN_NOW)
 async def test_first_dead_second_available_records_failover(
     hass: HomeAssistant,
 ) -> None:

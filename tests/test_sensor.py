@@ -130,9 +130,11 @@ def _make_coordinator(
     active_weather_entity: str | None = "weather.home",
     active_provider_label: str | None = "Home",
     last_update_success_time: datetime | None = None,
+    weather_ids: list[str] | None = None,
 ) -> SimpleNamespace:
     """Build a stub coordinator that satisfies CoordinatorEntity init."""
     store = SimpleNamespace(_data=stored) if stored is not None else SimpleNamespace()
+    ids = list(weather_ids) if weather_ids is not None else []
     return SimpleNamespace(
         data=decision,
         last_update_success=decision is not None,
@@ -140,6 +142,7 @@ def _make_coordinator(
         active_provider_label=active_provider_label,
         last_update_success_time=last_update_success_time,
         _store=store,
+        _weather_ids=lambda ids=ids: list(ids),
         async_add_listener=lambda update_callback, context=None: lambda: None,
     )
 
@@ -595,7 +598,7 @@ def test_primary_provider_uptime_percentage() -> None:
         last_failover_to=None,
         provider_health={"weather.home": health},
     )
-    coordinator = _make_coordinator(_make_decision(), stored=stored)
+    coordinator = _make_coordinator(_make_decision(), stored=stored, weather_ids=["weather.home"])
     entry = _make_entry(weather_entities=["weather.home"])
 
     sensor = PrimaryProviderUptimeSensor(coordinator, entry)
@@ -883,7 +886,7 @@ def test_worst_condition_none_when_no_conditions() -> None:
 
 def test_primary_provider_uptime_none_when_no_weather_entities() -> None:
     """Returns None when no configured weather entity ids."""
-    coordinator = _make_coordinator(_make_decision(), stored=StoredData.empty())
+    coordinator = _make_coordinator(_make_decision(), stored=StoredData.empty(), weather_ids=[])
     entry = _make_entry()
     # Override the helper's default weather_entities to truly empty.
     entry.data[CONF_WEATHER_ENTITIES] = []
@@ -895,7 +898,7 @@ def test_primary_provider_uptime_none_when_no_weather_entities() -> None:
 
 def test_primary_provider_uptime_none_when_store_unloaded() -> None:
     """Returns None when stored snapshot is missing."""
-    coordinator = _make_coordinator(_make_decision())  # no stored
+    coordinator = _make_coordinator(_make_decision(), weather_ids=["weather.home"])  # no stored
     entry = _make_entry(weather_entities=["weather.home"])
 
     sensor = PrimaryProviderUptimeSensor(coordinator, entry)
@@ -905,12 +908,66 @@ def test_primary_provider_uptime_none_when_store_unloaded() -> None:
 
 def test_primary_provider_uptime_none_when_no_health_entry() -> None:
     """Returns None when there is no health record for the primary entity."""
-    coordinator = _make_coordinator(_make_decision(), stored=StoredData.empty())
+    coordinator = _make_coordinator(
+        _make_decision(), stored=StoredData.empty(), weather_ids=["weather.home"]
+    )
     entry = _make_entry(weather_entities=["weather.home"])
 
     sensor = PrimaryProviderUptimeSensor(coordinator, entry)
 
     assert sensor.native_value is None
+
+
+def test_primary_provider_uptime_uses_options_first_provider() -> None:
+    """Reorder via Options → Providers must update the uptime sensor's primary.
+
+    Pre-fix the sensor read entry.data only, so the uptime kept reporting on
+    the original config-flow primary even after a reorder. The fix routes
+    through the coordinator's ``_weather_ids()`` helper, which merges options
+    over data.
+    """
+    backup_health = ProviderHealth(
+        entity_id="weather.backup",
+        success_count=9,
+        failure_count=1,
+        last_success_ts=None,
+        last_failure_ts=None,
+        last_error=None,
+        last_seen_ts=datetime.now(UTC).isoformat(),
+    )
+    primary_health = ProviderHealth(
+        entity_id="weather.primary",
+        success_count=1,
+        failure_count=9,
+        last_success_ts=None,
+        last_failure_ts=None,
+        last_error=None,
+        last_seen_ts=datetime.now(UTC).isoformat(),
+    )
+    stored = StoredData(
+        wash_log=[],
+        snooze_until=None,
+        last_failover_ts=None,
+        last_failover_from=None,
+        last_failover_to=None,
+        provider_health={
+            "weather.backup": backup_health,
+            "weather.primary": primary_health,
+        },
+    )
+    # Options reorder put backup first; data still has primary first.
+    coordinator = _make_coordinator(
+        _make_decision(),
+        stored=stored,
+        weather_ids=["weather.backup", "weather.primary"],
+    )
+    entry = _make_entry(weather_entities=["weather.primary", "weather.backup"])
+
+    sensor = PrimaryProviderUptimeSensor(coordinator, entry)
+    value = sensor.native_value
+
+    # Should reflect backup's 9/10 = 90 %, NOT primary's 1/10 = 10 %.
+    assert value == pytest.approx(90.0)
 
 
 def test_primary_provider_uptime_none_when_zero_total() -> None:
@@ -932,7 +989,7 @@ def test_primary_provider_uptime_none_when_zero_total() -> None:
         last_failover_to=None,
         provider_health={"weather.home": health},
     )
-    coordinator = _make_coordinator(_make_decision(), stored=stored)
+    coordinator = _make_coordinator(_make_decision(), stored=stored, weather_ids=["weather.home"])
     entry = _make_entry(weather_entities=["weather.home"])
 
     sensor = PrimaryProviderUptimeSensor(coordinator, entry)
