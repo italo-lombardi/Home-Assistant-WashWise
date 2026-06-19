@@ -286,13 +286,15 @@ async def test_reconfigure_clears_stale_weather_entities_from_options(
     options on reconfigure save while preserving every other option.
     """
     # Seed the entry with options that mimic a prior options-flow reorder
-    # plus an unrelated saved option (precip_weight) we expect to keep.
+    # plus an unrelated saved option (snooze_default_hours) we expect to
+    # keep. Use an "advanced" option so the customize-gate cleanup path
+    # doesn't strip it.
     mock_config_entry.add_to_hass(hass)
     hass.config_entries.async_update_entry(
         mock_config_entry,
         options={
             CONF_WEATHER_ENTITIES: ["weather.stale_primary", "weather.stale_backup"],
-            "precip_weight": 42,
+            "snooze_default_hours": 24,
         },
     )
 
@@ -325,7 +327,70 @@ async def test_reconfigure_clears_stale_weather_entities_from_options(
     # Stale options[CONF_WEATHER_ENTITIES] is gone.
     assert CONF_WEATHER_ENTITIES not in mock_config_entry.options
     # Unrelated options are preserved.
-    assert mock_config_entry.options.get("precip_weight") == 42
+    assert mock_config_entry.options.get("snooze_default_hours") == 24
+
+
+async def test_reconfigure_untoggle_customize_wipes_override_options(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """Reconfigure unticking ``customize_thresholds`` wipes the override keys.
+
+    Scenario:
+    1. User saves Options → Scoring (precip_weight=80). Auto-flip writes
+       ``options[CONF_CUSTOMIZE_THRESHOLDS]=True`` plus the override.
+    2. Later user runs Reconfigure with the toggle unticked.
+    3. Without this fix, ``options[CONF_CUSTOMIZE_THRESHOLDS]=True`` would
+       still win via the OR-gate in ``_resolve_thresholds`` and the
+       override would keep applying — user intent (False) silently
+       ignored.
+
+    Fix: when reconfigure submits ``customize=False``, strip the gate
+    plus every threshold/scoring/conditions key from options so the
+    category preset takes effect. Unrelated options (advanced /
+    irrigation / weather) are untouched.
+    """
+    mock_config_entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(
+        mock_config_entry,
+        options={
+            CONF_CUSTOMIZE_THRESHOLDS: True,
+            "precip_weight": 80,
+            CONF_DAYS: 5,
+            "snooze_default_hours": 12,  # advanced — must survive
+        },
+    )
+
+    with (
+        patch(
+            "custom_components.washwise.async_setup_entry",
+            return_value=True,
+        ),
+        patch(
+            "custom_components.washwise.async_unload_entry",
+            return_value=True,
+        ),
+    ):
+        result = await mock_config_entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.home"],
+                CONF_NAME: "Test Wash",
+                CONF_CATEGORY: "car",
+                CONF_CUSTOMIZE_THRESHOLDS: False,
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    # Customize gate + threshold/scoring overrides cleared from options.
+    assert CONF_CUSTOMIZE_THRESHOLDS not in mock_config_entry.options
+    assert "precip_weight" not in mock_config_entry.options
+    assert CONF_DAYS not in mock_config_entry.options
+    # Unrelated advanced option survives.
+    assert mock_config_entry.options.get("snooze_default_hours") == 12
 
 
 async def test_reconfigure_rejects_empty_weather_entities(
