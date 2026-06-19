@@ -127,6 +127,21 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
         """Initialise the config flow."""
         self._data: dict[str, Any] = {}
 
+    def _reconfigure_options_without_weather(self, entry: ConfigEntry) -> dict[str, Any]:
+        """Strip a stale ``weather_entities`` from options on reconfigure.
+
+        Reconfigure writes the new provider list to ``entry.data``. Since
+        the coordinator now merges options over data via ``_weather_ids``,
+        a stale ``options[CONF_WEATHER_ENTITIES]`` left over from an
+        earlier options-flow reorder would silently shadow the
+        reconfigure value. Drop just that one key; preserve every other
+        saved option (thresholds, scoring, advanced, irrigation).
+        """
+        options = entry.options or {}
+        if CONF_WEATHER_ENTITIES not in options:
+            return dict(options)
+        return {k: v for k, v in options.items() if k != CONF_WEATHER_ENTITIES}
+
     # ---------------------------------------------------------------- user
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
@@ -197,6 +212,7 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                     entry,
                     title=title,
                     data=self._data,
+                    options=self._reconfigure_options_without_weather(entry),
                     reason="reconfigure_successful",
                 )
             return self.async_create_entry(title=title, data=self._data)
@@ -288,6 +304,7 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                     entry,
                     title=title,
                     data=self._data,
+                    options=self._reconfigure_options_without_weather(entry),
                     reason="reconfigure_successful",
                 )
             return self.async_create_entry(title=title, data=self._data)
@@ -363,6 +380,7 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                         entry,
                         title=title,
                         data=new_data,
+                        options=self._reconfigure_options_without_weather(entry),
                         reason="reconfigure_successful",
                     )
 

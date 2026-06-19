@@ -272,6 +272,62 @@ async def test_reconfigure_updates_entry_and_reloads(
     assert mock_config_entry.data[CONF_CATEGORY] == "motorcycle"
 
 
+async def test_reconfigure_clears_stale_weather_entities_from_options(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """Reconfigure must drop a stale ``weather_entities`` from options.
+
+    If the user previously reordered providers via the options flow, the
+    list lives in ``entry.options`` and the coordinator's ``_weather_ids``
+    helper picks it over ``entry.data``. Reconfigure writes the new list
+    to ``entry.data``, so a stale options entry would silently shadow
+    the reconfigure value. The fix strips just that one key from
+    options on reconfigure save while preserving every other option.
+    """
+    # Seed the entry with options that mimic a prior options-flow reorder
+    # plus an unrelated saved option (precip_weight) we expect to keep.
+    mock_config_entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(
+        mock_config_entry,
+        options={
+            CONF_WEATHER_ENTITIES: ["weather.stale_primary", "weather.stale_backup"],
+            "precip_weight": 42,
+        },
+    )
+
+    with (
+        patch(
+            "custom_components.washwise.async_setup_entry",
+            return_value=True,
+        ),
+        patch(
+            "custom_components.washwise.async_unload_entry",
+            return_value=True,
+        ),
+    ):
+        result = await mock_config_entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.fresh_primary"],
+                CONF_NAME: "Test Wash",
+                CONF_CATEGORY: "car",
+                CONF_CUSTOMIZE_THRESHOLDS: False,
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    # New list lands in entry.data (as before).
+    assert mock_config_entry.data[CONF_WEATHER_ENTITIES] == ["weather.fresh_primary"]
+    # Stale options[CONF_WEATHER_ENTITIES] is gone.
+    assert CONF_WEATHER_ENTITIES not in mock_config_entry.options
+    # Unrelated options are preserved.
+    assert mock_config_entry.options.get("precip_weight") == 42
+
+
 async def test_reconfigure_rejects_empty_weather_entities(
     hass: HomeAssistant,
     mock_config_entry: MockConfigEntry,
