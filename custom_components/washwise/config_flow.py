@@ -160,24 +160,25 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
             return dict(options)
         return {k: v for k, v in options.items() if k != CONF_WEATHER_ENTITIES}
 
-    def _reconfigure_clean_options(self, entry: ConfigEntry, *, customize: bool) -> dict[str, Any]:
+    def _reconfigure_clean_options(self, entry: ConfigEntry) -> dict[str, Any]:
         """Return the cleaned options dict for a reconfigure save.
 
         Always strips ``CONF_WEATHER_ENTITIES`` (reconfigure's new list
         lives in entry.data — see :meth:`_reconfigure_options_without_weather`).
 
-        If the user unticked the "customize thresholds" toggle, also strip
-        the gate plus every threshold/scoring/conditions override so the
-        category preset takes effect again. Without this, an earlier
-        options-flow auto-flip would have written
-        ``options[CONF_CUSTOMIZE_THRESHOLDS]=True`` plus override values;
-        those keys would shadow the reconfigure intent via the OR-gate
-        in :meth:`WashWiseCoordinator._resolve_thresholds`.
+        Always strips the customize gate plus every threshold/scoring/
+        conditions key from options. Reconfigure is the authoritative
+        path: it re-asks for those values when the toggle is ticked, or
+        doesn't need them when unticked. Either way ``entry.data``
+        carries the fresh truth post-reconfigure, so any leftover
+        options key would only serve to shadow it via the OR-gate in
+        :meth:`WashWiseCoordinator._resolve_thresholds` or the
+        options-first ``_pick`` lookup. Symmetric strip closes both the
+        ``customize=False`` and ``customize=True`` shadow bugs.
         """
         cleaned = self._reconfigure_options_without_weather(entry)
-        if not customize:
-            for key in _CUSTOMIZE_OPTION_KEYS:
-                cleaned.pop(key, None)
+        for key in _CUSTOMIZE_OPTION_KEYS:
+            cleaned.pop(key, None)
         return cleaned
 
     # ---------------------------------------------------------------- user
@@ -250,10 +251,7 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                     entry,
                     title=title,
                     data=self._data,
-                    options=self._reconfigure_clean_options(
-                        entry,
-                        customize=bool(self._data.get(CONF_CUSTOMIZE_THRESHOLDS, False)),
-                    ),
+                    options=self._reconfigure_clean_options(entry),
                     reason="reconfigure_successful",
                 )
             return self.async_create_entry(title=title, data=self._data)
@@ -345,10 +343,7 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                     entry,
                     title=title,
                     data=self._data,
-                    options=self._reconfigure_clean_options(
-                        entry,
-                        customize=bool(self._data.get(CONF_CUSTOMIZE_THRESHOLDS, False)),
-                    ),
+                    options=self._reconfigure_clean_options(entry),
                     reason="reconfigure_successful",
                 )
             return self.async_create_entry(title=title, data=self._data)
@@ -424,10 +419,7 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                         entry,
                         title=title,
                         data=new_data,
-                        options=self._reconfigure_clean_options(
-                            entry,
-                            customize=bool(new_data.get(CONF_CUSTOMIZE_THRESHOLDS, False)),
-                        ),
+                        options=self._reconfigure_clean_options(entry),
                         reason="reconfigure_successful",
                     )
 
