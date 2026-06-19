@@ -304,6 +304,7 @@
           "snow": "Neve",
           "bad_condition": "Tempo ruim",
           "bad_current_condition": "Tempo ruim atual",
+          "dirty_now": "Superfície suja — lavar agora",
           "snoozed": "Adiado",
           "unavailable": "Indisponível"
         }

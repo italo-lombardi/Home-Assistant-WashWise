@@ -304,6 +304,7 @@
           "snow": "Neve",
           "bad_condition": "Maltempo",
           "bad_current_condition": "Maltempo attuale",
+          "dirty_now": "Superficie sporca — lava ora",
           "snoozed": "In pausa",
           "unavailable": "Non disponibile"
         }

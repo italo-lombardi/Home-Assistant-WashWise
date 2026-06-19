@@ -304,6 +304,7 @@
           "snow": "Neige",
           "bad_condition": "Mauvaise météo",
           "bad_current_condition": "Mauvaise météo actuelle",
+          "dirty_now": "Surface sale — laver maintenant",
           "snoozed": "En pause",
           "unavailable": "Indisponible"
         }
