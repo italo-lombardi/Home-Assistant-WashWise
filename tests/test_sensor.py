@@ -885,11 +885,9 @@ def test_worst_condition_none_when_no_conditions() -> None:
 
 
 def test_primary_provider_uptime_none_when_no_weather_entities() -> None:
-    """Returns None when no configured weather entity ids."""
+    """Returns None when the coordinator's _weather_ids() yields an empty list."""
     coordinator = _make_coordinator(_make_decision(), stored=StoredData.empty(), weather_ids=[])
     entry = _make_entry()
-    # Override the helper's default weather_entities to truly empty.
-    entry.data[CONF_WEATHER_ENTITIES] = []
 
     sensor = PrimaryProviderUptimeSensor(coordinator, entry)
 
