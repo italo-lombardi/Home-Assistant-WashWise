@@ -12,6 +12,7 @@ from custom_components.washwise.const import (
     CONF_BAD_CONDITIONS,
     CONF_CATEGORY,
     CONF_CONDITION_WEIGHT,
+    CONF_CUSTOMIZE_THRESHOLDS,
     CONF_DAYS,
     CONF_FORECAST_TYPE,
     CONF_FREEZE_CHECK,
@@ -362,3 +363,83 @@ async def test_options_cancel_midstep_makes_no_changes(
     assert mock_config_entry.data == snapshot_data
     assert mock_config_entry.data[CONF_NAME] == snapshot_data[CONF_NAME]
     assert mock_config_entry.data[CONF_CATEGORY] == DEFAULT_CATEGORY
+
+
+# ---------------------------------------------------------------------------
+# Saving any customisation step auto-flips CONF_CUSTOMIZE_THRESHOLDS=True so
+# the coordinator's customize gate picks the new override up without forcing
+# the user to also reconfigure the entry.
+# ---------------------------------------------------------------------------
+
+
+async def test_options_thresholds_save_auto_flips_customize(
+    hass: HomeAssistant, mock_config_entry: MockConfigEntry
+) -> None:
+    """Saving the thresholds step sets ``customize_thresholds=True``."""
+    await _setup_entry(hass, mock_config_entry)
+    # Pre-condition: customize is not set anywhere.
+    assert not mock_config_entry.options.get(CONF_CUSTOMIZE_THRESHOLDS)
+    assert not mock_config_entry.data.get(CONF_CUSTOMIZE_THRESHOLDS)
+
+    result = await hass.config_entries.options.async_init(mock_config_entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "thresholds"}
+    )
+    payload = {
+        CONF_DAYS: 5,
+        CONF_PRECIP_THRESHOLD: 0.75,
+        CONF_FREEZE_CHECK: True,
+        CONF_FORECAST_TYPE: DEFAULT_FORECAST_TYPE,
+    }
+    result = await hass.config_entries.options.async_configure(result["flow_id"], payload)
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert mock_config_entry.options[CONF_CUSTOMIZE_THRESHOLDS] is True
+    # Submitted payload values still land in options too.
+    for key, value in payload.items():
+        assert mock_config_entry.options[key] == value
+
+
+async def test_options_scoring_save_auto_flips_customize(
+    hass: HomeAssistant, mock_config_entry: MockConfigEntry
+) -> None:
+    """Saving the scoring step sets ``customize_thresholds=True``."""
+    await _setup_entry(hass, mock_config_entry)
+    assert not mock_config_entry.options.get(CONF_CUSTOMIZE_THRESHOLDS)
+
+    result = await hass.config_entries.options.async_init(mock_config_entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "scoring"}
+    )
+    payload = {
+        CONF_PRECIP_WEIGHT: 40,
+        CONF_FREEZE_WEIGHT: 30,
+        CONF_CONDITION_WEIGHT: 30,
+    }
+    result = await hass.config_entries.options.async_configure(result["flow_id"], payload)
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert mock_config_entry.options[CONF_CUSTOMIZE_THRESHOLDS] is True
+    for key, value in payload.items():
+        assert mock_config_entry.options[key] == value
+
+
+async def test_options_conditions_save_auto_flips_customize(
+    hass: HomeAssistant, mock_config_entry: MockConfigEntry
+) -> None:
+    """Saving the conditions step sets ``customize_thresholds=True``."""
+    await _setup_entry(hass, mock_config_entry)
+    assert not mock_config_entry.options.get(CONF_CUSTOMIZE_THRESHOLDS)
+
+    result = await hass.config_entries.options.async_init(mock_config_entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "conditions"}
+    )
+    new_conditions = ["rainy", "pouring"]
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {CONF_BAD_CONDITIONS: new_conditions}
+    )
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert mock_config_entry.options[CONF_CUSTOMIZE_THRESHOLDS] is True
+    assert mock_config_entry.options[CONF_BAD_CONDITIONS] == new_conditions

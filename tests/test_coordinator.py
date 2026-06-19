@@ -1242,6 +1242,59 @@ async def test_handle_registry_updated_remove_drops_entity_and_reloads(
     assert len(scheduled) == 1
 
 
+async def test_handle_registry_updated_writes_options_when_entities_in_options(
+    hass: HomeAssistant,
+) -> None:
+    """When weather_entities lives in options (set via the providers options
+    step), the rename writeback updates options too — not just data."""
+    entry = _make_entry(
+        ["weather.primary", "weather.backup"],
+        options={CONF_WEATHER_ENTITIES: ["weather.primary", "weather.backup"]},
+    )
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+
+    scheduled: list[Any] = []
+
+    def fake_create_background_task(_hass, coro, *_a, **_kw):
+        with contextlib.suppress(Exception):
+            coro.close()
+        scheduled.append(coro)
+        return None
+
+    with (
+        patch.object(hass.config_entries, "async_update_entry") as mock_update,
+        patch.object(hass.config_entries, "async_reload", new=AsyncMock()),
+        patch.object(
+            entry, "async_create_background_task", side_effect=fake_create_background_task
+        ),
+    ):
+        fake_event = type(
+            "E",
+            (),
+            {
+                "data": {
+                    "action": "update",
+                    "entity_id": "weather.primary_renamed",
+                    "changes": {"entity_id": "weather.primary"},
+                }
+            },
+        )()
+        coord._handle_registry_updated(fake_event)  # type: ignore[arg-type]
+
+    mock_update.assert_called_once()
+    _args, kwargs = mock_update.call_args
+    assert kwargs["data"][CONF_WEATHER_ENTITIES] == [
+        "weather.primary_renamed",
+        "weather.backup",
+    ]
+    assert kwargs["options"][CONF_WEATHER_ENTITIES] == [
+        "weather.primary_renamed",
+        "weather.backup",
+    ]
+    assert len(scheduled) == 1
+
+
 async def test_handle_registry_updated_remove_unknown_entity_noop(
     hass: HomeAssistant,
 ) -> None:

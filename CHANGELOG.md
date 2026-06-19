@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3] - 2026-06-19
+
+### Fixed
+- **Options-flow provider list ignored after save** — reordering or replacing weather sources via Settings → Options → Providers landed in `entry.options` but the coordinator only read `entry.data`, so sensors kept using the old provider chain even after a manual reload. The coordinator now merges `options` over `data` for `weather_entities` (active provider lookup, registry/state listeners, registry rename writeback) so reordering takes effect immediately.
+- **`forecast_type` change ignored after save** — switching between `daily` and `hourly` in Options → Thresholds saved to `entry.options` but the coordinator read `entry.data` only. Now reads options first.
+- **Threshold/scoring/conditions edits silently ignored when `customize_thresholds` was off** — saving any field under Options → Thresholds, Scoring, or Conditions now auto-flips `customize_thresholds=True` so the user's edits actually take effect. The toggle stays exposed in the initial setup and reconfigure flows for users who deliberately want preset behaviour.
+
 ## [0.2.2] - 2026-06-18
 
 ### Fixed

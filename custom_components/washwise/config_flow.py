@@ -477,7 +477,7 @@ class WashWiseOptionsFlow(OptionsFlow):
         preset = CATEGORY_PRESETS.get(category, CATEGORY_PRESETS[DEFAULT_CATEGORY])
 
         if user_input is not None:
-            return self._save(user_input)
+            return self._save({**user_input, CONF_CUSTOMIZE_THRESHOLDS: True})
 
         data_schema = vol.Schema(
             {
@@ -527,7 +527,7 @@ class WashWiseOptionsFlow(OptionsFlow):
         current = self._current()
 
         if user_input is not None:
-            return self._save(user_input)
+            return self._save({**user_input, CONF_CUSTOMIZE_THRESHOLDS: True})
 
         data_schema = vol.Schema(
             {
@@ -581,7 +581,7 @@ class WashWiseOptionsFlow(OptionsFlow):
         current = self._current()
 
         if user_input is not None:
-            return self._save(user_input)
+            return self._save({**user_input, CONF_CUSTOMIZE_THRESHOLDS: True})
 
         data_schema = vol.Schema(
             {
