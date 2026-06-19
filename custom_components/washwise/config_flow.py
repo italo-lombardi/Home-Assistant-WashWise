@@ -118,6 +118,28 @@ def _existing_names(hass) -> list[str]:
     return names
 
 
+# Option keys that reconfigure owns authoritatively. On every reconfigure
+# save these are wiped from entry.options so the freshly-submitted
+# entry.data values cannot be shadowed via _pick / OR-gate lookups in
+# the coordinator. Covers the customize_thresholds gate plus every
+# threshold/scoring/conditions/irrigation override the user can set
+# through the options menu.
+_RECONFIGURE_STRIPPED_OPTION_KEYS: tuple[str, ...] = (
+    CONF_CUSTOMIZE_THRESHOLDS,
+    CONF_DAYS,
+    CONF_PRECIP_THRESHOLD,
+    CONF_FREEZE_CHECK,
+    CONF_FORECAST_TYPE,
+    CONF_BAD_CONDITIONS,
+    CONF_PRECIP_WEIGHT,
+    CONF_FREEZE_WEIGHT,
+    CONF_CONDITION_WEIGHT,
+    CONF_RAIN_GAUGE_ENTITY,
+    CONF_RAIN_GAUGE_THRESHOLD_MM,
+    CONF_IRRIGATION_SWITCH_ENTITY,
+)
+
+
 class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for WashWise."""
 
@@ -126,6 +148,44 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         """Initialise the config flow."""
         self._data: dict[str, Any] = {}
+
+    def _reconfigure_options_without_weather(self, entry: ConfigEntry) -> dict[str, Any]:
+        """Strip a stale ``weather_entities`` from options on reconfigure.
+
+        Reconfigure writes the new provider list to ``entry.data``. Since
+        the coordinator now merges options over data via ``_weather_ids``,
+        a stale ``options[CONF_WEATHER_ENTITIES]`` left over from an
+        earlier options-flow reorder would silently shadow the
+        reconfigure value. Drop just that one key; preserve every other
+        saved option (thresholds, scoring, advanced, irrigation).
+        """
+        options = entry.options or {}
+        if CONF_WEATHER_ENTITIES not in options:
+            return dict(options)
+        return {k: v for k, v in options.items() if k != CONF_WEATHER_ENTITIES}
+
+    def _reconfigure_clean_options(self, entry: ConfigEntry) -> dict[str, Any]:
+        """Return the cleaned options dict for a reconfigure save.
+
+        Always strips ``CONF_WEATHER_ENTITIES`` (reconfigure's new list
+        lives in entry.data — see :meth:`_reconfigure_options_without_weather`).
+
+        Always strips every key in :data:`_RECONFIGURE_STRIPPED_OPTION_KEYS`
+        — the customize gate plus every threshold/scoring/conditions/
+        irrigation override the user can set through the options menu.
+        Reconfigure is the authoritative path: it re-asks for those
+        values when relevant or doesn't need them otherwise. Either way
+        ``entry.data`` carries the fresh truth post-reconfigure, so any
+        leftover options key would only serve to shadow it via the
+        OR-gate in :meth:`WashWiseCoordinator._resolve_thresholds` or
+        the options-first ``_pick`` lookup. Symmetric strip closes both
+        the ``customize=False`` and ``customize=True`` shadow bugs and
+        the analogous irrigation reconfigure shadow.
+        """
+        cleaned = self._reconfigure_options_without_weather(entry)
+        for key in _RECONFIGURE_STRIPPED_OPTION_KEYS:
+            cleaned.pop(key, None)
+        return cleaned
 
     # ---------------------------------------------------------------- user
 
@@ -197,6 +257,7 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                     entry,
                     title=title,
                     data=self._data,
+                    options=self._reconfigure_clean_options(entry),
                     reason="reconfigure_successful",
                 )
             return self.async_create_entry(title=title, data=self._data)
@@ -288,6 +349,7 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                     entry,
                     title=title,
                     data=self._data,
+                    options=self._reconfigure_clean_options(entry),
                     reason="reconfigure_successful",
                 )
             return self.async_create_entry(title=title, data=self._data)
@@ -363,6 +425,7 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                         entry,
                         title=title,
                         data=new_data,
+                        options=self._reconfigure_clean_options(entry),
                         reason="reconfigure_successful",
                     )
 
@@ -477,7 +540,7 @@ class WashWiseOptionsFlow(OptionsFlow):
         preset = CATEGORY_PRESETS.get(category, CATEGORY_PRESETS[DEFAULT_CATEGORY])
 
         if user_input is not None:
-            return self._save(user_input)
+            return self._save({**user_input, CONF_CUSTOMIZE_THRESHOLDS: True})
 
         data_schema = vol.Schema(
             {
@@ -527,7 +590,7 @@ class WashWiseOptionsFlow(OptionsFlow):
         current = self._current()
 
         if user_input is not None:
-            return self._save(user_input)
+            return self._save({**user_input, CONF_CUSTOMIZE_THRESHOLDS: True})
 
         data_schema = vol.Schema(
             {
@@ -581,7 +644,7 @@ class WashWiseOptionsFlow(OptionsFlow):
         current = self._current()
 
         if user_input is not None:
-            return self._save(user_input)
+            return self._save({**user_input, CONF_CUSTOMIZE_THRESHOLDS: True})
 
         data_schema = vol.Schema(
             {

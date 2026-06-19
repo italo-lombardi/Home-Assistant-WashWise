@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.3] - 2026-06-19
+
+### Fixed
+- **Options-flow provider list ignored after save** — reordering or replacing weather sources via Settings → Options → Providers landed in `entry.options` but the coordinator only read `entry.data`, so sensors kept using the old provider chain even after a manual reload. The coordinator now merges `options` over `data` for `weather_entities` (active provider lookup, registry/state listeners, registry rename writeback) so reordering takes effect immediately.
+- **`forecast_type` change ignored after save** — switching between `daily` and `hourly` in Options → Thresholds saved to `entry.options` but the coordinator read `entry.data` only. Now reads options first.
+- **Threshold/scoring/conditions edits silently ignored when `customize_thresholds` was off** — saving any field under Options → Thresholds, Scoring, or Conditions now auto-flips `customize_thresholds=True` so the user's edits actually take effect. The toggle stays exposed in the initial setup and reconfigure flows for users who deliberately want preset behaviour.
+- **`PrimaryProviderUptimeSensor` pinned to original config-flow primary** — same root cause as the coordinator fix; the diagnostic uptime sensor read `entry.data` only, so an Options → Providers reorder left the uptime % attributed to the old primary. Now routes through the coordinator's `_weather_ids()` helper.
+- **Reconfigure shadowed by stale options after an options-flow save** — if the user reordered providers via the options flow first and later ran Reconfigure with a different list, the reconfigure write to `entry.data` was silently shadowed by the leftover `entry.options[weather_entities]`. Reconfigure now strips `weather_entities` from options on every save so `entry.data` becomes the authoritative source.
+- **Reconfigure values for thresholds/scoring/conditions shadowed by stale options** — symmetric bug: an earlier options-flow save (auto-flipped `customize_thresholds=True` plus override values) survived a subsequent reconfigure. Reconfigure now also strips the customize gate plus every threshold/scoring/conditions key from `entry.options` on every save, so reconfigure values always win — whether the user ticks the toggle (overrides freshly captured in data) or unticks it (category preset takes effect).
+- **Reconfigure irrigation values shadowed by stale options** — same shadow class for `garden_irrigation`: rain gauge entity, threshold, and switch entity edited via Options → Irrigation landed in `entry.options` and silently overrode any subsequent reconfigure of the same fields. Reconfigure now also strips `CONF_RAIN_GAUGE_ENTITY`, `CONF_RAIN_GAUGE_THRESHOLD_MM`, and `CONF_IRRIGATION_SWITCH_ENTITY` from options on every save.
+
 ## [0.2.2] - 2026-06-18
 
 ### Fixed

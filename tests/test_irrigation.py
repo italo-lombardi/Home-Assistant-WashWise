@@ -1058,6 +1058,81 @@ async def test_reconfigure_garden_irrigation_routes_to_irrigation_step(
     assert entry.data[CONF_IRRIGATION_SWITCH_ENTITY] == "input_boolean.irr"
 
 
+@pytest.mark.asyncio
+async def test_reconfigure_garden_irrigation_strips_stale_options(
+    hass: HomeAssistant,
+) -> None:
+    """Reconfigure must wipe stale options[gauge/threshold/switch].
+
+    Same shadow class as the customize_thresholds bug:
+    1. User saves Options → Irrigation, picks ``sensor.old_rain`` and
+       ``input_boolean.old_irr``. Both land in ``entry.options``.
+    2. Later user runs Reconfigure with garden_irrigation, picks fresh
+       ``sensor.new_rain`` / ``input_boolean.new_irr``. Reconfigure
+       writes those to ``entry.data`` only.
+    3. Without this fix the stale ``entry.options`` keys would survive
+       and shadow the reconfigure values via the coordinator's
+       options-first ``_pick`` lookup in ``_async_handle_irrigation``.
+
+    Fix: every reconfigure save also strips
+    ``CONF_RAIN_GAUGE_ENTITY``, ``CONF_RAIN_GAUGE_THRESHOLD_MM``, and
+    ``CONF_IRRIGATION_SWITCH_ENTITY`` from options.
+    """
+    from unittest.mock import patch
+
+    from homeassistant.data_entry_flow import FlowResultType
+
+    entry = _make_irrigation_entry()
+    entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(
+        entry,
+        options={
+            CONF_RAIN_GAUGE_ENTITY: "sensor.old_rain",
+            CONF_RAIN_GAUGE_THRESHOLD_MM: 99.0,
+            CONF_IRRIGATION_SWITCH_ENTITY: "input_boolean.old_irr",
+            "snooze_default_hours": 6,  # advanced — must survive
+        },
+    )
+
+    with (
+        patch("custom_components.washwise.async_setup_entry", return_value=True),
+        patch("custom_components.washwise.async_unload_entry", return_value=True),
+    ):
+        result = await entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.home"],
+                CONF_NAME: "Garden",
+                CONF_CATEGORY: "garden_irrigation",
+                "customize_thresholds": False,
+            },
+        )
+        assert result["step_id"] == "irrigation"
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_RAIN_GAUGE_ENTITY: "sensor.new_rain",
+                CONF_RAIN_GAUGE_THRESHOLD_MM: 7.0,
+                CONF_IRRIGATION_SWITCH_ENTITY: "input_boolean.new_irr",
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    # Fresh values land in entry.data.
+    assert entry.data[CONF_RAIN_GAUGE_ENTITY] == "sensor.new_rain"
+    assert entry.data[CONF_RAIN_GAUGE_THRESHOLD_MM] == 7.0
+    assert entry.data[CONF_IRRIGATION_SWITCH_ENTITY] == "input_boolean.new_irr"
+    # Stale options gone.
+    assert CONF_RAIN_GAUGE_ENTITY not in entry.options
+    assert CONF_RAIN_GAUGE_THRESHOLD_MM not in entry.options
+    assert CONF_IRRIGATION_SWITCH_ENTITY not in entry.options
+    # Unrelated advanced option preserved.
+    assert entry.options.get("snooze_default_hours") == 6
+
+
 # ---------------------------------------------------------------------------
 # Unavailable switch guard — no service call when switch is unavailable/unknown
 # ---------------------------------------------------------------------------

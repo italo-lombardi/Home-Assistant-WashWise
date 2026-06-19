@@ -272,6 +272,208 @@ async def test_reconfigure_updates_entry_and_reloads(
     assert mock_config_entry.data[CONF_CATEGORY] == "motorcycle"
 
 
+async def test_reconfigure_clears_stale_weather_entities_from_options(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """Reconfigure must drop a stale ``weather_entities`` from options.
+
+    If the user previously reordered providers via the options flow, the
+    list lives in ``entry.options`` and the coordinator's ``_weather_ids``
+    helper picks it over ``entry.data``. Reconfigure writes the new list
+    to ``entry.data``, so a stale options entry would silently shadow
+    the reconfigure value. The fix strips just that one key from
+    options on reconfigure save while preserving every other option.
+    """
+    # Seed the entry with options that mimic a prior options-flow reorder
+    # plus an unrelated saved option (snooze_default_hours) we expect to
+    # keep. Use an "advanced" option so the customize-gate cleanup path
+    # doesn't strip it.
+    mock_config_entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(
+        mock_config_entry,
+        options={
+            CONF_WEATHER_ENTITIES: ["weather.stale_primary", "weather.stale_backup"],
+            "snooze_default_hours": 24,
+        },
+    )
+
+    with (
+        patch(
+            "custom_components.washwise.async_setup_entry",
+            return_value=True,
+        ),
+        patch(
+            "custom_components.washwise.async_unload_entry",
+            return_value=True,
+        ),
+    ):
+        result = await mock_config_entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.fresh_primary"],
+                CONF_NAME: "Test Wash",
+                CONF_CATEGORY: "car",
+                CONF_CUSTOMIZE_THRESHOLDS: False,
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    # New list lands in entry.data (as before).
+    assert mock_config_entry.data[CONF_WEATHER_ENTITIES] == ["weather.fresh_primary"]
+    # Stale options[CONF_WEATHER_ENTITIES] is gone.
+    assert CONF_WEATHER_ENTITIES not in mock_config_entry.options
+    # Unrelated options are preserved.
+    assert mock_config_entry.options.get("snooze_default_hours") == 24
+
+
+async def test_reconfigure_untoggle_customize_wipes_override_options(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """Reconfigure unticking ``customize_thresholds`` wipes the override keys.
+
+    Scenario:
+    1. User saves Options → Scoring (precip_weight=80). Auto-flip writes
+       ``options[CONF_CUSTOMIZE_THRESHOLDS]=True`` plus the override.
+    2. Later user runs Reconfigure with the toggle unticked.
+    3. Without this fix, ``options[CONF_CUSTOMIZE_THRESHOLDS]=True`` would
+       still win via the OR-gate in ``_resolve_thresholds`` and the
+       override would keep applying — user intent (False) silently
+       ignored.
+
+    Fix: when reconfigure submits ``customize=False``, strip the gate
+    plus every threshold/scoring/conditions key from options so the
+    category preset takes effect. Unrelated options (advanced /
+    irrigation / weather) are untouched.
+    """
+    mock_config_entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(
+        mock_config_entry,
+        options={
+            CONF_CUSTOMIZE_THRESHOLDS: True,
+            "precip_weight": 80,
+            CONF_DAYS: 5,
+            "snooze_default_hours": 12,  # advanced — must survive
+        },
+    )
+
+    with (
+        patch(
+            "custom_components.washwise.async_setup_entry",
+            return_value=True,
+        ),
+        patch(
+            "custom_components.washwise.async_unload_entry",
+            return_value=True,
+        ),
+    ):
+        result = await mock_config_entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.home"],
+                CONF_NAME: "Test Wash",
+                CONF_CATEGORY: "car",
+                CONF_CUSTOMIZE_THRESHOLDS: False,
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    # Customize gate + threshold/scoring overrides cleared from options.
+    assert CONF_CUSTOMIZE_THRESHOLDS not in mock_config_entry.options
+    assert "precip_weight" not in mock_config_entry.options
+    assert CONF_DAYS not in mock_config_entry.options
+    # Unrelated advanced option survives.
+    assert mock_config_entry.options.get("snooze_default_hours") == 12
+
+
+async def test_reconfigure_with_customize_true_overwrites_stale_options(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """Reconfigure with ``customize=True`` and a fresh value must win.
+
+    Inverse scenario:
+    1. Options → Scoring auto-flips ``customize=True`` and saves
+       ``precip_weight=80`` to options.
+    2. User runs Reconfigure, ticks customize, types ``precip_weight=50``.
+    3. Reconfigure writes ``data[precip_weight]=50``. Without this fix
+       ``options[precip_weight]=80`` survived and ``_pick`` returned 80
+       (options-first), so the user's reconfigure value was shadowed.
+
+    Fix: every reconfigure save strips the customize keys from options;
+    data is the authoritative source of truth post-reconfigure.
+    """
+    mock_config_entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(
+        mock_config_entry,
+        options={
+            CONF_CUSTOMIZE_THRESHOLDS: True,
+            "precip_weight": 80,
+            CONF_DAYS: 5,
+            "snooze_default_hours": 12,  # advanced — must survive
+        },
+    )
+
+    with (
+        patch(
+            "custom_components.washwise.async_setup_entry",
+            return_value=True,
+        ),
+        patch(
+            "custom_components.washwise.async_unload_entry",
+            return_value=True,
+        ),
+    ):
+        # Reconfigure step 1: tick customize, submit.
+        result = await mock_config_entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.home"],
+                CONF_NAME: "Test Wash",
+                CONF_CATEGORY: "car",
+                CONF_CUSTOMIZE_THRESHOLDS: True,
+            },
+        )
+        # Reconfigure step 2 (thresholds): supply fresh values.
+        assert result["type"] == FlowResultType.FORM
+        assert result["step_id"] == "thresholds"
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_DAYS: 3,
+                CONF_PRECIP_THRESHOLD: 0.5,
+                CONF_FREEZE_CHECK: True,
+                CONF_FORECAST_TYPE: DEFAULT_FORECAST_TYPE,
+                "bad_conditions": ["rainy", "pouring"],
+                "precip_weight": 50,
+                "freeze_weight": 25,
+                "condition_weight": 25,
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    # Fresh values land in entry.data.
+    assert mock_config_entry.data["precip_weight"] == 50
+    assert mock_config_entry.data[CONF_DAYS] == 3
+    assert mock_config_entry.data[CONF_CUSTOMIZE_THRESHOLDS] is True
+    # Stale options[customize_thresholds / precip_weight / days] gone.
+    assert CONF_CUSTOMIZE_THRESHOLDS not in mock_config_entry.options
+    assert "precip_weight" not in mock_config_entry.options
+    assert CONF_DAYS not in mock_config_entry.options
+    # Unrelated advanced option preserved.
+    assert mock_config_entry.options.get("snooze_default_hours") == 12
+
+
 async def test_reconfigure_rejects_empty_weather_entities(
     hass: HomeAssistant,
     mock_config_entry: MockConfigEntry,

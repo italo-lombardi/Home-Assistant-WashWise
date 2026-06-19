@@ -104,7 +104,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
 
         # React to weather-entity renames so we keep tracking the same
         # underlying provider when the user changes its entity_id.
-        weather_ids = list(entry.data.get(CONF_WEATHER_ENTITIES, []) or [])
+        weather_ids = self._weather_ids()
         if weather_ids:
             self._unsub_registry = async_track_entity_registry_updated_event(
                 hass,
@@ -294,8 +294,10 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
                 return snooze_decision
 
         # Step 4: walk the provider chain.
-        weather_ids: list[str] = list(self.entry.data.get(CONF_WEATHER_ENTITIES, []) or [])
-        forecast_type = self.entry.data.get(CONF_FORECAST_TYPE, DEFAULT_FORECAST_TYPE)
+        weather_ids: list[str] = self._weather_ids()
+        forecast_type = (self.entry.options or {}).get(CONF_FORECAST_TYPE) or self.entry.data.get(
+            CONF_FORECAST_TYPE, DEFAULT_FORECAST_TYPE
+        )
         thresholds, invert = self._resolve_thresholds()
         horizon = int(thresholds.get("days", 3))
 
@@ -570,6 +572,15 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
             return sys_unit
         return None
 
+    def _weather_ids(self) -> list[str]:
+        """Merged ``weather_entities`` list — options win over data."""
+        options = self.entry.options or {}
+        data = self.entry.data or {}
+        ids = options.get(CONF_WEATHER_ENTITIES)
+        if ids is None:
+            ids = data.get(CONF_WEATHER_ENTITIES)
+        return list(ids or [])
+
     @callback
     def _handle_state_change(self, event: Event) -> None:
         """Smart auto-recalc on weather entity state change.
@@ -589,7 +600,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         eid = event.data.get("entity_id")
         if not eid:
             return
-        weather_ids = list(self.entry.data.get(CONF_WEATHER_ENTITIES, []) or [])
+        weather_ids = self._weather_ids()
         if eid not in weather_ids:
             return
 
@@ -650,7 +661,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         if not event_entity_id:
             return
 
-        weather_ids = list(self.entry.data.get(CONF_WEATHER_ENTITIES, []) or [])
+        weather_ids = self._weather_ids()
         new_ids: list[str] | None = None
 
         if action == "remove":
@@ -669,7 +680,14 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
             return
 
         new_data = {**self.entry.data, CONF_WEATHER_ENTITIES: new_ids}
-        self.hass.config_entries.async_update_entry(self.entry, data=new_data)
+        options = self.entry.options or {}
+        if CONF_WEATHER_ENTITIES in options:
+            new_options = {**options, CONF_WEATHER_ENTITIES: new_ids}
+            self.hass.config_entries.async_update_entry(
+                self.entry, data=new_data, options=new_options
+            )
+        else:
+            self.hass.config_entries.async_update_entry(self.entry, data=new_data)
         # Reload re-runs setup, which re-instantiates the coordinator with
         # the updated weather_ids and re-attaches the registry listener.
         self.entry.async_create_background_task(

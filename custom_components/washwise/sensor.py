@@ -44,7 +44,6 @@ from .const import (
     CONF_CUSTOMIZE_THRESHOLDS,
     CONF_DAYS,
     CONF_RAIN_GAUGE_THRESHOLD_MM,
-    CONF_WEATHER_ENTITIES,
     DEFAULT_CATEGORY,
     DEFAULT_RAIN_GAUGE_THRESHOLD_MM,
     DOMAIN,
@@ -491,7 +490,10 @@ class PrimaryProviderUptimeSensor(_DiagnosticBase):
     @property
     def native_value(self) -> float | None:
         """Return the success ratio of the primary provider (percent)."""
-        weather_ids = self._entry.data.get(CONF_WEATHER_ENTITIES) or []
+        # Route through the coordinator helper so an options-flow reorder
+        # of weather_entities is honoured here too — otherwise the uptime
+        # stays pinned to the original config-flow primary.
+        weather_ids = self.coordinator._weather_ids()
         if not weather_ids:
             return None
         primary = weather_ids[0]

@@ -304,6 +304,7 @@
           "snow": "Śnieg",
           "bad_condition": "Zła pogoda",
           "bad_current_condition": "Zła bieżąca pogoda",
+          "dirty_now": "Brudna powierzchnia — myj teraz",
           "snoozed": "Drzemka",
           "unavailable": "Niedostępne"
         }
