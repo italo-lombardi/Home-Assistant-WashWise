@@ -295,9 +295,9 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
 
         # Step 4: walk the provider chain.
         weather_ids: list[str] = self._weather_ids()
-        forecast_type = (self.entry.options or {}).get(
-            CONF_FORECAST_TYPE
-        ) or self.entry.data.get(CONF_FORECAST_TYPE, DEFAULT_FORECAST_TYPE)
+        forecast_type = (self.entry.options or {}).get(CONF_FORECAST_TYPE) or self.entry.data.get(
+            CONF_FORECAST_TYPE, DEFAULT_FORECAST_TYPE
+        )
         thresholds, invert = self._resolve_thresholds()
         horizon = int(thresholds.get("days", 3))
 
