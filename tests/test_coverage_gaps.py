@@ -1257,11 +1257,12 @@ async def test_irrigation_toggle_skipped_when_switch_state_missing(
     await coord._async_handle_irrigation(decision)
 
 
-def test_resolve_temperature_unit_uses_explicit_data_value() -> None:
-    """When options omit the unit but data has it, that value is used.
+def test_resolve_temperature_unit_options_value_short_circuits_data_lookup() -> None:
+    """When ``entry.options`` already supplies the unit, ``entry.data`` is not consulted.
 
     Covers branch ``coordinator.py:555->557`` where ``choice is None`` is
-    False because ``options.get`` already returned the unit.
+    False because ``options.get`` already returned the unit, so the
+    ``entry.data`` fallback is skipped.
     """
     from custom_components.washwise.const import (
         CONF_CATEGORY,
@@ -1285,9 +1286,8 @@ def test_resolve_temperature_unit_uses_explicit_data_value() -> None:
 def test_handle_state_change_alive_primary_skips_refresh() -> None:
     """A non-primary entity firing while primary is healthy does not refresh.
 
-    Covers branches ``coordinator.py:625->exit`` (``primary is not None``
-    True but body skipped) — actually the False of ``primary_dead`` path —
-    and confirms no refresh request.
+    Covers branch ``coordinator.py:633->exit`` where ``primary_dead`` is
+    False so the fallback refresh request is not scheduled.
     """
     from custom_components.washwise.coordinator import WashWiseCoordinator
 
