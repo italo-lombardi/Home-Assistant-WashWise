@@ -277,11 +277,10 @@ class WashStatusSensor(WashWiseSensorBase):
         decision = self._decision
         if decision is None:
             return None
-        reason = decision.reason or ""
-        if not reason:
+        if not decision.reason:
             return None
         table = self._OK_REASONS if decision.can_wash else self._NO_REASONS
-        return table.get(reason)
+        return table.get(decision.reason)
 
 
 class DaysUntilWashSensor(WashWiseSensorBase):
