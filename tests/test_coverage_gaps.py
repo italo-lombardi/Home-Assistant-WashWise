@@ -1086,3 +1086,321 @@ async def test_register_lovelace_resource_non_storage_updates_in_place(
     await _async_register_lovelace_resource(hass, "0.2.0")
 
     assert "0.2.0" in first["url"]
+
+
+async def test_register_lovelace_resource_no_create_no_append_path(
+    hass: HomeAssistant,
+) -> None:
+    """No ``async_create_item`` and no ``data.append`` → silently returns.
+
+    Covers branch ``148->150`` in ``__init__.py`` where neither registration
+    path is available on the fake resources object.
+    """
+    from custom_components.washwise import _async_register_lovelace_resource
+
+    fake_resources = MagicMock(spec=[])  # no async_create_item attr
+    fake_resources.loaded = True
+    fake_resources.async_items = MagicMock(return_value=[])
+    # data is None so the second branch's ``getattr(resources, "data", None)``
+    # falls through.
+    fake_resources.data = None
+    hass.data["lovelace"] = MagicMock(resources=fake_resources)
+
+    # Just ensure it returns without raising.
+    await _async_register_lovelace_resource(hass, "0.1.0")
+
+
+async def test_register_lovelace_resource_duplicate_not_storage_collection(
+    hass: HomeAssistant,
+) -> None:
+    """Duplicate row in non-StorageCollection resources is left in place.
+
+    Covers branch ``154->153`` in ``__init__.py`` where the ``isinstance``
+    check inside the dedup loop is False, so ``async_delete_item`` is not
+    called and the loop continues.
+    """
+    from custom_components.washwise import CARD_FILENAME, _async_register_lovelace_resource
+
+    first = {"id": "first", "url": f"/washwise/{CARD_FILENAME}?old"}
+    dup = {"id": "dup", "url": f"/washwise/{CARD_FILENAME}?dup"}
+    fake_resources = MagicMock()  # NOT a ResourceStorageCollection
+    fake_resources.loaded = True
+    fake_resources.async_items = MagicMock(return_value=[first, dup])
+    hass.data["lovelace"] = MagicMock(resources=fake_resources)
+
+    await _async_register_lovelace_resource(hass, "0.2.0")
+
+    # First entry was rewritten in-place (non-storage path).
+    assert "0.2.0" in first["url"]
+    # Duplicate was left untouched because the isinstance branch was False.
+    assert dup["url"] == f"/washwise/{CARD_FILENAME}?dup"
+
+
+async def test_register_lovelace_resource_already_current_skips_update(
+    hass: HomeAssistant,
+) -> None:
+    """When the existing URL already matches the current resource_url, no update.
+
+    Covers branch ``159->exit`` in ``__init__.py`` where the equality check
+    is True and the function returns without calling ``async_update_item``.
+    """
+    from homeassistant.components.lovelace.resources import ResourceStorageCollection
+
+    from custom_components.washwise import CARD_FILENAME, _async_register_lovelace_resource
+
+    version = "9.9.9"
+    current_url = f"/washwise/{CARD_FILENAME}?automatically-added&{version}"
+    existing = [{"id": "abc", "url": current_url}]
+    fake_resources = MagicMock(spec=ResourceStorageCollection)
+    fake_resources.loaded = True
+    fake_resources.async_items = MagicMock(return_value=existing)
+    fake_resources.async_update_item = AsyncMock()
+    hass.data["lovelace"] = MagicMock(resources=fake_resources)
+
+    await _async_register_lovelace_resource(hass, version)
+
+    fake_resources.async_update_item.assert_not_called()
+
+
+# ----------------------------------------------------------------------
+# Branch-only coverage gaps (cov-branch ``->`` partials)
+# ----------------------------------------------------------------------
+
+
+def test_day_ok_extra_attrs_non_dict_row_returns_index_only() -> None:
+    """``WashWiseDayOkBinarySensor.extra_state_attributes`` skips non-dict rows.
+
+    Covers branch ``binary_sensor.py:244->246`` where the ``isinstance(row, dict)``
+    check is False so ``attrs.update`` is skipped.
+    """
+    decision = MagicMock()
+    decision.forecast_summary = ["not-a-dict"]
+    coord = MagicMock()
+    coord.data = decision
+    sensor = WashWiseDayOkBinarySensor.__new__(WashWiseDayOkBinarySensor)
+    sensor._day_index = 0
+    sensor.coordinator = coord  # bypass CoordinatorEntity init
+    assert sensor.extra_state_attributes == {"day_index": 0}
+
+
+async def test_irrigation_switch_remove_without_subscription(
+    hass: HomeAssistant,
+) -> None:
+    """``async_will_remove_from_hass`` is a no-op when no listener was subscribed.
+
+    Covers branch ``binary_sensor.py:395->exit`` where ``_unsub_switch`` is
+    ``None`` and the conditional body is skipped.
+    """
+    from custom_components.washwise.binary_sensor import (
+        IrrigationSwitchStateBinarySensor,
+    )
+
+    sensor = IrrigationSwitchStateBinarySensor.__new__(IrrigationSwitchStateBinarySensor)
+    sensor._unsub_switch = None
+    # Should return without raising and without touching anything.
+    await sensor.async_will_remove_from_hass()
+    assert sensor._unsub_switch is None
+
+
+def test_existing_names_skips_blank_entries() -> None:
+    """``_existing_names`` skips entries whose name folds to empty.
+
+    Covers branch ``config_flow.py:116->114`` where the ``if name`` check
+    is False and the loop continues without appending.
+    """
+    from custom_components.washwise.config_flow import _existing_names
+    from custom_components.washwise.const import CONF_NAME, DOMAIN
+
+    e1 = MagicMock()
+    e1.data = {CONF_NAME: "  "}  # whitespace folds to empty
+    e2 = MagicMock()
+    e2.data = {CONF_NAME: "Real"}
+
+    hass = MagicMock()
+    hass.config_entries.async_entries = MagicMock(return_value=[e1, e2])
+
+    assert _existing_names(hass) == ["real"]
+    hass.config_entries.async_entries.assert_called_once_with(DOMAIN)
+
+
+async def test_irrigation_toggle_skipped_when_switch_state_missing(
+    hass: HomeAssistant,
+) -> None:
+    """If the switch entity has no state, the toggle path early-exits.
+
+    Covers branch ``coordinator.py:449->exit`` where
+    ``current_switch_state is not None`` is False.
+    """
+    from custom_components.washwise.const import (
+        CONF_CATEGORY,
+        CONF_IRRIGATION_SWITCH_ENTITY,
+        CONF_RAIN_GAUGE_THRESHOLD_MM,
+        CONF_WEATHER_ENTITIES,
+    )
+    from custom_components.washwise.coordinator import WashWiseCoordinator
+
+    entry = MockConfigEntry(
+        domain="washwise",
+        title="Garden",
+        data={
+            CONF_CATEGORY: "garden_irrigation",
+            CONF_WEATHER_ENTITIES: ["weather.home"],
+            CONF_IRRIGATION_SWITCH_ENTITY: "switch.irrigation",
+            CONF_RAIN_GAUGE_THRESHOLD_MM: 5.0,
+        },
+    )
+    entry.add_to_hass(hass)
+    coord = WashWiseCoordinator(hass, entry)
+    decision = MagicMock()
+    decision.can_wash = True  # → suppress
+    # No state for switch.irrigation in hass.states → branch falls through.
+    await coord._async_handle_irrigation(decision)
+
+
+def test_resolve_temperature_unit_options_value_short_circuits_data_lookup() -> None:
+    """When ``entry.options`` already supplies the unit, ``entry.data`` is not consulted.
+
+    Covers branch ``coordinator.py:555->557`` where ``choice is None`` is
+    False because ``options.get`` already returned the unit, so the
+    ``entry.data`` fallback is skipped.
+    """
+    from custom_components.washwise.const import (
+        CONF_CATEGORY,
+        CONF_TEMPERATURE_UNIT,
+        CONF_WEATHER_ENTITIES,
+        TEMPERATURE_UNIT_FAHRENHEIT,
+    )
+    from custom_components.washwise.coordinator import WashWiseCoordinator
+
+    entry = MagicMock(spec=ConfigEntry)
+    entry.data = {
+        CONF_CATEGORY: "car",
+        CONF_WEATHER_ENTITIES: ["weather.home"],
+    }
+    entry.options = {CONF_TEMPERATURE_UNIT: TEMPERATURE_UNIT_FAHRENHEIT}
+    coord = WashWiseCoordinator.__new__(WashWiseCoordinator)
+    coord.entry = entry
+    assert coord._resolve_temperature_unit() == "°F"
+
+
+def test_handle_state_change_alive_primary_skips_refresh() -> None:
+    """A non-primary entity firing while primary is healthy does not refresh.
+
+    Covers branch ``coordinator.py:633->exit`` where ``primary_dead`` is
+    False so the fallback refresh request is not scheduled.
+    """
+    from custom_components.washwise.coordinator import WashWiseCoordinator
+
+    coord = WashWiseCoordinator.__new__(WashWiseCoordinator)
+    hass = MagicMock()
+    primary_state = MagicMock()
+    primary_state.state = "2026-06-20T00:00:00Z"  # healthy → not in dead set
+    hass.states.get = MagicMock(return_value=primary_state)
+    coord.hass = hass
+    coord._active_weather_entity = "weather.primary"  # active != None
+    entry = MagicMock()
+    entry.async_create_background_task = MagicMock()
+    coord.entry = entry
+    coord._weather_ids = lambda: ["weather.primary", "weather.fallback"]
+
+    event = MagicMock()
+    event.data = {"entity_id": "weather.fallback"}
+    coord._handle_state_change(event)
+
+    entry.async_create_background_task.assert_not_called()
+
+
+def test_temp_check_unchanged_when_both_temps_missing() -> None:
+    """A forecast frame with no ``temp_min``/``temp_max`` keeps prior temp.
+
+    Covers branch ``decision.py:396->400`` where ``elif tmin is not None`` is
+    False, so ``temp_check`` is left at its prior value.
+    """
+    from custom_components.washwise.decision import (
+        CurrentWeather,
+        ForecastDay,
+        compute,
+    )
+
+    now = datetime(2026, 6, 11, 9, 0, tzinfo=UTC)
+    today = now.date()
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [
+        ForecastDay(
+            date=today,
+            condition="sunny",
+            precipitation_mm=0.0,
+            temp_min_c=10.0,
+            temp_max_c=20.0,
+        ),
+        ForecastDay(
+            date=date.fromordinal(today.toordinal() + 1),
+            condition="sunny",
+            precipitation_mm=0.0,
+            temp_min_c=None,
+            temp_max_c=None,  # branch hits 396->400 here
+        ),
+    ]
+    thresholds = {"days": 2, "precip_threshold_mm": 0.2, "freeze_check": True}
+    result = compute(cur, forecast, thresholds, invert=False, now=now)
+    assert result.days_analyzed == 2
+
+
+async def test_unregister_services_skips_missing_service(hass: HomeAssistant) -> None:
+    """``async_unregister_services`` skips services that are not registered.
+
+    Covers branch ``services.py:160->154`` where ``has_service`` is False so
+    ``async_remove`` is not called and the loop continues.
+    """
+    from custom_components.washwise.const import DOMAIN
+    from custom_components.washwise.services import (
+        _SERVICES_REGISTERED_FLAG,
+        SERVICE_MARK_WASHED,
+        async_unregister_services,
+    )
+
+    hass.data[DOMAIN] = {_SERVICES_REGISTERED_FLAG: True}
+    # Register only one of the four services so the others trip 160->154.
+    hass.services.async_register(DOMAIN, SERVICE_MARK_WASHED, lambda call: None)
+    async_unregister_services(hass)
+    assert not hass.services.has_service(DOMAIN, SERVICE_MARK_WASHED)
+
+
+async def test_weather_source_temperature_unit_attr_blank_falls_back(
+    hass: HomeAssistant,
+) -> None:
+    """A blank/non-string ``temperature_unit`` attribute falls back to config.
+
+    Covers branch ``weather_source.py:133->139`` where the attribute fails
+    the ``isinstance(str) and strip()`` check, so ``entity_unit`` stays None.
+    """
+    from homeassistant.core import ServiceCall
+    from homeassistant.helpers.service import SupportsResponse
+
+    from custom_components.washwise import weather_source
+
+    entity_id = "weather.blank_unit"
+    raw_forecast = [
+        {
+            "datetime": "2026-06-13T00:00:00+00:00",
+            "condition": "sunny",
+            "precipitation": 0.0,
+            "temperature": 22.0,
+            "templow": 12.0,
+        }
+    ]
+
+    async def _handler(call: ServiceCall):
+        return {entity_id: {"forecast": raw_forecast}}
+
+    hass.services.async_register(
+        "weather",
+        "get_forecasts",
+        _handler,
+        supports_response=SupportsResponse.ONLY,
+    )
+    # Whitespace-only string fails the ``isinstance(str) and strip()`` test.
+    hass.states.async_set(entity_id, "sunny", {"temperature_unit": "   "})
+
+    result = await weather_source.get_forecast(hass, entity_id, "daily", 1, fallback_unit="°C")
+    assert len(result) == 1

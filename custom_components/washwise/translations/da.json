@@ -309,6 +309,20 @@
           "unavailable": "Utilgængelig"
         }
       },
+      "wash_status": {
+        "name": "Vaskestatus",
+        "state": {
+          "ok_clear": "Ja — Klart",
+          "ok_dirty_now": "Ja — Beskidt — vask nu",
+          "unknown_clear": "Ukendt",
+          "no_rain": "Nej — Regn",
+          "no_freeze": "Nej — Frost",
+          "no_snow": "Nej — Sne",
+          "no_bad_condition": "Nej — Dårligt vejr",
+          "no_bad_current_condition": "Nej — Dårligt aktuelt vejr",
+          "snoozed": "Udsat"
+        }
+      },
       "days_until_wash": {
         "name": "Dage til mulig vask"
       },

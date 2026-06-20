@@ -68,6 +68,7 @@ async def async_setup_entry(
     entities: list[SensorEntity] = [
         ScoreSensor(coordinator, entry),
         ReasonSensor(coordinator, entry),
+        WashStatusSensor(coordinator, entry),
         DaysUntilWashSensor(coordinator, entry),
         DaysSinceWashSensor(coordinator, entry),
         LastWashedSensor(coordinator, entry),
@@ -113,7 +114,7 @@ def _resolve_horizon(entry: ConfigEntry) -> int:
     preset = CATEGORY_PRESETS.get(category, CATEGORY_PRESETS[DEFAULT_CATEGORY])
     if customize:
         # Mirror coordinator: options override entry.data; fall back to preset.
-        for source in (options, entry.data or {}):
+        for source in (options, entry.data or {}):  # pragma: no branch
             if CONF_DAYS in source:
                 try:
                     return max(0, int(source[CONF_DAYS]))
@@ -219,6 +220,67 @@ class ReasonSensor(WashWiseSensorBase):
         if decision is None:
             return None
         return decision.reason or None
+
+
+class WashStatusSensor(WashWiseSensorBase):
+    """Combined verdict + reason as a single translated enum string.
+
+    Merges :attr:`Decision.can_wash` and :attr:`Decision.reason` into one
+    state key so dashboards/automations can show or branch on a single
+    value (e.g. "Yes — clear", "No — rain expected") without composing
+    two entities. Translation lives under
+    ``entity.sensor.wash_status.state.*`` in each locale file.
+    """
+
+    _attr_icon = "mdi:car-wash"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options: ClassVar[list[str]] = [
+        "ok_clear",
+        "ok_dirty_now",
+        "unknown_clear",
+        "no_rain",
+        "no_freeze",
+        "no_snow",
+        "no_bad_condition",
+        "no_bad_current_condition",
+        "snoozed",
+    ]
+
+    # Map a (can_wash, reason) tuple to the composed key. Reasons not in
+    # the map resolve to ``None`` (HA renders that as ``unknown``) so a
+    # future reason key added without a matching translation surfaces as
+    # the platform-standard ``unknown`` state rather than colliding with
+    # the reserved ``unavailable`` state. ``unavailable``/``unknown`` are
+    # deliberately omitted from ``_attr_options`` — HA reserves them as
+    # state-machine values, not enum members.
+    _OK_REASONS: ClassVar[dict[str, str]] = {
+        "clear": "ok_clear",
+        "dirty_now": "ok_dirty_now",
+    }
+    _NO_REASONS: ClassVar[dict[str, str]] = {
+        "clear": "unknown_clear",
+        "rain": "no_rain",
+        "freeze": "no_freeze",
+        "snow": "no_snow",
+        "bad_condition": "no_bad_condition",
+        "bad_current_condition": "no_bad_current_condition",
+        "snoozed": "snoozed",
+    }
+
+    def __init__(self, coordinator: WashWiseCoordinator, entry: ConfigEntry) -> None:
+        """Register the combined wash-status sensor."""
+        super().__init__(coordinator, entry, "wash_status")
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the merged verdict+reason key, or ``None`` when unknown."""
+        decision = self._decision
+        if decision is None:
+            return None
+        if not decision.reason:
+            return None
+        table = self._OK_REASONS if decision.can_wash else self._NO_REASONS
+        return table.get(decision.reason)
 
 
 class DaysUntilWashSensor(WashWiseSensorBase):

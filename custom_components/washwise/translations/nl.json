@@ -309,6 +309,20 @@
           "unavailable": "Niet beschikbaar"
         }
       },
+      "wash_status": {
+        "name": "Wasstatus",
+        "state": {
+          "ok_clear": "Ja — Geen belemmering",
+          "ok_dirty_now": "Ja — Vies oppervlak — nu wassen",
+          "unknown_clear": "Onbekend",
+          "no_rain": "Nee — Regen",
+          "no_freeze": "Nee — Vorst",
+          "no_snow": "Nee — Sneeuw",
+          "no_bad_condition": "Nee — Slecht weer",
+          "no_bad_current_condition": "Nee — Slecht actueel weer",
+          "snoozed": "Gesluimerd"
+        }
+      },
       "days_until_wash": {
         "name": "Dagen tot mogelijke wasbeurt"
       },

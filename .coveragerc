@@ -1,5 +1,6 @@
 [run]
 source = custom_components/washwise
+branch = True
 omit =
     */__pycache__/*
     */tests/*
@@ -10,3 +11,5 @@ exclude_lines =
     pragma: no cover
     if TYPE_CHECKING:
     raise NotImplementedError
+partial_branches =
+    pragma: no branch

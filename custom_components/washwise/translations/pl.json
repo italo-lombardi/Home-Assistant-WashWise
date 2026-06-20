@@ -309,6 +309,20 @@
           "unavailable": "Niedostępne"
         }
       },
+      "wash_status": {
+        "name": "Status mycia",
+        "state": {
+          "ok_clear": "Tak — Brak przeszkód",
+          "ok_dirty_now": "Tak — Brudna powierzchnia — myj teraz",
+          "unknown_clear": "Nieznany",
+          "no_rain": "Nie — Deszcz",
+          "no_freeze": "Nie — Mróz",
+          "no_snow": "Nie — Śnieg",
+          "no_bad_condition": "Nie — Zła pogoda",
+          "no_bad_current_condition": "Nie — Zła bieżąca pogoda",
+          "snoozed": "Drzemka"
+        }
+      },
       "days_until_wash": {
         "name": "Dni do możliwego mycia"
       },

@@ -622,7 +622,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
             return
 
         # Fallback path: primary is sick, anything in the chain may unstick it.
-        if primary is not None:
+        if primary is not None:  # pragma: no branch  # eid in weather_ids implies primary set
             primary_state = self.hass.states.get(primary)
             primary_dead = primary_state is None or primary_state.state in (
                 "unavailable",

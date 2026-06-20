@@ -309,6 +309,20 @@
           "unavailable": "Otillgänglig"
         }
       },
+      "wash_status": {
+        "name": "Tvättstatus",
+        "state": {
+          "ok_clear": "Ja — Klart",
+          "ok_dirty_now": "Ja — Smutsig yta — tvätta nu",
+          "unknown_clear": "Okänt",
+          "no_rain": "Nej — Regn",
+          "no_freeze": "Nej — Frost",
+          "no_snow": "Nej — Snö",
+          "no_bad_condition": "Nej — Dåligt väder",
+          "no_bad_current_condition": "Nej — Dåligt väder just nu",
+          "snoozed": "Pausad"
+        }
+      },
       "days_until_wash": {
         "name": "Dagar till möjlig tvätt"
       },

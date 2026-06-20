@@ -309,6 +309,20 @@
           "unavailable": "Unavailable"
         }
       },
+      "wash_status": {
+        "name": "Wash status",
+        "state": {
+          "ok_clear": "Yes — Clear",
+          "ok_dirty_now": "Yes — Surface dirty — wash now",
+          "unknown_clear": "Unknown",
+          "no_rain": "No — Rain",
+          "no_freeze": "No — Freeze",
+          "no_snow": "No — Snow",
+          "no_bad_condition": "No — Bad weather",
+          "no_bad_current_condition": "No — Bad current weather",
+          "snoozed": "Snoozed"
+        }
+      },
       "days_until_wash": {
         "name": "Days until possible wash"
       },
