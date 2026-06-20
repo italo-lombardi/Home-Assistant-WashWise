@@ -312,14 +312,14 @@
       "wash_status": {
         "name": "Estado de lavado",
         "state": {
-          "ok_clear": "Sí — sin incidencias",
-          "ok_dirty_now": "Sí — superficie sucia",
+          "ok_clear": "Sí — Sin incidencias",
+          "ok_dirty_now": "Sí — Superficie sucia — lavar ahora",
           "unknown_clear": "Desconocido",
-          "no_rain": "No — se espera lluvia",
-          "no_freeze": "No — se esperan heladas",
-          "no_snow": "No — se espera nieve",
-          "no_bad_condition": "No — mal tiempo",
-          "no_bad_current_condition": "No — mal tiempo actual",
+          "no_rain": "No — Lluvia",
+          "no_freeze": "No — Heladas",
+          "no_snow": "No — Nieve",
+          "no_bad_condition": "No — Mal tiempo",
+          "no_bad_current_condition": "No — Mal tiempo actual",
           "snoozed": "Pospuesto"
         }
       },
