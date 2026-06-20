@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 - Bump `pytest-homeassistant-custom-component` to `>=0.13.339,<0.13.340` to track HA core 2026.6.3 (dependabot #13).
 - Bump `actions/checkout` from v6 to v7 in `validate.yml` and `release.yml` — picks up the fork-PR safety fix and ESM toolchain upgrade (dependabot #12).
 - Note: dependabot #14 (`pytest>=9.1.1`) conflicts with `pytest-homeassistant-custom-component==0.13.339` which pins `pytest==9.0.3`; deferred until upstream relaxes the pin.
+- **100% branch coverage** — enabled `--cov-branch` in `pytest.ini`, added 12 targeted tests covering remaining partial branches across `__init__.py`, `binary_sensor.py`, `config_flow.py`, `coordinator.py`, `decision.py`, `services.py`, `weather_source.py`. Two unreachable branches marked `# pragma: no branch` (loop over a 2-tuple in `sensor._resolve_horizon`; `primary is not None` in `coordinator._handle_state_change` after a `eid in weather_ids` guard).
 
 ## [0.2.3] - 2026-06-19
 

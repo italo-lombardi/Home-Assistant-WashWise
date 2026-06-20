@@ -114,7 +114,7 @@ def _resolve_horizon(entry: ConfigEntry) -> int:
     preset = CATEGORY_PRESETS.get(category, CATEGORY_PRESETS[DEFAULT_CATEGORY])
     if customize:
         # Mirror coordinator: options override entry.data; fall back to preset.
-        for source in (options, entry.data or {}):
+        for source in (options, entry.data or {}):  # pragma: no branch
             if CONF_DAYS in source:
                 try:
                     return max(0, int(source[CONF_DAYS]))
