@@ -729,14 +729,25 @@ def test_wash_status_combines_can_wash_and_reason(
 
 
 def test_wash_status_unknown_reason_falls_back() -> None:
-    """A reason key not in the mapping resolves to ``unavailable``."""
+    """A reason key not in the mapping resolves to ``None`` (HA renders ``unknown``)."""
     decision = _make_decision(can_wash=False, reason="future_reason_key")
     coordinator = _make_coordinator(decision)
     entry = _make_entry()
 
     sensor = WashStatusSensor(coordinator, entry)
 
-    assert sensor.native_value == "unavailable"
+    assert sensor.native_value is None
+
+
+def test_wash_status_empty_reason_yields_none() -> None:
+    """An empty reason short-circuits to ``None`` (matches ``ReasonSensor``)."""
+    decision = _make_decision(can_wash=False, reason="")
+    coordinator = _make_coordinator(decision)
+    entry = _make_entry()
+
+    sensor = WashStatusSensor(coordinator, entry)
+
+    assert sensor.native_value is None
 
 
 def test_wash_status_none_without_decision() -> None:
@@ -750,7 +761,7 @@ def test_wash_status_none_without_decision() -> None:
 
 
 def test_wash_status_options_match_state_keys() -> None:
-    """Enum options expose every key the mapping can emit."""
+    """Enum options expose every key the mapping can emit (no ``unavailable``)."""
     expected = {
         "ok_clear",
         "ok_dirty_now",
@@ -761,12 +772,14 @@ def test_wash_status_options_match_state_keys() -> None:
         "no_bad_condition",
         "no_bad_current_condition",
         "snoozed",
-        "unavailable",
     }
     coordinator = _make_coordinator(_make_decision())
     entry = _make_entry()
     sensor = WashStatusSensor(coordinator, entry)
     assert set(sensor.options or []) == expected
+    # HA reserves ``unavailable``/``unknown``; they must not appear as enum members.
+    assert "unavailable" not in (sensor.options or [])
+    assert "unknown" not in (sensor.options or [])
 
 
 def test_days_until_wash_returns_value_with_decision() -> None:

@@ -320,8 +320,7 @@
           "no_snow": "Nei — snø forventet",
           "no_bad_condition": "Nei — dårlig vær",
           "no_bad_current_condition": "Nei — dårlig vær akkurat nå",
-          "snoozed": "Slumret",
-          "unavailable": "Utilgjengelig"
+          "snoozed": "Slumret"
         }
       },
       "days_until_wash": {

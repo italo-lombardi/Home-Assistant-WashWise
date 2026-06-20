@@ -320,8 +320,7 @@
           "no_snow": "Não — neve prevista",
           "no_bad_condition": "Não — tempo ruim",
           "no_bad_current_condition": "Não — tempo ruim atual",
-          "snoozed": "Adiado",
-          "unavailable": "Indisponível"
+          "snoozed": "Adiado"
         }
       },
       "days_until_wash": {

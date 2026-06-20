@@ -244,12 +244,15 @@ class WashStatusSensor(WashWiseSensorBase):
         "no_bad_condition",
         "no_bad_current_condition",
         "snoozed",
-        "unavailable",
     ]
 
     # Map a (can_wash, reason) tuple to the composed key. Reasons not in
-    # the map fall through to ``unavailable`` so a future reason key
-    # added without a matching translation does not crash the sensor.
+    # the map resolve to ``None`` (HA renders that as ``unknown``) so a
+    # future reason key added without a matching translation surfaces as
+    # the platform-standard ``unknown`` state rather than colliding with
+    # the reserved ``unavailable`` state. ``unavailable``/``unknown`` are
+    # deliberately omitted from ``_attr_options`` — HA reserves them as
+    # state-machine values, not enum members.
     _OK_REASONS: ClassVar[dict[str, str]] = {
         "clear": "ok_clear",
         "dirty_now": "ok_dirty_now",
@@ -275,8 +278,10 @@ class WashStatusSensor(WashWiseSensorBase):
         if decision is None:
             return None
         reason = decision.reason or ""
+        if not reason:
+            return None
         table = self._OK_REASONS if decision.can_wash else self._NO_REASONS
-        return table.get(reason, "unavailable")
+        return table.get(reason)
 
 
 class DaysUntilWashSensor(WashWiseSensorBase):

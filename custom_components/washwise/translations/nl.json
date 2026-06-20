@@ -320,8 +320,7 @@
           "no_snow": "Nee — sneeuw verwacht",
           "no_bad_condition": "Nee — slecht weer",
           "no_bad_current_condition": "Nee — slecht actueel weer",
-          "snoozed": "Gesluimerd",
-          "unavailable": "Niet beschikbaar"
+          "snoozed": "Gesluimerd"
         }
       },
       "days_until_wash": {
