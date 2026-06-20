@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.4] - 2026-06-20
+
+### Added
+- **`sensor.<name>_wash_status`** — single-state enum sensor that merges `can_wash` + `reason` into one translated string ("Yes — clear", "No — rain expected", …). Lets dashboards and automations branch on a single value without composing two entities. Translations shipped for all 11 supported locales.
+
+### Maintenance
+- Bump `pytest` requirement to `>=9.1.1` (was `>=9.0.3`) — picks up the upstream `RaisesGroup` and `parametrize` regression fixes (dependabot #14).
+- Bump `pytest-homeassistant-custom-component` to `>=0.13.339,<0.13.340` to track HA core 2026.6.3 (dependabot #13).
+- Bump `actions/checkout` from v6 to v7 in `validate.yml` and `release.yml` — picks up the fork-PR safety fix and ESM toolchain upgrade (dependabot #12).
+
 ## [0.2.3] - 2026-06-19
 
 ### Fixed

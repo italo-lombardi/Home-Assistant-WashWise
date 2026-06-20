@@ -309,6 +309,21 @@
           "unavailable": "Non disponibile"
         }
       },
+      "wash_status": {
+        "name": "Stato lavaggio",
+        "state": {
+          "ok_clear": "Sì — sereno",
+          "ok_dirty_now": "Sì — superficie sporca",
+          "unknown_clear": "Sconosciuto",
+          "no_rain": "No — pioggia prevista",
+          "no_freeze": "No — gelo previsto",
+          "no_snow": "No — neve prevista",
+          "no_bad_condition": "No — maltempo",
+          "no_bad_current_condition": "No — maltempo attuale",
+          "snoozed": "In pausa",
+          "unavailable": "Non disponibile"
+        }
+      },
       "days_until_wash": {
         "name": "Giorni al prossimo lavaggio possibile"
       },

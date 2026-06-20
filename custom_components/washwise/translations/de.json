@@ -309,6 +309,21 @@
           "unavailable": "Nicht verfügbar"
         }
       },
+      "wash_status": {
+        "name": "Waschstatus",
+        "state": {
+          "ok_clear": "Ja — klar",
+          "ok_dirty_now": "Ja — Oberfläche schmutzig",
+          "unknown_clear": "Unbekannt",
+          "no_rain": "Nein — Regen erwartet",
+          "no_freeze": "Nein — Frost erwartet",
+          "no_snow": "Nein — Schnee erwartet",
+          "no_bad_condition": "Nein — schlechtes Wetter",
+          "no_bad_current_condition": "Nein — aktuell schlechtes Wetter",
+          "snoozed": "Schlummert",
+          "unavailable": "Nicht verfügbar"
+        }
+      },
       "days_until_wash": {
         "name": "Tage bis zur möglichen Wäsche"
       },
