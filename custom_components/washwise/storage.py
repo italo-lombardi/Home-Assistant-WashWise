@@ -119,12 +119,22 @@ class WashWiseStore:
     async def save(self, data: StoredData) -> None:
         # Update the in-memory cache FIRST so subsequent reads see the new
         # state immediately, even if the disk write is still in flight.
+        # If the disk write fails, revert the cache so a follow-up read
+        # doesn't observe state that was never persisted.
+        previous = self._data
         self._data = data
-        await self._store.async_save(data.to_dict())
+        try:
+            await self._store.async_save(data.to_dict())
+        except Exception:
+            self._data = previous
+            raise
 
     async def remove(self) -> None:
-        await self._store.async_remove()
-        self._data = None
+        # Hold the load lock so an in-flight ``_load_from_disk`` cannot
+        # re-populate the cache after the file is deleted.
+        async with self._load_lock:
+            await self._store.async_remove()
+            self._data = None
 
     async def append_wash(self, entry: WashEntry) -> None:
         data = await self.load()

@@ -549,3 +549,69 @@ async def test_corrupt_storage_falls_back_gracefully(
     assert second == StoredData.empty()
     assert fake_load.await_count == 1
     assert "corrupt" in caplog.text.lower()
+
+
+async def test_save_failure_reverts_cache(store: WashWiseStore, utc_now: datetime) -> None:
+    """If ``Store.async_save`` throws, the in-memory cache reverts to prior state."""
+    initial = StoredData(
+        wash_log=[WashEntry(timestamp=utc_now.isoformat(), source="manual")],
+    )
+    new_payload = StoredData(
+        wash_log=[WashEntry(timestamp=(utc_now + timedelta(hours=1)).isoformat(), source="auto")],
+    )
+
+    fake_save_ok = AsyncMock(return_value=None)
+    with patch.object(store._store, "async_save", new=fake_save_ok):
+        await store.save(initial)
+
+    # Now make the second save fail; cache must roll back to ``initial``.
+    fake_save_fail = AsyncMock(side_effect=OSError("disk full"))
+    with (
+        patch.object(store._store, "async_save", new=fake_save_fail),
+        pytest.raises(OSError),
+    ):
+        await store.save(new_payload)
+
+    # Cache reverted: subsequent reads see the old (persisted) state.
+    fake_load = AsyncMock(return_value=None)
+    with patch.object(store._store, "async_load", new=fake_load):
+        cached = await store.load()
+    assert cached == initial
+    # Disk read NOT triggered — cache held the prior value.
+    assert fake_load.await_count == 0
+
+
+async def test_remove_serializes_with_in_flight_load(store: WashWiseStore) -> None:
+    """A concurrent load + remove must not leave the cache populated after removal.
+
+    remove() holds the load lock so an in-flight ``_load_from_disk`` cannot
+    re-populate the cache after the file is deleted.
+    """
+    load_started = asyncio.Event()
+    release_load = asyncio.Event()
+
+    async def slow_load() -> None:
+        load_started.set()
+        await release_load.wait()
+        return None
+
+    fake_load = AsyncMock(side_effect=slow_load)
+    fake_remove = AsyncMock(return_value=None)
+    with (
+        patch.object(store._store, "async_load", new=fake_load),
+        patch.object(store._store, "async_remove", new=fake_remove),
+    ):
+        load_task = asyncio.create_task(store.load())
+        await load_started.wait()
+        # remove() must wait for the in-flight load to complete (lock held).
+        remove_task = asyncio.create_task(store.remove())
+        # Give remove() a chance to attempt acquisition; it should block.
+        await asyncio.sleep(0)
+        assert not remove_task.done()
+        # Let load finish; remove() then proceeds and clears the cache.
+        release_load.set()
+        await load_task
+        await remove_task
+
+    assert store._data is None
+    assert fake_remove.await_count == 1
