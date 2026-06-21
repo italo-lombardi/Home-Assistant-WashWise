@@ -8,6 +8,7 @@ the helper mutation methods (``append_wash``, ``set_snooze``,
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import UTC, datetime, timedelta
 from json import JSONDecodeError
@@ -462,3 +463,155 @@ async def test_migrate_v0_returns_input_unchanged(
     payload = {"snooze_until": None}
     result = await store.migrate(payload, 0)
     assert result == payload
+
+
+# ---------------------------------------------------------------------------
+# WW-3: in-memory cache eliminates per-tick disk reads
+# ---------------------------------------------------------------------------
+
+
+async def test_storage_read_once_per_setup(store: WashWiseStore) -> None:
+    """First load hits disk; subsequent loads return the cached blob.
+
+    Asserts ``Store.async_load`` is called exactly once across the cold
+    read and 100 follow-up "tick" reads.
+    """
+    fake_load = AsyncMock(return_value=None)
+    with patch.object(store._store, "async_load", new=fake_load):
+        first = await store.load()
+        assert first == StoredData.empty()
+        for _ in range(100):
+            await store.load()
+
+    assert fake_load.await_count == 1
+    assert store.disk_read_count == 1
+
+
+async def test_storage_write_updates_cache_in_memory(
+    store: WashWiseStore, utc_now: datetime
+) -> None:
+    """``save`` updates the cache so subsequent reads bypass disk."""
+    payload = StoredData(
+        wash_log=[WashEntry(timestamp=utc_now.isoformat(), source="manual")],
+    )
+
+    fake_load = AsyncMock(return_value=None)
+    fake_save = AsyncMock(return_value=None)
+    with (
+        patch.object(store._store, "async_load", new=fake_load),
+        patch.object(store._store, "async_save", new=fake_save),
+    ):
+        # Cold read populates the cache once.
+        await store.load()
+        # Write updates the cache in-memory.
+        await store.save(payload)
+        # Read-after-write returns the written payload without another disk hit.
+        result = await store.load()
+
+    assert result == payload
+    assert fake_load.await_count == 1
+    assert fake_save.await_count == 1
+
+
+async def test_concurrent_first_reads_are_single_flight(
+    store: WashWiseStore,
+) -> None:
+    """10 concurrent first-readers must trigger exactly one disk read."""
+
+    # Slow async_load so all 10 callers race into the lock at once.
+    async def slow_load() -> None:
+        await asyncio.sleep(0.01)
+        return None
+
+    fake_load = AsyncMock(side_effect=slow_load)
+    with patch.object(store._store, "async_load", new=fake_load):
+        results = await asyncio.gather(*(store.load() for _ in range(10)))
+
+    assert all(r == StoredData.empty() for r in results)
+    assert fake_load.await_count == 1
+    assert store.disk_read_count == 1
+
+
+async def test_corrupt_storage_falls_back_gracefully(
+    store: WashWiseStore, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A corrupt file still recovers to an empty StoredData (cache populated)."""
+    fake_load = AsyncMock(side_effect=JSONDecodeError("bad", "", 0))
+    with (
+        patch.object(store._store, "async_load", new=fake_load),
+        caplog.at_level(logging.WARNING),
+    ):
+        first = await store.load()
+        # Subsequent loads must come from cache, not retry disk.
+        second = await store.load()
+
+    assert first == StoredData.empty()
+    assert second == StoredData.empty()
+    assert fake_load.await_count == 1
+    assert "corrupt" in caplog.text.lower()
+
+
+async def test_save_failure_reverts_cache(store: WashWiseStore, utc_now: datetime) -> None:
+    """If ``Store.async_save`` throws, the in-memory cache reverts to prior state."""
+    initial = StoredData(
+        wash_log=[WashEntry(timestamp=utc_now.isoformat(), source="manual")],
+    )
+    new_payload = StoredData(
+        wash_log=[WashEntry(timestamp=(utc_now + timedelta(hours=1)).isoformat(), source="auto")],
+    )
+
+    fake_save_ok = AsyncMock(return_value=None)
+    with patch.object(store._store, "async_save", new=fake_save_ok):
+        await store.save(initial)
+
+    # Now make the second save fail; cache must roll back to ``initial``.
+    fake_save_fail = AsyncMock(side_effect=OSError("disk full"))
+    with (
+        patch.object(store._store, "async_save", new=fake_save_fail),
+        pytest.raises(OSError),
+    ):
+        await store.save(new_payload)
+
+    # Cache reverted: subsequent reads see the old (persisted) state.
+    fake_load = AsyncMock(return_value=None)
+    with patch.object(store._store, "async_load", new=fake_load):
+        cached = await store.load()
+    assert cached == initial
+    # Disk read NOT triggered — cache held the prior value.
+    assert fake_load.await_count == 0
+
+
+async def test_remove_serializes_with_in_flight_load(store: WashWiseStore) -> None:
+    """A concurrent load + remove must not leave the cache populated after removal.
+
+    remove() holds the load lock so an in-flight ``_load_from_disk`` cannot
+    re-populate the cache after the file is deleted.
+    """
+    load_started = asyncio.Event()
+    release_load = asyncio.Event()
+
+    async def slow_load() -> None:
+        load_started.set()
+        await release_load.wait()
+        return None
+
+    fake_load = AsyncMock(side_effect=slow_load)
+    fake_remove = AsyncMock(return_value=None)
+    with (
+        patch.object(store._store, "async_load", new=fake_load),
+        patch.object(store._store, "async_remove", new=fake_remove),
+    ):
+        load_task = asyncio.create_task(store.load())
+        await load_started.wait()
+        # remove() must wait for the in-flight load to complete (lock held).
+        remove_task = asyncio.create_task(store.remove())
+        # Give remove() a chance to attempt acquisition; it should block.
+        await asyncio.sleep(0)
+        assert not remove_task.done()
+        # Let load finish; remove() then proceeds and clears the cache.
+        release_load.set()
+        await load_task
+        await remove_task
+
+    assert store._data is None
+    assert fake_remove.await_count == 1
