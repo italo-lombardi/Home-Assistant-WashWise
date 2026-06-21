@@ -17,6 +17,7 @@ from json import JSONDecodeError
 from typing import Any
 
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.storage import Store
 
 from .const import STALE_PROVIDER_TTL_DAYS, STORAGE_KEY_FMT, STORAGE_VERSION
@@ -121,11 +122,19 @@ class WashWiseStore:
         # state immediately, even if the disk write is still in flight.
         # If the disk write fails, revert the cache so a follow-up read
         # doesn't observe state that was never persisted.
+        #
+        # NOTE on the save→load race window: ``self._data`` flips to the new
+        # value before ``async_save`` awaits, so a concurrent ``load()`` mid-
+        # flight observes the new state; if the disk write then fails we roll
+        # back, leaving any pre-rollback reader holding a value that was never
+        # persisted. In practice HA runs on a single-threaded asyncio event
+        # loop and the coordinator serializes its own ticks, so no caller
+        # interleaves with an in-flight ``save()`` from this integration.
         previous = self._data
         self._data = data
         try:
             await self._store.async_save(data.to_dict())
-        except Exception:
+        except (OSError, HomeAssistantError):
             self._data = previous
             raise
 
