@@ -8,6 +8,7 @@ the helper mutation methods (``append_wash``, ``set_snooze``,
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import UTC, datetime, timedelta
 from json import JSONDecodeError
@@ -462,3 +463,89 @@ async def test_migrate_v0_returns_input_unchanged(
     payload = {"snooze_until": None}
     result = await store.migrate(payload, 0)
     assert result == payload
+
+
+# ---------------------------------------------------------------------------
+# WW-3: in-memory cache eliminates per-tick disk reads
+# ---------------------------------------------------------------------------
+
+
+async def test_storage_read_once_per_setup(store: WashWiseStore) -> None:
+    """First load hits disk; subsequent loads return the cached blob.
+
+    Asserts ``Store.async_load`` is called exactly once across the cold
+    read and 100 follow-up "tick" reads.
+    """
+    fake_load = AsyncMock(return_value=None)
+    with patch.object(store._store, "async_load", new=fake_load):
+        first = await store.load()
+        assert first == StoredData.empty()
+        for _ in range(100):
+            await store.load()
+
+    assert fake_load.await_count == 1
+    assert store.disk_read_count == 1
+
+
+async def test_storage_write_updates_cache_in_memory(
+    store: WashWiseStore, utc_now: datetime
+) -> None:
+    """``save`` updates the cache so subsequent reads bypass disk."""
+    payload = StoredData(
+        wash_log=[WashEntry(timestamp=utc_now.isoformat(), source="manual")],
+    )
+
+    fake_load = AsyncMock(return_value=None)
+    fake_save = AsyncMock(return_value=None)
+    with (
+        patch.object(store._store, "async_load", new=fake_load),
+        patch.object(store._store, "async_save", new=fake_save),
+    ):
+        # Cold read populates the cache once.
+        await store.load()
+        # Write updates the cache in-memory.
+        await store.save(payload)
+        # Read-after-write returns the written payload without another disk hit.
+        result = await store.load()
+
+    assert result == payload
+    assert fake_load.await_count == 1
+    assert fake_save.await_count == 1
+
+
+async def test_concurrent_first_reads_are_single_flight(
+    store: WashWiseStore,
+) -> None:
+    """10 concurrent first-readers must trigger exactly one disk read."""
+
+    # Slow async_load so all 10 callers race into the lock at once.
+    async def slow_load() -> None:
+        await asyncio.sleep(0.01)
+        return None
+
+    fake_load = AsyncMock(side_effect=slow_load)
+    with patch.object(store._store, "async_load", new=fake_load):
+        results = await asyncio.gather(*(store.load() for _ in range(10)))
+
+    assert all(r == StoredData.empty() for r in results)
+    assert fake_load.await_count == 1
+    assert store.disk_read_count == 1
+
+
+async def test_corrupt_storage_falls_back_gracefully(
+    store: WashWiseStore, caplog: pytest.LogCaptureFixture
+) -> None:
+    """A corrupt file still recovers to an empty StoredData (cache populated)."""
+    fake_load = AsyncMock(side_effect=JSONDecodeError("bad", "", 0))
+    with (
+        patch.object(store._store, "async_load", new=fake_load),
+        caplog.at_level(logging.WARNING),
+    ):
+        first = await store.load()
+        # Subsequent loads must come from cache, not retry disk.
+        second = await store.load()
+
+    assert first == StoredData.empty()
+    assert second == StoredData.empty()
+    assert fake_load.await_count == 1
+    assert "corrupt" in caplog.text.lower()

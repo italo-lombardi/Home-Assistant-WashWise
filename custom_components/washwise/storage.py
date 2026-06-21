@@ -1,7 +1,16 @@
-"""Persistent storage helper for WashWise."""
+"""Persistent storage helper for WashWise.
+
+The store keeps a single in-memory copy of :class:`StoredData` and only
+hits disk on cold start (first read after setup) and on writes. Every
+mutator (``append_wash``, ``set_snooze``, ``record_failover``,
+``update_provider_health``, ``gc_stale_health``) routes its read through
+the cached accessor so the coordinator's per-tick health-update path no
+longer issues redundant ``Store.async_load()`` calls. See WW-3.
+"""
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import UTC, datetime, timedelta
 from json import JSONDecodeError
@@ -48,38 +57,70 @@ class WashWiseStore:
             STORAGE_KEY_FMT.format(entry_id=entry_id),
         )
         self._data: StoredData | None = None
+        # Single-flight guard so concurrent first-readers don't both
+        # trigger ``Store.async_load()`` while the cache is empty.
+        self._load_lock: asyncio.Lock = asyncio.Lock()
+        # Diagnostics: count actual disk reads (not cache hits).
+        self._disk_read_count: int = 0
+
+    @property
+    def disk_read_count(self) -> int:
+        """Return the number of ``Store.async_load()`` calls made so far."""
+        return self._disk_read_count
 
     async def load(self) -> StoredData:
-        try:
-            raw = await self._store.async_load()
-        except (JSONDecodeError, OSError) as err:
-            _LOGGER.warning(
-                "WashWise storage for %s is corrupt (%s); resetting to empty.",
-                self._entry_id,
-                err,
-            )
-            self._data = StoredData.empty()
+        """Return cached :class:`StoredData`, hitting disk only when cold."""
+        if self._data is not None:
             return self._data
+        return await self._load_from_disk("cold cache")
 
-        if raw is None:
-            self._data = StoredData.empty()
-            return self._data
+    async def _load_from_disk(self, reason: str) -> StoredData:
+        """Read from disk under the single-flight lock and cache the result."""
+        async with self._load_lock:
+            # Re-check inside the lock: another waiter may have populated
+            # the cache while we were queued.
+            if self._data is not None:
+                return self._data
 
-        try:
-            self._data = StoredData.from_dict(raw)
-            return self._data
-        except (TypeError, ValueError, KeyError) as err:
-            _LOGGER.warning(
-                "WashWise storage for %s failed to deserialize (%s); resetting to empty.",
+            self._disk_read_count += 1
+            _LOGGER.debug(
+                "WashWise storage read for %s: %s (total reads=%d)",
                 self._entry_id,
-                err,
+                reason,
+                self._disk_read_count,
             )
-            self._data = StoredData.empty()
-            return self._data
+            try:
+                raw = await self._store.async_load()
+            except (JSONDecodeError, OSError) as err:
+                _LOGGER.warning(
+                    "WashWise storage for %s is corrupt (%s); resetting to empty.",
+                    self._entry_id,
+                    err,
+                )
+                self._data = StoredData.empty()
+                return self._data
+
+            if raw is None:
+                self._data = StoredData.empty()
+                return self._data
+
+            try:
+                self._data = StoredData.from_dict(raw)
+                return self._data
+            except (TypeError, ValueError, KeyError) as err:
+                _LOGGER.warning(
+                    "WashWise storage for %s failed to deserialize (%s); resetting to empty.",
+                    self._entry_id,
+                    err,
+                )
+                self._data = StoredData.empty()
+                return self._data
 
     async def save(self, data: StoredData) -> None:
-        await self._store.async_save(data.to_dict())
+        # Update the in-memory cache FIRST so subsequent reads see the new
+        # state immediately, even if the disk write is still in flight.
         self._data = data
+        await self._store.async_save(data.to_dict())
 
     async def remove(self) -> None:
         await self._store.async_remove()

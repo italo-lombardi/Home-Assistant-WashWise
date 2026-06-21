@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.5] - 2026-06-21
+
+### Performance
+- **`StoredData` cached in memory; reload only on write (WW-3).** The coordinator's per-tick health-update path was issuing multiple `Store.async_load()` calls per coordinator tick (every provider walked, plus the initial snooze read), driving redundant disk I/O on idle Pi 5 NVMe setups. The store now keeps a single in-memory copy of `StoredData`, populated once on first access and refreshed in-memory on every `save()`. Concurrent first-readers funnel through an `asyncio.Lock` for single-flight load. Disk reads per coordinator tick: **N → 0** on idle (one read per integration lifetime; writes still flush via the existing `Store` mechanism). `decision.compute()` remains a pure function — unchanged.
+
+### Added
+- `WashWiseStore.disk_read_count` diagnostic counter — counts actual `Store.async_load()` calls (not cache hits) so users can verify the drop on idle.
+- Debug log on every disk read: `WashWise storage read for <entry_id>: <reason> (total reads=<n>)`.
+
 ## [0.2.4] - 2026-06-20
 
 ### Added
