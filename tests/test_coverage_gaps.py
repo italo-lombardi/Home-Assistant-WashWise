@@ -780,6 +780,7 @@ async def test_handle_state_change_dead_primary_triggers_refresh(hass) -> None:
         coord._handle_state_change(event)
         await hass.async_block_till_done()
 
+    coord._debounced_refresh.async_cancel()
     assert len(refresh_calls) >= 1
 
 
