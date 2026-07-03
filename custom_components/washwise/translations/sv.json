@@ -238,6 +238,7 @@
         "boat": "Båt",
         "rv_camper": "Husbil/husvagn",
         "windows_house": "Husfönster",
+        "laundry": "Laundry",
         "solar_panels": "Solpaneler",
         "patio_deck": "Uteplats/altan",
         "garden_irrigation": "Trädgårdsbevattning",
@@ -344,6 +345,9 @@
       "days_analyzed": {
         "name": "Analyserade dagar"
       },
+      "hours_analyzed": {
+        "name": "Hours analyzed"
+      },
       "precip_total_mm": {
         "name": "Total nederbörd i prognosen"
       },
@@ -380,6 +384,7 @@
           "boat": "Båt",
           "rv_camper": "Husbil",
           "windows_house": "Husfönster",
+          "laundry": "Laundry",
           "solar_panels": "Solpaneler",
           "patio_deck": "Uteplats",
           "garden_irrigation": "Trädgårdsbevattning",

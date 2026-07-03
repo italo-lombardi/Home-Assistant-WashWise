@@ -238,6 +238,7 @@
         "boat": "Båd",
         "rv_camper": "Autocamper / campingvogn",
         "windows_house": "Husvinduer",
+        "laundry": "Laundry",
         "solar_panels": "Solpaneler",
         "patio_deck": "Terrasse",
         "garden_irrigation": "Havevanding",
@@ -344,6 +345,9 @@
       "days_analyzed": {
         "name": "Analyserede dage"
       },
+      "hours_analyzed": {
+        "name": "Hours analyzed"
+      },
       "precip_total_mm": {
         "name": "Samlet nedbør i prognosen"
       },
@@ -380,6 +384,7 @@
           "boat": "Båd",
           "rv_camper": "Autocamper",
           "windows_house": "Husvinduer",
+          "laundry": "Laundry",
           "solar_panels": "Solpaneler",
           "patio_deck": "Terrasse",
           "garden_irrigation": "Havevanding",

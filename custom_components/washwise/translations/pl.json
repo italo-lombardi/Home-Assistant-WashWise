@@ -238,6 +238,7 @@
         "boat": "Łódź",
         "rv_camper": "Kamper",
         "windows_house": "Okna domu",
+        "laundry": "Laundry",
         "solar_panels": "Panele słoneczne",
         "patio_deck": "Taras",
         "garden_irrigation": "Nawadnianie ogrodu",
@@ -344,6 +345,9 @@
       "days_analyzed": {
         "name": "Przeanalizowane dni"
       },
+      "hours_analyzed": {
+        "name": "Hours analyzed"
+      },
       "precip_total_mm": {
         "name": "Łączne opady w prognozie"
       },
@@ -380,6 +384,7 @@
           "boat": "Łódź",
           "rv_camper": "Kamper",
           "windows_house": "Okna domu",
+          "laundry": "Laundry",
           "solar_panels": "Panele słoneczne",
           "patio_deck": "Taras",
           "garden_irrigation": "Nawadnianie ogrodu",

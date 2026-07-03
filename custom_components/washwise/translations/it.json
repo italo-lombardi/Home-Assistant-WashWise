@@ -238,6 +238,7 @@
         "boat": "Barca",
         "rv_camper": "Camper / Roulotte",
         "windows_house": "Finestre di casa",
+        "laundry": "Laundry",
         "solar_panels": "Pannelli solari",
         "patio_deck": "Patio / terrazza",
         "garden_irrigation": "Irrigazione giardino",
@@ -344,6 +345,9 @@
       "days_analyzed": {
         "name": "Giorni analizzati"
       },
+      "hours_analyzed": {
+        "name": "Hours analyzed"
+      },
       "precip_total_mm": {
         "name": "Precipitazione totale prevista"
       },
@@ -380,6 +384,7 @@
           "boat": "Barca",
           "rv_camper": "Camper",
           "windows_house": "Finestre di casa",
+          "laundry": "Laundry",
           "solar_panels": "Pannelli solari",
           "patio_deck": "Terrazza",
           "garden_irrigation": "Irrigazione del giardino",

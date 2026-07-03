@@ -1073,6 +1073,147 @@ async def test_gc_stale_health_called_at_50th_update(hass: HomeAssistant) -> Non
     assert coord._update_count == 50
 
 
+# ---------------------------------------------------------------------------
+# Stale-forecast filter
+# ---------------------------------------------------------------------------
+
+
+@freeze_time(FROZEN_NOW)
+async def test_stale_forecast_entries_are_dropped(hass: HomeAssistant) -> None:
+    """Forecast entries predating today are filtered out before compute."""
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+
+    today = FROZEN_NOW.date()
+
+    def _fd(dt):
+        return ForecastDay(
+            date=dt,
+            condition="sunny",
+            precipitation_mm=0.0,
+            temp_min_c=10.0,
+            temp_max_c=20.0,
+            raw={},
+        )
+
+    # Two stale entries (yesterday, day before) + two valid entries (today, tomorrow).
+    mixed_forecast = [
+        _fd(today - timedelta(days=2)),
+        _fd(today - timedelta(days=1)),
+        _fd(today),
+        _fd(today + timedelta(days=1)),
+    ]
+
+    with (
+        patch(
+            "custom_components.washwise.coordinator.weather_source.is_available",
+            new=AsyncMock(return_value=True),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_current",
+            new=AsyncMock(return_value=_sunny_current()),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_forecast",
+            new=AsyncMock(return_value=mixed_forecast),
+        ),
+    ):
+        decision = await coord._async_update_data()
+
+    # Only today + tomorrow passed to compute → days_analyzed == 2, not 4.
+    assert decision.days_analyzed == 2
+    stale_dates = {(today - timedelta(days=2)).isoformat(), (today - timedelta(days=1)).isoformat()}
+    summary_dates = {s["date"] for s in decision.forecast_summary}
+    assert stale_dates.isdisjoint(summary_dates)
+
+
+@freeze_time(FROZEN_NOW)
+async def test_provider_returns_only_stale_entries_fails_over(hass: HomeAssistant) -> None:
+    """When provider only returns stale (past) entries, it is skipped → UpdateFailed."""
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, stub = _build_coordinator(hass, entry)
+
+    today = FROZEN_NOW.date()
+    stale_only = [
+        ForecastDay(
+            date=today - timedelta(days=1),
+            condition="sunny",
+            precipitation_mm=0.0,
+            temp_min_c=10.0,
+            temp_max_c=20.0,
+            raw={},
+        ),
+    ]
+
+    with (
+        patch(
+            "custom_components.washwise.coordinator.weather_source.is_available",
+            new=AsyncMock(return_value=True),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_current",
+            new=AsyncMock(return_value=_sunny_current()),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_forecast",
+            new=AsyncMock(return_value=stale_only),
+        ),
+        pytest.raises(UpdateFailed),
+    ):
+        await coord._async_update_data()
+
+    primary_calls = [c for c in stub.health_calls if c[0] == "weather.primary"]
+    assert primary_calls == [("weather.primary", False, "stale_forecast")]
+
+
+@freeze_time(FROZEN_NOW)
+async def test_stale_provider_fails_over_to_valid_provider(hass: HomeAssistant) -> None:
+    """Provider 1 returns all-stale forecast → skipped; provider 2 returns valid → used."""
+    entry = _make_entry(["weather.stale", "weather.valid"])
+    entry.add_to_hass(hass)
+    coord, stub = _build_coordinator(hass, entry)
+
+    today = FROZEN_NOW.date()
+    stale_forecast = [
+        ForecastDay(
+            date=today - timedelta(days=1),
+            condition="sunny",
+            precipitation_mm=0.0,
+            temp_min_c=10.0,
+            temp_max_c=20.0,
+            raw={},
+        ),
+    ]
+
+    async def fake_get_forecast(_hass, eid, *args, **kwargs):
+        if eid == "weather.stale":
+            return stale_forecast
+        return _clear_forecast(3)
+
+    with (
+        patch(
+            "custom_components.washwise.coordinator.weather_source.is_available",
+            new=AsyncMock(return_value=True),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_current",
+            new=AsyncMock(return_value=_sunny_current()),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_forecast",
+            new=AsyncMock(side_effect=fake_get_forecast),
+        ),
+    ):
+        decision = await coord._async_update_data()
+
+    assert decision.can_wash is True
+    assert coord.active_weather_entity == "weather.valid"
+    stale_calls = [c for c in stub.health_calls if c[0] == "weather.stale"]
+    assert stale_calls == [("weather.stale", False, "stale_forecast")]
+
+
 def test_resolve_scan_interval_from_options(hass: HomeAssistant) -> None:
     """Options value wins and produces a timedelta."""
     entry = MockConfigEntry(
@@ -1387,3 +1528,46 @@ async def test_handle_registry_updated_rename_to_same_id_noop(
     with patch.object(hass.config_entries, "async_update_entry") as mock_update:
         coord._handle_registry_updated(fake_event)  # type: ignore[arg-type]
     mock_update.assert_not_called()
+
+
+@freeze_time(FROZEN_NOW)
+async def test_stale_filter_skipped_for_horizon_zero(hass: HomeAssistant) -> None:
+    """horizon=0 (solar_panels) bypasses stale filter — forecast passed as-is to compute."""
+    entry = _make_entry(["weather.primary"], category="solar_panels")
+    entry.add_to_hass(hass)
+    coord, stub = _build_coordinator(hass, entry)
+
+    today = FROZEN_NOW.date()
+    # Stale entry — would be filtered for horizon>0 but must pass through for solar_panels.
+    stale = [
+        ForecastDay(
+            date=today - timedelta(days=1),
+            condition="sunny",
+            precipitation_mm=0.0,
+            temp_min_c=10.0,
+            temp_max_c=20.0,
+            raw={},
+        ),
+    ]
+
+    with (
+        patch(
+            "custom_components.washwise.coordinator.weather_source.is_available",
+            new=AsyncMock(return_value=True),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_current",
+            new=AsyncMock(return_value=_sunny_current()),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_forecast",
+            new=AsyncMock(return_value=stale),
+        ),
+    ):
+        await coord._async_update_data()
+
+    # solar_panels with horizon=0 → compute sees empty walked list (horizon clips it),
+    # not a stale_forecast failure. Provider should be marked healthy.
+    healthy_calls = [c for c in stub.health_calls if c[0] == "weather.primary" and c[1] is True]
+    assert healthy_calls, "solar_panels provider should be marked healthy"
+    assert "stale_forecast" not in [c[2] for c in stub.health_calls]

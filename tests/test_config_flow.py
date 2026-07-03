@@ -610,3 +610,52 @@ async def test_reconfigure_with_customize_thresholds_routes_to_thresholds_step(
 
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
+
+
+async def test_reconfigure_untick_customize_strips_stale_threshold_keys(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """Reconfigure with customize_thresholds=False strips stale threshold keys from data.
+
+    Previously entry.data was spread into new_data before stripping, so old threshold
+    values (including forecast_type) survived and silently overrode the category preset.
+    """
+    mock_config_entry.add_to_hass(hass)
+
+    with (
+        patch("custom_components.washwise.async_setup_entry", return_value=True),
+        patch("custom_components.washwise.async_unload_entry", return_value=True),
+    ):
+        hass.config_entries.async_update_entry(
+            mock_config_entry,
+            data={
+                **mock_config_entry.data,
+                CONF_CUSTOMIZE_THRESHOLDS: True,
+                CONF_DAYS: 5,
+                CONF_FORECAST_TYPE: "hourly",
+                CONF_PRECIP_THRESHOLD: 9.9,
+                CONF_FREEZE_CHECK: False,
+            },
+        )
+        result = await mock_config_entry.start_reconfigure_flow(hass)
+        assert result["step_id"] == "reconfigure"
+
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.home"],
+                CONF_NAME: "Test Wash",
+                CONF_CATEGORY: DEFAULT_CATEGORY,
+                CONF_CUSTOMIZE_THRESHOLDS: False,
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    assert CONF_DAYS not in mock_config_entry.data
+    assert CONF_FORECAST_TYPE not in mock_config_entry.data
+    assert CONF_PRECIP_THRESHOLD not in mock_config_entry.data
+    assert CONF_FREEZE_CHECK not in mock_config_entry.data
+    assert mock_config_entry.data[CONF_CUSTOMIZE_THRESHOLDS] is False

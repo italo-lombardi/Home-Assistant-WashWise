@@ -9,6 +9,9 @@
 [![Add to HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=italo-lombardi&repository=Home-Assistant-WashWise&category=integration)
 [![Add to Home Assistant](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=washwise)
 
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=flat&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/italolombardi)
+[![PayPal](https://img.shields.io/badge/PayPal-00457C?style=flat&logo=paypal&logoColor=white)](https://paypal.me/ItaloLombardi)
+
 Decide whether to wash your car (or motorcycle, boat, solar panels, patio…) — or whether to skip garden irrigation — based on the weather forecast. WashWise reads any Home Assistant `weather` entity, walks an ordered fallback list of sources, and produces a verdict, a 0–100 score, a blocking reason, and per-day breakdown — all wrapped in a custom Lovelace card.
 
 ---
@@ -38,7 +41,7 @@ Decide whether to wash your car (or motorcycle, boat, solar panels, patio…) �
 - **Generic weather model** -- any HA `weather` entity works, no per-provider code
 - **Ordered fallback** -- list multiple weather sources; first available wins, failovers persisted
 - **0–100 score** -- weighted sum of precipitation, freeze, and bad-condition penalties
-- **Ten categories** -- Car, Motorcycle, Bicycle, Boat, RV, Windows, Solar Panels, Patio, Garden Irrigation, Custom — each with sensible preset thresholds
+- **Eleven categories** -- Car, Motorcycle, Bicycle, Boat, RV, Windows, Laundry, Solar Panels, Patio, Garden Irrigation, Custom — each with sensible preset thresholds
 - **Solar panel inversion** -- rain *helps* clean panels; verdict flips automatically
 - **Garden irrigation** -- inverted-logic category; `can_wash = true` means rain is forecast so irrigation should be skipped; event-driven updates with no polling
 - **Rain gauge / pluviometer** -- optional sensor entity; measured rain suppresses irrigation when it meets a configurable mm threshold
@@ -80,7 +83,7 @@ This integration uses a config flow accessible from **Settings > Devices & Servi
 |-------|-------------|
 | Weather entities | One or more HA `weather.*` entities in priority order. First available is used; rest are fallbacks. |
 | Name | Optional friendly name (e.g. "Daily driver"). Entity IDs become `sensor.washwise_<name>_*`. |
-| Category | One of ten categories (see [Categories](#categories) below). Default: Car. |
+| Category | One of eleven categories (see [Categories](#categories) below). Default: Car. |
 | Customize thresholds | Toggle on to override the category preset in the next step. |
 
 ### Step 2 (optional): Garden irrigation
@@ -122,9 +125,10 @@ The **Advanced** step includes a **Temperature unit** override. Leave it on **Au
 | Boat | 5 d | 0.1 mm | yes | no |
 | RV / Camper | 5 d | 0.1 mm | yes | no |
 | House windows | 1 d | 1.0 mm | no | no |
+| Laundry | 7 h | 0.1 mm | yes | no |
 | Solar panels | 0 d | 0.0 mm | no | **yes** |
 | Patio / deck | 2 d | 0.5 mm | no | no |
-| Garden irrigation | 3 d | 0.2 mm | no | **yes** |
+| Garden irrigation | 1 d | 2.0 mm | no | **yes** |
 | Custom | 3 d | 0.2 mm | yes | no |
 
 Solar panels and Garden irrigation invert the verdict — rain forecast means "self-cleaning expected" / "skip irrigation" rather than "wash now".
@@ -166,7 +170,8 @@ All entities live under a single **WashWise \<name\>** device per config entry.
 | Entity | Description |
 |--------|-------------|
 | `sensor.washwise_<name>_category` | Configured category key (e.g. `car`, `boat`). |
-| `sensor.washwise_<name>_days_analyzed` | Forecast days that made it through normalisation. |
+| `sensor.washwise_<name>_days_analyzed` | Forecast slots analysed (daily forecast). Shows unit `d`. |
+| `sensor.washwise_<name>_hours_analyzed` | Forecast slots analysed (hourly forecast, e.g. Laundry). Shows unit `h`. |
 | `sensor.washwise_<name>_precip_total_mm` | Sum of precipitation across the analysed horizon. |
 | `sensor.washwise_<name>_worst_condition` | Most adverse condition code seen in the horizon. |
 | `sensor.washwise_<name>_min_temp` | Minimum forecast temperature (°C). |

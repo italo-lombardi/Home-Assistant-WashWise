@@ -238,6 +238,7 @@
         "boat": "Båt",
         "rv_camper": "Bobil / campingvogn",
         "windows_house": "Husvinduer",
+        "laundry": "Laundry",
         "solar_panels": "Solcellepaneler",
         "patio_deck": "Terrasse / platting",
         "garden_irrigation": "Havevanning",
@@ -344,6 +345,9 @@
       "days_analyzed": {
         "name": "Dager analysert"
       },
+      "hours_analyzed": {
+        "name": "Hours analyzed"
+      },
       "precip_total_mm": {
         "name": "Total nedbør i værvarselet"
       },
@@ -380,6 +384,7 @@
           "boat": "Båt",
           "rv_camper": "Bobil",
           "windows_house": "Husvinduer",
+          "laundry": "Laundry",
           "solar_panels": "Solcellepaneler",
           "patio_deck": "Terrasse",
           "garden_irrigation": "Hagevanningsanlegg",

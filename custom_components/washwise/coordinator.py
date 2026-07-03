@@ -296,13 +296,20 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         # Step 4: walk the provider chain.
         weather_ids: list[str] = self._weather_ids()
         forecast_type = (self.entry.options or {}).get(CONF_FORECAST_TYPE) or self.entry.data.get(
-            CONF_FORECAST_TYPE, DEFAULT_FORECAST_TYPE
+            CONF_FORECAST_TYPE
         )
+        if not forecast_type:
+            category = (self.entry.options or {}).get(CONF_CATEGORY) or self.entry.data.get(
+                CONF_CATEGORY, DEFAULT_CATEGORY
+            )
+            preset = CATEGORY_PRESETS.get(category, CATEGORY_PRESETS[DEFAULT_CATEGORY])
+            forecast_type = preset.get("forecast_type", DEFAULT_FORECAST_TYPE)
         thresholds, invert = self._resolve_thresholds()
         horizon = int(thresholds.get("days", 3))
 
         previous_active = self._active_weather_entity
         last_error: str | None = None
+        today = dt_util.now().date()
 
         for eid in weather_ids:
             if not await weather_source.is_available(self.hass, eid):
@@ -327,6 +334,19 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
                 await self._store.update_provider_health(eid, False, "no_forecast")
                 last_error = "no_forecast"
                 continue
+
+            if horizon > 0:
+                filtered_forecast = [fd for fd in forecast if fd.date >= today]
+                if not filtered_forecast and forecast:
+                    _LOGGER.debug(
+                        "WashWise: all forecast entries for %s predate today;"
+                        " provider may start from tomorrow",
+                        eid,
+                    )
+                    await self._store.update_provider_health(eid, False, "stale_forecast")
+                    last_error = "stale_forecast"
+                    continue
+                forecast = filtered_forecast
 
             await self._store.update_provider_health(eid, True, None)
             if previous_active is not None and previous_active != eid:

@@ -238,6 +238,7 @@
         "boat": "Boot",
         "rv_camper": "Camper",
         "windows_house": "Ramen van het huis",
+        "laundry": "Laundry",
         "solar_panels": "Zonnepanelen",
         "patio_deck": "Terras / vlonder",
         "garden_irrigation": "Tuinirrigatie",
@@ -344,6 +345,9 @@
       "days_analyzed": {
         "name": "Geanalyseerde dagen"
       },
+      "hours_analyzed": {
+        "name": "Hours analyzed"
+      },
       "precip_total_mm": {
         "name": "Totale neerslag in voorspelling"
       },
@@ -380,6 +384,7 @@
           "boat": "Boot",
           "rv_camper": "Camper",
           "windows_house": "Huisramen",
+          "laundry": "Laundry",
           "solar_panels": "Zonnepanelen",
           "patio_deck": "Terras",
           "garden_irrigation": "Tuinberegening",
