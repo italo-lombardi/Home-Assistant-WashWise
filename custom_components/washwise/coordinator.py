@@ -339,7 +339,8 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
                 filtered_forecast = [fd for fd in forecast if fd.date >= today]
                 if not filtered_forecast and forecast:
                     _LOGGER.debug(
-                        "WashWise: all forecast entries for %s predate today; provider may start from tomorrow",
+                        "WashWise: all forecast entries for %s predate today;"
+                        " provider may start from tomorrow",
                         eid,
                     )
                     await self._store.update_provider_health(eid, False, "stale_forecast")

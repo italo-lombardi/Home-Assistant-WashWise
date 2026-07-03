@@ -1086,12 +1086,23 @@ async def test_stale_forecast_entries_are_dropped(hass: HomeAssistant) -> None:
     coord, _stub = _build_coordinator(hass, entry)
 
     today = FROZEN_NOW.date()
+
+    def _fd(dt):
+        return ForecastDay(
+            date=dt,
+            condition="sunny",
+            precipitation_mm=0.0,
+            temp_min_c=10.0,
+            temp_max_c=20.0,
+            raw={},
+        )
+
     # Two stale entries (yesterday, day before) + two valid entries (today, tomorrow).
     mixed_forecast = [
-        ForecastDay(date=today - timedelta(days=2), condition="sunny", precipitation_mm=0.0, temp_min_c=10.0, temp_max_c=20.0, raw={}),
-        ForecastDay(date=today - timedelta(days=1), condition="sunny", precipitation_mm=0.0, temp_min_c=10.0, temp_max_c=20.0, raw={}),
-        ForecastDay(date=today, condition="sunny", precipitation_mm=0.0, temp_min_c=10.0, temp_max_c=20.0, raw={}),
-        ForecastDay(date=today + timedelta(days=1), condition="sunny", precipitation_mm=0.0, temp_min_c=10.0, temp_max_c=20.0, raw={}),
+        _fd(today - timedelta(days=2)),
+        _fd(today - timedelta(days=1)),
+        _fd(today),
+        _fd(today + timedelta(days=1)),
     ]
 
     with (
@@ -1126,7 +1137,14 @@ async def test_provider_returns_only_stale_entries_fails_over(hass: HomeAssistan
 
     today = FROZEN_NOW.date()
     stale_only = [
-        ForecastDay(date=today - timedelta(days=1), condition="sunny", precipitation_mm=0.0, temp_min_c=10.0, temp_max_c=20.0, raw={}),
+        ForecastDay(
+            date=today - timedelta(days=1),
+            condition="sunny",
+            precipitation_mm=0.0,
+            temp_min_c=10.0,
+            temp_max_c=20.0,
+            raw={},
+        ),
     ]
 
     with (
@@ -1159,7 +1177,14 @@ async def test_stale_provider_fails_over_to_valid_provider(hass: HomeAssistant) 
 
     today = FROZEN_NOW.date()
     stale_forecast = [
-        ForecastDay(date=today - timedelta(days=1), condition="sunny", precipitation_mm=0.0, temp_min_c=10.0, temp_max_c=20.0, raw={}),
+        ForecastDay(
+            date=today - timedelta(days=1),
+            condition="sunny",
+            precipitation_mm=0.0,
+            temp_min_c=10.0,
+            temp_max_c=20.0,
+            raw={},
+        ),
     ]
 
     async def fake_get_forecast(_hass, eid, *args, **kwargs):
