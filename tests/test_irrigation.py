@@ -23,8 +23,12 @@ from pytest_homeassistant_custom_component.common import MockConfigEntry
 from custom_components.washwise.const import (
     CONF_CATEGORY,
     CONF_CUSTOMIZE_THRESHOLDS,
+    CONF_DAYS,
+    CONF_FORECAST_TYPE,
+    CONF_FREEZE_CHECK,
     CONF_IRRIGATION_SWITCH_ENTITY,
     CONF_NAME,
+    CONF_PRECIP_THRESHOLD,
     CONF_RAIN_GAUGE_ENTITY,
     CONF_RAIN_GAUGE_THRESHOLD_MM,
     CONF_WEATHER_ENTITIES,
@@ -1367,10 +1371,10 @@ async def test_reconfigure_garden_irrigation_untick_customize_strips_threshold_k
             CONF_WEATHER_ENTITIES: ["weather.home"],
             CONF_CATEGORY: "garden_irrigation",
             CONF_CUSTOMIZE_THRESHOLDS: True,
-            "days": 5,
-            "forecast_type": "hourly",
-            "precip_threshold_mm": 9.9,
-            "freeze_check": False,
+            CONF_DAYS: 5,
+            CONF_FORECAST_TYPE: "hourly",
+            CONF_PRECIP_THRESHOLD: 9.9,
+            CONF_FREEZE_CHECK: False,
             CONF_RAIN_GAUGE_ENTITY: "sensor.old_gauge",
             CONF_RAIN_GAUGE_THRESHOLD_MM: 99.0,
         },
@@ -1409,8 +1413,8 @@ async def test_reconfigure_garden_irrigation_untick_customize_strips_threshold_k
 
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
-    assert "days" not in entry.data
-    assert "forecast_type" not in entry.data
-    assert "precip_threshold_mm" not in entry.data
+    assert CONF_DAYS not in entry.data
+    assert CONF_FORECAST_TYPE not in entry.data
+    assert CONF_PRECIP_THRESHOLD not in entry.data
     assert entry.data[CONF_RAIN_GAUGE_ENTITY] == "sensor.new_gauge"
     assert entry.data[CONF_RAIN_GAUGE_THRESHOLD_MM] == 5.0
