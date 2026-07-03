@@ -30,6 +30,7 @@ from custom_components.washwise.const import (
     CONF_CATEGORY,
     CONF_CUSTOMIZE_THRESHOLDS,
     CONF_DAYS,
+    CONF_FORECAST_TYPE,
     CONF_WEATHER_ENTITIES,
     DOMAIN,
 )
@@ -61,6 +62,7 @@ from custom_components.washwise.sensor import (
     WorstConditionSensor,
     _coerce_str,
     _parse_iso,
+    _resolve_forecast_type,
     _resolve_horizon,
     _temp_extreme,
     async_setup_entry,
@@ -1266,3 +1268,43 @@ def test_coerce_str_plain_value() -> None:
     """Plain values without ``isoformat`` go through ``str``."""
     assert _coerce_str(42) == "42"
     assert _coerce_str("already") == "already"
+
+
+# ----------------------------------------------------------------------
+# _resolve_forecast_type
+# ----------------------------------------------------------------------
+
+
+def test_resolve_forecast_type_returns_from_data() -> None:
+    """``_resolve_forecast_type`` returns early when data has forecast_type."""
+    entry = _make_entry(category="car")
+    entry.data[CONF_FORECAST_TYPE] = "hourly"
+
+    assert _resolve_forecast_type(entry) == "hourly"
+
+
+def test_resolve_forecast_type_falls_back_to_preset() -> None:
+    """``_resolve_forecast_type`` falls back to preset when neither options nor data has key."""
+    entry = _make_entry(category="laundry")
+    # No CONF_FORECAST_TYPE in data or options.
+
+    assert _resolve_forecast_type(entry) == "hourly"
+
+
+# ----------------------------------------------------------------------
+# DaysAnalyzedSensor — hourly branch
+# ----------------------------------------------------------------------
+
+
+def test_days_analyzed_hourly_uses_hours_key_and_unit() -> None:
+    """``DaysAnalyzedSensor`` with hourly entry sets hours_analyzed key and h unit."""
+    from homeassistant.const import UnitOfTime
+
+    coordinator = _make_coordinator(_make_decision(days_analyzed=7))
+    entry = _make_entry(category="laundry")
+
+    sensor = DaysAnalyzedSensor(coordinator, entry)
+
+    assert sensor._attr_translation_key == "hours_analyzed"
+    assert sensor._attr_native_unit_of_measurement == UnitOfTime.HOURS
+    assert sensor.native_value == 7

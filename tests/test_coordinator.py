@@ -1528,3 +1528,46 @@ async def test_handle_registry_updated_rename_to_same_id_noop(
     with patch.object(hass.config_entries, "async_update_entry") as mock_update:
         coord._handle_registry_updated(fake_event)  # type: ignore[arg-type]
     mock_update.assert_not_called()
+
+
+@freeze_time(FROZEN_NOW)
+async def test_stale_filter_skipped_for_horizon_zero(hass: HomeAssistant) -> None:
+    """horizon=0 (solar_panels) bypasses stale filter — forecast passed as-is to compute."""
+    entry = _make_entry(["weather.primary"], category="solar_panels")
+    entry.add_to_hass(hass)
+    coord, stub = _build_coordinator(hass, entry)
+
+    today = FROZEN_NOW.date()
+    # Stale entry — would be filtered for horizon>0 but must pass through for solar_panels.
+    stale = [
+        ForecastDay(
+            date=today - timedelta(days=1),
+            condition="sunny",
+            precipitation_mm=0.0,
+            temp_min_c=10.0,
+            temp_max_c=20.0,
+            raw={},
+        ),
+    ]
+
+    with (
+        patch(
+            "custom_components.washwise.coordinator.weather_source.is_available",
+            new=AsyncMock(return_value=True),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_current",
+            new=AsyncMock(return_value=_sunny_current()),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_forecast",
+            new=AsyncMock(return_value=stale),
+        ),
+    ):
+        await coord._async_update_data()
+
+    # solar_panels with horizon=0 → compute sees empty walked list (horizon clips it),
+    # not a stale_forecast failure. Provider should be marked healthy.
+    healthy_calls = [c for c in stub.health_calls if c[0] == "weather.primary" and c[1] is True]
+    assert healthy_calls, "solar_panels provider should be marked healthy"
+    assert "stale_forecast" not in [c[2] for c in stub.health_calls]
