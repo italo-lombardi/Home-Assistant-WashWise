@@ -167,7 +167,8 @@ All entities live under a single **WashWise \<name\>** device per config entry.
 | Entity | Description |
 |--------|-------------|
 | `sensor.washwise_<name>_category` | Configured category key (e.g. `car`, `boat`). |
-| `sensor.washwise_<name>_days_analyzed` | Forecast days that made it through normalisation. |
+| `sensor.washwise_<name>_days_analyzed` | Forecast slots analysed (daily forecast). Shows unit `d`. |
+| `sensor.washwise_<name>_hours_analyzed` | Forecast slots analysed (hourly forecast, e.g. Laundry). Shows unit `h`. |
 | `sensor.washwise_<name>_precip_total_mm` | Sum of precipitation across the analysed horizon. |
 | `sensor.washwise_<name>_worst_condition` | Most adverse condition code seen in the horizon. |
 | `sensor.washwise_<name>_min_temp` | Minimum forecast temperature (°C). |
