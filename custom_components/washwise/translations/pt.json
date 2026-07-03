@@ -238,10 +238,10 @@
         "boat": "Barco",
         "rv_camper": "Motorhome / Trailer",
         "windows_house": "Janelas da casa",
+        "laundry": "Laundry",
         "solar_panels": "Painéis solares",
         "patio_deck": "Pátio / deck",
         "garden_irrigation": "Irrigação de jardim",
-        "laundry": "Laundry",
         "custom": "Personalizado"
       }
     },
@@ -384,10 +384,10 @@
           "boat": "Barco",
           "rv_camper": "Motorhome",
           "windows_house": "Janelas de casa",
+          "laundry": "Laundry",
           "solar_panels": "Painéis solares",
           "patio_deck": "Varanda",
           "garden_irrigation": "Irrigação do jardim",
-        "laundry": "Laundry",
           "custom": "Personalizado"
         }
       }

@@ -238,10 +238,10 @@
         "boat": "Båd",
         "rv_camper": "Autocamper / campingvogn",
         "windows_house": "Husvinduer",
+        "laundry": "Laundry",
         "solar_panels": "Solpaneler",
         "patio_deck": "Terrasse",
         "garden_irrigation": "Havevanding",
-        "laundry": "Laundry",
         "custom": "Brugerdefineret"
       }
     },
@@ -384,10 +384,10 @@
           "boat": "Båd",
           "rv_camper": "Autocamper",
           "windows_house": "Husvinduer",
+          "laundry": "Laundry",
           "solar_panels": "Solpaneler",
           "patio_deck": "Terrasse",
           "garden_irrigation": "Havevanding",
-        "laundry": "Laundry",
           "custom": "Brugerdefineret"
         }
       }

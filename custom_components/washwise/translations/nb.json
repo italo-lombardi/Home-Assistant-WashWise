@@ -238,10 +238,10 @@
         "boat": "Båt",
         "rv_camper": "Bobil / campingvogn",
         "windows_house": "Husvinduer",
+        "laundry": "Laundry",
         "solar_panels": "Solcellepaneler",
         "patio_deck": "Terrasse / platting",
         "garden_irrigation": "Havevanning",
-        "laundry": "Laundry",
         "custom": "Egendefinert"
       }
     },
@@ -384,10 +384,10 @@
           "boat": "Båt",
           "rv_camper": "Bobil",
           "windows_house": "Husvinduer",
+          "laundry": "Laundry",
           "solar_panels": "Solcellepaneler",
           "patio_deck": "Terrasse",
           "garden_irrigation": "Hagevanningsanlegg",
-        "laundry": "Laundry",
           "custom": "Egendefinert"
         }
       }

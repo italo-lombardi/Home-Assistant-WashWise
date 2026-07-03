@@ -12,15 +12,17 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from homeassistant.core import HomeAssistant
+from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.exceptions import HomeAssistantError
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.washwise.const import (
     CONF_CATEGORY,
+    CONF_CUSTOMIZE_THRESHOLDS,
     CONF_IRRIGATION_SWITCH_ENTITY,
     CONF_NAME,
     CONF_RAIN_GAUGE_ENTITY,
@@ -1345,3 +1347,70 @@ async def test_irrigation_switch_state_sensor_handle_state_change(
         sensor._handle_switch_state_change(MagicMock())
 
     mock_write.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_reconfigure_garden_irrigation_untick_customize_strips_threshold_keys(
+    hass: HomeAssistant,
+) -> None:
+    """garden_irrigation + customize=False reconfigure strips stale threshold keys.
+
+    The fix hoists the strip loop before both the customize=True and
+    garden_irrigation branches. This test covers the garden_irrigation path.
+    """
+    entry = MockConfigEntry(
+        version=1,
+        domain=DOMAIN,
+        title="Garden",
+        data={
+            CONF_NAME: "Garden",
+            CONF_WEATHER_ENTITIES: ["weather.home"],
+            CONF_CATEGORY: "garden_irrigation",
+            CONF_CUSTOMIZE_THRESHOLDS: True,
+            "days": 5,
+            "forecast_type": "hourly",
+            "precip_threshold_mm": 9.9,
+            "freeze_check": False,
+            CONF_RAIN_GAUGE_ENTITY: "sensor.old_gauge",
+            CONF_RAIN_GAUGE_THRESHOLD_MM: 99.0,
+        },
+        options={},
+        entry_id="garden_strip_test",
+        unique_id=f"{DOMAIN}_garden_strip_test",
+    )
+    entry.add_to_hass(hass)
+
+    with (
+        patch("custom_components.washwise.async_setup_entry", return_value=True),
+        patch("custom_components.washwise.async_unload_entry", return_value=True),
+    ):
+        result = await entry.start_reconfigure_flow(hass)
+        assert result["step_id"] == "reconfigure"
+
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.home"],
+                CONF_NAME: "Garden",
+                CONF_CATEGORY: "garden_irrigation",
+                CONF_CUSTOMIZE_THRESHOLDS: False,
+            },
+        )
+        assert result["step_id"] == "irrigation"
+
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_RAIN_GAUGE_ENTITY: "sensor.new_gauge",
+                CONF_RAIN_GAUGE_THRESHOLD_MM: 5.0,
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    assert "days" not in entry.data
+    assert "forecast_type" not in entry.data
+    assert "precip_threshold_mm" not in entry.data
+    assert entry.data[CONF_RAIN_GAUGE_ENTITY] == "sensor.new_gauge"
+    assert entry.data[CONF_RAIN_GAUGE_THRESHOLD_MM] == 5.0

@@ -238,10 +238,10 @@
         "boat": "Barco",
         "rv_camper": "Autocaravana / caravana",
         "windows_house": "Ventanas de la casa",
+        "laundry": "Laundry",
         "solar_panels": "Paneles solares",
         "patio_deck": "Patio / terraza",
         "garden_irrigation": "Riego del jardín",
-        "laundry": "Laundry",
         "custom": "Personalizado"
       }
     },
@@ -384,10 +384,10 @@
           "boat": "Barco",
           "rv_camper": "Autocaravana",
           "windows_house": "Ventanas de casa",
+          "laundry": "Laundry",
           "solar_panels": "Paneles solares",
           "patio_deck": "Terraza",
           "garden_irrigation": "Riego del jardín",
-        "laundry": "Laundry",
           "custom": "Personalizado"
         }
       }

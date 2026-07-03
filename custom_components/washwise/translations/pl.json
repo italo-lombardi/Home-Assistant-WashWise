@@ -238,10 +238,10 @@
         "boat": "Łódź",
         "rv_camper": "Kamper",
         "windows_house": "Okna domu",
+        "laundry": "Laundry",
         "solar_panels": "Panele słoneczne",
         "patio_deck": "Taras",
         "garden_irrigation": "Nawadnianie ogrodu",
-        "laundry": "Laundry",
         "custom": "Niestandardowa"
       }
     },
@@ -384,10 +384,10 @@
           "boat": "Łódź",
           "rv_camper": "Kamper",
           "windows_house": "Okna domu",
+          "laundry": "Laundry",
           "solar_panels": "Panele słoneczne",
           "patio_deck": "Taras",
           "garden_irrigation": "Nawadnianie ogrodu",
-        "laundry": "Laundry",
           "custom": "Niestandardowa"
         }
       }

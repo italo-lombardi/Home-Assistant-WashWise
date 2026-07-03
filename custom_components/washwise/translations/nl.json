@@ -238,10 +238,10 @@
         "boat": "Boot",
         "rv_camper": "Camper",
         "windows_house": "Ramen van het huis",
+        "laundry": "Laundry",
         "solar_panels": "Zonnepanelen",
         "patio_deck": "Terras / vlonder",
         "garden_irrigation": "Tuinirrigatie",
-        "laundry": "Laundry",
         "custom": "Aangepast"
       }
     },
@@ -384,10 +384,10 @@
           "boat": "Boot",
           "rv_camper": "Camper",
           "windows_house": "Huisramen",
+          "laundry": "Laundry",
           "solar_panels": "Zonnepanelen",
           "patio_deck": "Terras",
           "garden_irrigation": "Tuinberegening",
-        "laundry": "Laundry",
           "custom": "Aangepast"
         }
       }
