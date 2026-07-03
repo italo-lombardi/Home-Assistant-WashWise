@@ -241,6 +241,7 @@
         "solar_panels": "Pannelli solari",
         "patio_deck": "Patio / terrazza",
         "garden_irrigation": "Irrigazione giardino",
+        "laundry": "Laundry",
         "custom": "Personalizzata"
       }
     },
@@ -344,6 +345,9 @@
       "days_analyzed": {
         "name": "Giorni analizzati"
       },
+      "hours_analyzed": {
+        "name": "Hours analyzed"
+      },
       "precip_total_mm": {
         "name": "Precipitazione totale prevista"
       },
@@ -383,6 +387,7 @@
           "solar_panels": "Pannelli solari",
           "patio_deck": "Terrazza",
           "garden_irrigation": "Irrigazione del giardino",
+        "laundry": "Laundry",
           "custom": "Personalizzata"
         }
       }

@@ -7,7 +7,7 @@ Decide whether to wash your car (or motorcycle, boat, solar panels, patio…) ba
 - **Generic weather model** — any HA `weather` entity works, no per-provider code
 - **Ordered fallback** — list multiple sources; first available wins, failovers persisted
 - **0–100 score** — weighted sum of precipitation, freeze, and bad-condition penalties
-- **Nine categories** — Car, Motorcycle, Bicycle, Boat, RV, Windows, Solar Panels, Patio, Custom
+- **Eleven categories** — Car, Motorcycle, Bicycle, Boat, RV, Windows, Laundry, Solar Panels, Patio, Garden Irrigation, Custom
 - **Solar panel inversion** — rain helps clean panels; verdict flips automatically
 - **Smart auto-recalc** — recomputes the moment the active weather entity changes state
 - **Snooze** — pause the verdict for N hours via service call; countdown sensor included

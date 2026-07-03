@@ -241,6 +241,7 @@
         "solar_panels": "Solcellepaneler",
         "patio_deck": "Terrasse / platting",
         "garden_irrigation": "Havevanning",
+        "laundry": "Laundry",
         "custom": "Egendefinert"
       }
     },
@@ -344,6 +345,9 @@
       "days_analyzed": {
         "name": "Dager analysert"
       },
+      "hours_analyzed": {
+        "name": "Hours analyzed"
+      },
       "precip_total_mm": {
         "name": "Total nedbør i værvarselet"
       },
@@ -383,6 +387,7 @@
           "solar_panels": "Solcellepaneler",
           "patio_deck": "Terrasse",
           "garden_irrigation": "Hagevanningsanlegg",
+        "laundry": "Laundry",
           "custom": "Egendefinert"
         }
       }

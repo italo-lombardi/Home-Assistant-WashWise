@@ -241,6 +241,7 @@
         "solar_panels": "Zonnepanelen",
         "patio_deck": "Terras / vlonder",
         "garden_irrigation": "Tuinirrigatie",
+        "laundry": "Laundry",
         "custom": "Aangepast"
       }
     },
@@ -344,6 +345,9 @@
       "days_analyzed": {
         "name": "Geanalyseerde dagen"
       },
+      "hours_analyzed": {
+        "name": "Hours analyzed"
+      },
       "precip_total_mm": {
         "name": "Totale neerslag in voorspelling"
       },
@@ -383,6 +387,7 @@
           "solar_panels": "Zonnepanelen",
           "patio_deck": "Terras",
           "garden_irrigation": "Tuinberegening",
+        "laundry": "Laundry",
           "custom": "Aangepast"
         }
       }

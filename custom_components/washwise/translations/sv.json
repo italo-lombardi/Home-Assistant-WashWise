@@ -241,6 +241,7 @@
         "solar_panels": "Solpaneler",
         "patio_deck": "Uteplats/altan",
         "garden_irrigation": "Trädgårdsbevattning",
+        "laundry": "Laundry",
         "custom": "Anpassad"
       }
     },
@@ -344,6 +345,9 @@
       "days_analyzed": {
         "name": "Analyserade dagar"
       },
+      "hours_analyzed": {
+        "name": "Hours analyzed"
+      },
       "precip_total_mm": {
         "name": "Total nederbörd i prognosen"
       },
@@ -383,6 +387,7 @@
           "solar_panels": "Solpaneler",
           "patio_deck": "Uteplats",
           "garden_irrigation": "Trädgårdsbevattning",
+        "laundry": "Laundry",
           "custom": "Anpassad"
         }
       }

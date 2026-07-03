@@ -80,12 +80,13 @@ CATEGORY_PRESETS = {
         "invert": False,
         "icon": "mdi:window-closed-variant",
     },
-    "solar_panels": {
-        "days": 0,
-        "precip_threshold_mm": 0.0,
-        "freeze_check": False,
-        "invert": True,
-        "icon": "mdi:solar-panel",
+    "laundry": {
+        "days": 7,
+        "precip_threshold_mm": 0.1,
+        "freeze_check": True,
+        "invert": False,
+        "forecast_type": "hourly",
+        "icon": "mdi:tshirt-crew",
     },
     "patio_deck": {
         "days": 2,
@@ -93,6 +94,13 @@ CATEGORY_PRESETS = {
         "freeze_check": False,
         "invert": False,
         "icon": "mdi:deck",
+    },
+    "solar_panels": {
+        "days": 0,
+        "precip_threshold_mm": 0.0,
+        "freeze_check": False,
+        "invert": True,
+        "icon": "mdi:solar-panel",
     },
     "garden_irrigation": {
         "days": 1,

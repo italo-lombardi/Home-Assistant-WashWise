@@ -264,13 +264,16 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
 
         data_schema = vol.Schema(
             {
+                vol.Required(
+                    CONF_FORECAST_TYPE, default=preset.get("forecast_type", DEFAULT_FORECAST_TYPE)
+                ): _forecast_type_selector(),
                 vol.Required(CONF_DAYS, default=preset["days"]): selector.NumberSelector(
                     selector.NumberSelectorConfig(
                         min=0,
                         max=7,
                         step=1,
                         mode=selector.NumberSelectorMode.BOX,
-                        unit_of_measurement="days",
+                        unit_of_measurement="slots",
                     )
                 ),
                 vol.Required(
@@ -288,9 +291,6 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                 vol.Required(
                     CONF_FREEZE_CHECK, default=preset["freeze_check"]
                 ): selector.BooleanSelector(),
-                vol.Required(
-                    CONF_FORECAST_TYPE, default=DEFAULT_FORECAST_TYPE
-                ): _forecast_type_selector(),
                 vol.Required(
                     CONF_BAD_CONDITIONS, default=list(BAD_CONDITIONS)
                 ): _bad_conditions_selector(),
@@ -414,6 +414,14 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                             user_input.get(CONF_CUSTOMIZE_THRESHOLDS, False)
                         ),
                     }
+                    # Strip stale threshold keys when customize is off so coordinator
+                    # falls through to the category preset. Safe to run before the
+                    # customize/irrigation branches: customize=True will overwrite with
+                    # fresh form values; garden_irrigation step does the same.
+                    if not new_data[CONF_CUSTOMIZE_THRESHOLDS]:
+                        for key in _RECONFIGURE_STRIPPED_OPTION_KEYS:
+                            if key != CONF_CUSTOMIZE_THRESHOLDS:
+                                new_data.pop(key, None)
                     title = name or _category_label(category)
                     if new_data[CONF_CUSTOMIZE_THRESHOLDS]:
                         self._data = new_data
@@ -545,6 +553,10 @@ class WashWiseOptionsFlow(OptionsFlow):
         data_schema = vol.Schema(
             {
                 vol.Required(
+                    CONF_FORECAST_TYPE,
+                    default=current.get(CONF_FORECAST_TYPE, DEFAULT_FORECAST_TYPE),
+                ): _forecast_type_selector(),
+                vol.Required(
                     CONF_DAYS,
                     default=current.get(CONF_DAYS, preset["days"]),
                 ): selector.NumberSelector(
@@ -553,7 +565,7 @@ class WashWiseOptionsFlow(OptionsFlow):
                         max=7,
                         step=1,
                         mode=selector.NumberSelectorMode.BOX,
-                        unit_of_measurement="days",
+                        unit_of_measurement="slots",
                     )
                 ),
                 vol.Required(
@@ -572,10 +584,6 @@ class WashWiseOptionsFlow(OptionsFlow):
                     CONF_FREEZE_CHECK,
                     default=current.get(CONF_FREEZE_CHECK, preset["freeze_check"]),
                 ): selector.BooleanSelector(),
-                vol.Required(
-                    CONF_FORECAST_TYPE,
-                    default=current.get(CONF_FORECAST_TYPE, DEFAULT_FORECAST_TYPE),
-                ): _forecast_type_selector(),
             }
         )
 

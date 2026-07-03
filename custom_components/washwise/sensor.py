@@ -43,8 +43,10 @@ from .const import (
     CONF_CATEGORY,
     CONF_CUSTOMIZE_THRESHOLDS,
     CONF_DAYS,
+    CONF_FORECAST_TYPE,
     CONF_RAIN_GAUGE_THRESHOLD_MM,
     DEFAULT_CATEGORY,
+    DEFAULT_FORECAST_TYPE,
     DEFAULT_RAIN_GAUGE_THRESHOLD_MM,
     DOMAIN,
 )
@@ -122,6 +124,17 @@ def _resolve_horizon(entry: ConfigEntry) -> int:
                     break
         return int(preset.get("days", 3))
     return int(preset.get("days", 3))
+
+
+def _resolve_forecast_type(entry: ConfigEntry) -> str:
+    """Return the active forecast type for the entry (options → data → preset → default)."""
+    options = entry.options or {}
+    ft = options.get(CONF_FORECAST_TYPE) or (entry.data or {}).get(CONF_FORECAST_TYPE)
+    if ft:
+        return ft
+    category = (entry.data or {}).get(CONF_CATEGORY, DEFAULT_CATEGORY)
+    preset = CATEGORY_PRESETS.get(category, CATEGORY_PRESETS[DEFAULT_CATEGORY])
+    return preset.get("forecast_type", DEFAULT_FORECAST_TYPE)
 
 
 # ----------------------------------------------------------------------
@@ -424,19 +437,26 @@ class _DiagnosticBase(WashWiseSensorBase):
 
 
 class DaysAnalyzedSensor(_DiagnosticBase):
-    """Number of forecast days that fed the latest decision."""
+    """Number of forecast slots that fed the latest decision."""
 
     _attr_icon = "mdi:calendar-search"
-    _attr_native_unit_of_measurement = UnitOfTime.DAYS
     _attr_state_class = SensorStateClass.MEASUREMENT
 
     def __init__(self, coordinator: WashWiseCoordinator, entry: ConfigEntry) -> None:
-        """Register the diagnostic ``days_analyzed`` sensor."""
+        """Register the diagnostic slots_analyzed sensor (key varies by forecast type)."""
         super().__init__(coordinator, entry, "days_analyzed")
+        # translation_key is set once at init. HA triggers a full entry reload on every
+        # options-flow save (_update_listener), so sensors are reconstructed and this
+        # re-evaluates correctly when the user switches forecast_type.
+        if _resolve_forecast_type(entry) == "hourly":
+            self._attr_translation_key = "hours_analyzed"
+            self._attr_native_unit_of_measurement = UnitOfTime.HOURS
+        else:
+            self._attr_native_unit_of_measurement = UnitOfTime.DAYS
 
     @property
     def native_value(self) -> int | None:
-        """Return how many days the algorithm walked."""
+        """Return how many slots the algorithm walked."""
         decision = self._decision
         if decision is None:
             return None

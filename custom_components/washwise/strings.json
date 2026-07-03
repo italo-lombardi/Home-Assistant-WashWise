@@ -21,7 +21,7 @@
         "title": "Custom thresholds",
         "description": "Override the defaults that ship with the chosen category. These values control which forecast days block a wash and how the score is computed.",
         "data": {
-          "days": "Forecast horizon (days)",
+          "days": "Forecast horizon (slots)",
           "precip_threshold_mm": "Precipitation threshold (mm)",
           "freeze_check": "Block on freezing temperatures",
           "forecast_type": "Forecast type",
@@ -31,10 +31,10 @@
           "condition_weight": "Condition score weight"
         },
         "data_description": {
-          "days": "How many forecast days to look ahead, including today. Larger horizons catch more weather but produce more conservative verdicts.",
+          "days": "Number of forecast slots to analyse. With daily forecast each slot = 1 day; with hourly each slot = 1 hour. Larger values catch more weather but produce more conservative verdicts.",
           "precip_threshold_mm": "Total precipitation per day above this value blocks the wash. Lower values (0.1) are stricter, higher values (1.0) tolerate light drizzle.",
           "freeze_check": "When on, a forecast day whose temperature crosses 0 °C blocks the wash to avoid freezing the wash water on the surface.",
-          "forecast_type": "Daily uses one entry per day; Hourly aggregates the next N×24 hourly entries. Hourly is more accurate but requires the source to expose hourly data.",
+          "forecast_type": "Daily uses one entry per day; Hourly uses one entry per hour. Hourly is more accurate but requires the source to expose hourly data.",
           "bad_conditions": "Weather condition codes that block washing when they appear in the forecast or as the current condition.",
           "precip_weight": "How much rain in the forecast subtracts from the 0–100 score. Higher value penalizes rainy days more aggressively.",
           "freeze_weight": "How much a freezing day subtracts from the 0–100 score. Set to 0 to ignore freeze in scoring while still blocking the verdict.",
@@ -111,16 +111,16 @@
         "title": "Thresholds",
         "description": "Override the defaults that ship with the chosen category.",
         "data": {
-          "days": "Forecast horizon (days)",
+          "days": "Forecast horizon (slots)",
           "precip_threshold_mm": "Precipitation threshold (mm)",
           "freeze_check": "Block on freezing temperatures",
           "forecast_type": "Forecast type"
         },
         "data_description": {
-          "days": "How many forecast days to look ahead, including today.",
+          "days": "Number of forecast slots to analyse. With daily forecast each slot = 1 day; with hourly each slot = 1 hour.",
           "precip_threshold_mm": "Total precipitation per day above this value blocks the wash.",
           "freeze_check": "When on, a forecast day whose temperature crosses 0 °C blocks the wash.",
-          "forecast_type": "Daily uses one entry per day; Hourly aggregates hourly entries when supported."
+          "forecast_type": "Daily uses one entry per day; Hourly uses one entry per hour. Hourly is more accurate but requires the source to expose hourly data."
         }
       },
       "scoring": {
@@ -238,8 +238,9 @@
         "boat": "Boat",
         "rv_camper": "RV / Camper",
         "windows_house": "House windows",
-        "solar_panels": "Solar panels",
+        "laundry": "Laundry",
         "patio_deck": "Patio / Deck",
+        "solar_panels": "Solar panels",
         "garden_irrigation": "Garden irrigation",
         "custom": "Custom"
       }
@@ -344,6 +345,9 @@
       "days_analyzed": {
         "name": "Days analyzed"
       },
+      "hours_analyzed": {
+        "name": "Hours analyzed"
+      },
       "precip_total_mm": {
         "name": "Forecast rainfall total"
       },
@@ -377,6 +381,7 @@
           "solar_panels": "Solar panels",
           "patio_deck": "Patio / Deck",
           "garden_irrigation": "Garden irrigation",
+          "laundry": "Laundry",
           "custom": "Custom"
         }
       },

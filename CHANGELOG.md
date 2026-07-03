@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.6] - 2026-07-03
+
+### Added
+- **Laundry category** — new `laundry` preset tuned for hang-drying: 7-hour hourly horizon, 0.1 mm precipitation cutoff, freeze check enabled. Uses hourly forecast by default so the question "is it safe to hang washing out now?" is answered on a drying-window timescale rather than a whole-day basis. Addresses [#18](https://github.com/italo-lombardi/Home-Assistant-WashWise/issues/18).
+- **`Days analyzed` sensor adapts to forecast type** — shows "Hours analyzed" with unit `h` for hourly entries, "Days analyzed" with unit `d` for daily. Sensor unique_id unchanged; existing history and automations unaffected.
+
+### Fixed
+- **Stale forecast entries filtered before decision** — forecast entries with a date earlier than today are now dropped before being passed to `decision.compute()`. Providers that return yesterday's data (stale cache) no longer inflate `days_analyzed` or influence the verdict.
+- **All-stale provider correctly fails over** — when every forecast entry from a provider is stale, the provider is marked unhealthy (`stale_forecast`) and the coordinator walks to the next provider in the chain, mirroring the existing `no_forecast` guard.
+- **Stale filter skipped for `horizon=0` categories** — the solar-panels preset uses `days=0` (forecast irrelevant). The stale filter previously fired on the dummy forecast slice fetched for that path; it now mirrors the `no_forecast` guard's `horizon > 0` condition.
+- **Stale filter date anchor uses HA local time** — `today` is now derived from `dt_util.now().date()` (HA's configured timezone) rather than UTC, so forecast entries dated "today" in the user's local timezone are not incorrectly filtered for users in UTC+ zones late in the day.
+- **Category preset seeds `forecast_type`** — when a category preset includes a `forecast_type` key (e.g. `laundry` → `hourly`), the initial config-flow thresholds step now pre-fills that value instead of always defaulting to `daily`. Existing entries are unaffected; users can override via Options flow.
+- **Coordinator `forecast_type` resolution falls back to category preset** — entries created without custom thresholds (e.g. new laundry entry with defaults) now correctly use the preset's `forecast_type` via the resolution chain `options → data → preset → default`. Previously the fallback stopped at `default` ("daily"), causing laundry entries without customisation to use daily forecast instead of hourly.
+- **Reconfigure unticking `customize_thresholds` now strips stale threshold keys from `entry.data`** — previously, reconfiguring with `customize_thresholds=False` left old threshold values (including `forecast_type`, `days`, `precip_threshold_mm`) in `entry.data` because they were inherited via `{**entry.data, ...}`. These stale values silently overrode the category preset until the user explicitly re-customised. Now stripped on reconfigure for both standard and `garden_irrigation` categories.
+
 ## [0.2.5] - 2026-06-21
 
 ### Performance

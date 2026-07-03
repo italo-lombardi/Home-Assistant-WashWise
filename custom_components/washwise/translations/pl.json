@@ -241,6 +241,7 @@
         "solar_panels": "Panele słoneczne",
         "patio_deck": "Taras",
         "garden_irrigation": "Nawadnianie ogrodu",
+        "laundry": "Laundry",
         "custom": "Niestandardowa"
       }
     },
@@ -344,6 +345,9 @@
       "days_analyzed": {
         "name": "Przeanalizowane dni"
       },
+      "hours_analyzed": {
+        "name": "Hours analyzed"
+      },
       "precip_total_mm": {
         "name": "Łączne opady w prognozie"
       },
@@ -383,6 +387,7 @@
           "solar_panels": "Panele słoneczne",
           "patio_deck": "Taras",
           "garden_irrigation": "Nawadnianie ogrodu",
+        "laundry": "Laundry",
           "custom": "Niestandardowa"
         }
       }
