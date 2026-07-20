@@ -317,12 +317,16 @@ python -m pytest tests/ -v
 
 ## Sibling integrations
 
-- [Entity Availability](https://github.com/italo-lombardi/Home-Assistant-EntityAvailability) — track offline entities, availability history, and degraded states with a custom dashboard card.
-- [Entity Guard](https://github.com/italo-lombardi/Home-Assistant-EntityGuard) — enforce entity state via declarative rules — replaces hand-written auto-off / auto-lock automations.
-- [Entity Distance](https://github.com/italo-lombardi/Home-Assistant-EntityDistance) — distance, direction, and ETA between 2–5 HA entities.
-- [Fuel Compare](https://github.com/italo-lombardi/Home-Assistant-FuelCompare) — live fuel prices from 36 providers across 30 countries.
-- [DashSnap](https://github.com/italo-lombardi/DashSnap) — record or screenshot any web page via headless Chromium (HA dashboards, Grafana, public pages); HA Add-on or Docker.
-- [DashSnap Integration](https://github.com/italo-lombardi/DashSnap-Integration) — trigger DashSnap recordings and screenshots from HA automations and scripts.
+Other Home Assistant integrations by the same author:
+
+| Integration | Description |
+|-------------|-------------|
+| [Entity Availability](https://github.com/italo-lombardi/Home-Assistant-EntityAvailability) | Monitor entity availability by group — tracks offline entities, availability history, and degraded states with a custom dashboard card |
+| [Entity Guard](https://github.com/italo-lombardi/Home-Assistant-EntityGuard) | Enforce entity state via declarative rules — replaces hand-written auto-off / auto-lock / kill-switch automations |
+| [Entity Distance](https://github.com/italo-lombardi/Home-Assistant-EntityDistance) | Tracks distance between 2–5 HA entities (persons, devices, zones) — direction, closing speed, ETA, proximity, group sensors |
+| [Fuel Compare](https://github.com/italo-lombardi/Home-Assistant-FuelCompare) | Live fuel prices from 36 providers across 30 countries |
+| [DashSnap](https://github.com/italo-lombardi/DashSnap) | Record or screenshot any web page via headless Chromium — HA dashboards, Grafana, public pages; HA Add-on or Docker |
+| [DashSnap Integration](https://github.com/italo-lombardi/DashSnap-Integration) | Trigger DashSnap recordings and screenshots from HA automations and scripts |
 
 ---
 
