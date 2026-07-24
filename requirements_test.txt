@@ -1,5 +1,5 @@
 pytest>=9.0.3
 pytest-asyncio==1.4.0
-pytest-homeassistant-custom-component>=0.13.346,<0.13.347
+pytest-homeassistant-custom-component>=0.13.347,<0.13.348
 pytest-cov>=7.1.0
 freezegun>=1.5.5
