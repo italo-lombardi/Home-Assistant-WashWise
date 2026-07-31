@@ -13,7 +13,7 @@ Decide whether to wash your car (or motorcycle, boat, solar panels, patio…) ba
 - **Snooze** — pause the verdict for N hours via service call; countdown sensor included
 - **Wash log** — mark washes manually; days-since and 30-day count tracked in persistent storage
 - **Custom Lovelace card** — verdict, score, forecast strip, diagnostics panel, visual editor
-- **11 backend languages**, 100% test coverage gate in CI
+- **29 backend languages**, 100% test coverage gate in CI
 
 ## Card
 

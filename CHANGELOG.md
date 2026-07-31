@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.2.6] - 2026-07-03
 
 ### Added
+- **18 new translation locales** — zh-Hans, zh-Hant, ru, ja, ko, uk, cs, sk, hu, ro, bg, hr, fi, el, tr, lt, lv, ca. Backend language count: 11 → 29.
 - **Laundry category** — new `laundry` preset tuned for hang-drying: 7-hour hourly horizon, 0.1 mm precipitation cutoff, freeze check enabled. Uses hourly forecast by default so the question "is it safe to hang washing out now?" is answered on a drying-window timescale rather than a whole-day basis. Addresses [#18](https://github.com/italo-lombardi/Home-Assistant-WashWise/issues/18).
 - **`Days analyzed` sensor adapts to forecast type** — shows "Hours analyzed" with unit `h` for hourly entries, "Days analyzed" with unit `d` for daily. Sensor unique_id unchanged; existing history and automations unaffected.
 

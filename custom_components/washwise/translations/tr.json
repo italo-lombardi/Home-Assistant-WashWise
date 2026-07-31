@@ -1,0 +1,404 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "Hava tahmini verilerine dayanarak bir yüzeyi yıkayıp yıkayamayacağınıza karar veren bir yıkama danışmanı kurun.",
+        "data": {
+          "weather_entities": "Hava durumu kaynakları",
+          "name": "Ad",
+          "category": "Kategori",
+          "customize_thresholds": "Eşik değerlerini özelleştir"
+        },
+        "data_description": {
+          "weather_entities": "Bir veya daha fazla HA hava durumu varlığı seçin. Bu sıralı listedeki ilk kullanılabilir kaynak kullanılır; önceki kullanılamıyorsa bir sonraki denenir.",
+          "name": "Bu WashWise örneği için kolay okunur ad. Bu giriş tarafından oluşturulan her varlığa önek olarak eklenir.",
+          "category": "Neyi yıkadığınız. Her kategori makul varsayılan eşik değerleri ve varsayılan bir simgeyle gelir. Tarafsız varsayılanlarla başlamak için Özel'i seçin.",
+          "customize_thresholds": "Bir sonraki ekranda kategori varsayılanlarını geçersiz kılmak için açın. Seçilen kategori için önceden ayarlanmış değerleri kullanmak üzere kapalı bırakın."
+        }
+      },
+      "thresholds": {
+        "title": "Özel eşik değerleri",
+        "description": "Seçilen kategoriyle birlikte gelen varsayılanları geçersiz kılın. Bu değerler hangi tahmin günlerinin yıkamayı engellediğini ve puanın nasıl hesaplandığını kontrol eder.",
+        "data": {
+          "days": "Tahmin ufku (dilim)",
+          "precip_threshold_mm": "Yağış eşiği (mm)",
+          "freeze_check": "Dondurucu sıcaklıklarda engelle",
+          "forecast_type": "Tahmin türü",
+          "bad_conditions": "Engelleyici hava koşulları",
+          "precip_weight": "Yağış puan ağırlığı",
+          "freeze_weight": "Donma puan ağırlığı",
+          "condition_weight": "Koşul puan ağırlığı"
+        },
+        "data_description": {
+          "days": "Analiz edilecek tahmin dilimi sayısı. Günlük tahminle her dilim = 1 gün; saatlik tahminle her dilim = 1 saat. Daha büyük değerler daha fazla hava durumunu yakalar ancak daha ihtiyatlı sonuçlar üretir.",
+          "precip_threshold_mm": "Gün başına bu değerin üzerindeki toplam yağış yıkamayı engeller. Düşük değerler (0,1) daha katı, yüksek değerler (1,0) hafif çiselemeye toleranslıdır.",
+          "freeze_check": "Açıkken, sıcaklığı 0 °C'nin altına düşen bir tahmin günü, yüzeydeki yıkama suyunun donmasını önlemek için yıkamayı engeller.",
+          "forecast_type": "Günlük, gün başına bir giriş kullanır; saatlik, saat başına bir giriş kullanır. Saatlik daha doğrudur ancak kaynağın saatlik veri sunmasını gerektirir.",
+          "bad_conditions": "Tahmin veya mevcut koşulda göründüklerinde yıkamayı engelleyen hava durumu kodu koşulları.",
+          "precip_weight": "Tahmindeki yağışın 0–100 puanından ne kadar çıkarıldığı. Daha yüksek değer, yağışlı günleri daha agresif şekilde cezalandırır.",
+          "freeze_weight": "Donma gününün 0–100 puanından ne kadar çıkarıldığı. Sonucu yine engellerken puanlamada donmayı yok saymak için 0 olarak ayarlayın.",
+          "condition_weight": "Kötü hava koşullarının (fırtına, dolu, kar) 0–100 puanından ne kadar çıkarıldığı. Şiddet koşula göre değişir."
+        }
+      },
+      "irrigation": {
+        "title": "Sulama ayarları",
+        "description": "Bahçe sulama danışmanı için yağış ölçer ve sulama programı anahtarını yapılandırın.",
+        "data": {
+          "rain_gauge_entity": "Yağış ölçer sensörü",
+          "rain_gauge_threshold_mm": "Yağış eşiği (mm)",
+          "irrigation_switch_entity": "Sulama programı anahtarı"
+        },
+        "data_description": {
+          "rain_gauge_entity": "mm cinsinden ölçülen yağışı bildiren bir sensör varlığı (örn. bir hava istasyonu plüviyometresinden). Yalnızca tahmine dayalı baskı kullanmak için boş bırakın.",
+          "rain_gauge_threshold_mm": "Yağış ölçer bu değere ulaşır veya aşarsa sulama programı otomatik olarak bastırılır.",
+          "irrigation_switch_entity": "Sulama programınızı başlatan anahtar, input_boolean veya otomasyon. WashWise, yağış sulamayı bastırdığında onu kapatır ve koşullar düzeldiğinde tekrar açar."
+        }
+      },
+      "reconfigure": {
+        "title": "WashWise'ı Yeniden Yapılandır",
+        "description": "Bu örnek için hava durumu kaynaklarını, adı, kategoriyi veya eşik özelleştirmesini değiştirin.",
+        "data": {
+          "weather_entities": "Hava durumu kaynakları",
+          "name": "Ad",
+          "category": "Kategori",
+          "customize_thresholds": "Eşik değerlerini özelleştir"
+        },
+        "data_description": {
+          "weather_entities": "Bir veya daha fazla HA hava durumu varlığı seçin. Bu sıralı listedeki ilk kullanılabilir kaynak kullanılır; önceki kullanılamıyorsa bir sonraki denenir.",
+          "name": "Bu WashWise örneği için kolay okunur ad. Bu giriş tarafından oluşturulan her varlığa önek olarak eklenir.",
+          "category": "Neyi yıkadığınız. Her kategori makul varsayılan eşik değerleri ve varsayılan bir simgeyle gelir. Tarafsız varsayılanlarla başlamak için Özel'i seçin.",
+          "customize_thresholds": "Bir sonraki ekranda kategori varsayılanlarını geçersiz kılmak için açın. Seçilen kategori için önceden ayarlanmış değerleri kullanmak üzere kapalı bırakın."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "En az bir hava durumu kaynağı seçin.",
+      "weather_unavailable": "Seçilen tüm hava durumu kaynakları şu anda kullanılamıyor.",
+      "duplicate_name": "Bu adda bir WashWise örneği zaten mevcut.",
+      "invalid_category": "Seçilen kategori geçerli değil."
+    },
+    "abort": {
+      "already_configured": "Bu kombinasyon zaten yapılandırılmış.",
+      "reconfigure_successful": "Yapılandırma başarıyla güncellendi."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WashWise seçenekleri",
+        "description": "Düzenlenecek bir bölüm seçin.",
+        "menu_options": {
+          "providers": "Hava durumu kaynakları",
+          "thresholds": "Eşik değerleri",
+          "scoring": "Puanlama ağırlıkları",
+          "conditions": "Engelleyici koşullar",
+          "advanced": "Gelişmiş",
+          "irrigation": "Sulama ayarları"
+        }
+      },
+      "providers": {
+        "title": "Hava durumu kaynakları",
+        "description": "Tahmin kaynağı olarak kullanılan hava durumu varlıklarını ekleyin, kaldırın veya yeniden sıralayın.",
+        "data": {
+          "weather_entities": "Hava durumu kaynakları"
+        },
+        "data_description": {
+          "weather_entities": "Sıralama önemlidir. Bu listedeki ilk kullanılabilir varlık kullanılır; önceki kullanılamıyorsa bir sonraki denenir."
+        }
+      },
+      "thresholds": {
+        "title": "Eşik değerleri",
+        "description": "Seçilen kategoriyle birlikte gelen varsayılanları geçersiz kılın.",
+        "data": {
+          "days": "Tahmin ufku (dilim)",
+          "precip_threshold_mm": "Yağış eşiği (mm)",
+          "freeze_check": "Dondurucu sıcaklıklarda engelle",
+          "forecast_type": "Tahmin türü"
+        },
+        "data_description": {
+          "days": "Analiz edilecek tahmin dilimi sayısı. Günlük tahminle her dilim = 1 gün; saatlik tahminle her dilim = 1 saat.",
+          "precip_threshold_mm": "Gün başına bu değerin üzerindeki toplam yağış yıkamayı engeller.",
+          "freeze_check": "Açıkken, sıcaklığı 0 °C'nin altına düşen bir tahmin günü yıkamayı engeller.",
+          "forecast_type": "Günlük, gün başına bir giriş kullanır; saatlik, saat başına bir giriş kullanır. Saatlik daha doğrudur ancak kaynağın saatlik veri sunmasını gerektirir."
+        }
+      },
+      "scoring": {
+        "title": "Puanlama ağırlıkları",
+        "description": "0–100 puanının nasıl hesaplandığını ayarlayın. Ağırlıkların toplamı 100 olması gerekmez — gün başına bağımsız olarak uygulanırlar.",
+        "data": {
+          "precip_weight": "Yağış puan ağırlığı",
+          "freeze_weight": "Donma puan ağırlığı",
+          "condition_weight": "Koşul puan ağırlığı"
+        },
+        "data_description": {
+          "precip_weight": "Tahmindeki yağışın puandan ne kadar çıkarıldığı.",
+          "freeze_weight": "Donma gününün puandan ne kadar çıkarıldığı.",
+          "condition_weight": "Kötü hava koşullarının puandan ne kadar çıkarıldığı."
+        }
+      },
+      "conditions": {
+        "title": "Engelleyici koşullar",
+        "description": "Hangi HA hava durumu koşul kodlarının yıkamayı engellemesi gerektiğini seçin.",
+        "data": {
+          "bad_conditions": "Engelleyici hava koşulları"
+        },
+        "data_description": {
+          "bad_conditions": "Bu koşullardan herhangi biri mevcut koşul olarak veya bir tahmin gününde göründüğünde sonuç engellenir."
+        }
+      },
+      "advanced": {
+        "title": "Gelişmiş",
+        "description": "Daha az kullanılan ayarlar.",
+        "data": {
+          "snooze_default_hours": "Varsayılan erteleme süresi (saat)",
+          "temperature_unit": "Sıcaklık birimi"
+        },
+        "data_description": {
+          "snooze_default_hours": "Erteleme hizmeti açık bir süre belirtilmeden çağrıldığında uygulanan varsayılan süre.",
+          "temperature_unit": "Tahmin sıcaklıklarını yorumlamak için kullanılan birimi geçersiz kılın. Otomatik, kaynak hava durumu varlığından okur (önerilir). Yalnızca bir sağlayıcının meta verileri yanlış veya eksik olduğunda Celsius / Fahrenheit / Kelvin'i seçin."
+        }
+      },
+      "irrigation": {
+        "title": "Sulama ayarları",
+        "description": "Yağış ölçer sensörünü ve sulama programı anahtarını yapılandırın.",
+        "data": {
+          "rain_gauge_entity": "Yağış ölçer sensörü",
+          "rain_gauge_threshold_mm": "Yağış eşiği (mm)",
+          "irrigation_switch_entity": "Sulama programı anahtarı"
+        },
+        "data_description": {
+          "rain_gauge_entity": "mm cinsinden ölçülen yağışı bildiren bir sensör varlığı. Yalnızca tahmini kullanmak için boş bırakın.",
+          "rain_gauge_threshold_mm": "Bu değere ulaşan veya aşan ölçülen yağış sulamayı otomatik olarak bastırır.",
+          "irrigation_switch_entity": "Sulama programınızı başlatan anahtar veya otomasyon. WashWise, bastırıldığında onu kapatır ve koşullar düzeldiğinde tekrar açar."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "Yıkandı olarak işaretle",
+      "description": "Seçilen WashWise örneğinin yıkama günlüğüne bir yıkama girişi ekleyin.",
+      "fields": {
+        "entry_id": {
+          "name": "Yapılandırma",
+          "description": "Hedef WashWise yapılandırma girişi."
+        },
+        "timestamp": {
+          "name": "Zaman damgası",
+          "description": "Yıkamanın gerçekleştiği zaman. Varsayılan olarak şu anki zamanı kullanır."
+        }
+      }
+    },
+    "snooze": {
+      "name": "Ertele",
+      "description": "WashWise sonuçlarını belirli bir süre için duraklatın. Belirtilmezse varsayılan olarak 24 saate ayarlanır.",
+      "fields": {
+        "entry_id": {
+          "name": "Yapılandırma",
+          "description": "Hedef WashWise yapılandırma girişi."
+        },
+        "hours": {
+          "name": "Saat",
+          "description": "Ertelenecek saat sayısı (en az 1). Varsayılan olarak 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Ertelemeyi temizle",
+      "description": "Aktif ertelemeyi iptal edin.",
+      "fields": {
+        "entry_id": {
+          "name": "Yapılandırma",
+          "description": "Hedef WashWise yapılandırma girişi."
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "Sulama anahtarını ayarla",
+      "description": "Sulama programı anahtarının durumunu manuel olarak geçersiz kılın.",
+      "fields": {
+        "entry_id": {
+          "name": "Yapılandırma",
+          "description": "Hedef WashWise garden_irrigation yapılandırma girişi."
+        },
+        "state": {
+          "name": "Durum",
+          "description": "Sulama anahtarını açın veya kapatın."
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "Araba",
+        "motorcycle": "Motosiklet",
+        "bicycle": "Bisiklet",
+        "boat": "Tekne",
+        "rv_camper": "Karavan / Kamp Aracı",
+        "windows_house": "Ev pencereleri",
+        "laundry": "Çamaşır",
+        "patio_deck": "Veranda / Teras",
+        "solar_panels": "Güneş panelleri",
+        "garden_irrigation": "Bahçe sulaması",
+        "custom": "Özel"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "Günlük",
+        "hourly": "Saatlik"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "Yağmurlu gök gürültülü fırtına",
+        "rainy": "Yağmurlu",
+        "pouring": "Şiddetli yağmur",
+        "snowy": "Karlı",
+        "snowy-rainy": "Kar ve yağmur",
+        "hail": "Dolu",
+        "exceptional": "İstisnai"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "Otomatik (kaynak varlığını kullan)",
+        "celsius": "Celsius (°C)",
+        "fahrenheit": "Fahrenheit (°F)",
+        "kelvin": "Kelvin (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "Yıkayabilir"
+      },
+      "day_ok": {
+        "name": "{day}. gün uygun"
+      },
+      "freeze_risk": {
+        "name": "Tahminde donma riski"
+      },
+      "irrigation_suppressed": {
+        "name": "Sulama bastırıldı"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Tahmin sulamayı engelliyor"
+      },
+      "irrigation_switch_state": {
+        "name": "Sulama anahtarı durumu"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "Yıkama puanı"
+      },
+      "reason": {
+        "name": "Neden",
+        "state": {
+          "clear": "Açık",
+          "rain": "Yağmur",
+          "freeze": "Donma",
+          "snow": "Kar",
+          "bad_condition": "Kötü hava",
+          "bad_current_condition": "Kötü mevcut hava",
+          "dirty_now": "Yüzey kirli — şimdi yıkayın",
+          "snoozed": "Ertelendi",
+          "unavailable": "Kullanılamıyor"
+        }
+      },
+      "wash_status": {
+        "name": "Yıkama durumu",
+        "state": {
+          "ok_clear": "Evet — Açık",
+          "ok_dirty_now": "Evet — Yüzey kirli — şimdi yıkayın",
+          "unknown_clear": "Bilinmiyor",
+          "no_rain": "Hayır — Yağmur",
+          "no_freeze": "Hayır — Donma",
+          "no_snow": "Hayır — Kar",
+          "no_bad_condition": "Hayır — Kötü hava",
+          "no_bad_current_condition": "Hayır — Kötü mevcut hava",
+          "snoozed": "Ertelendi"
+        }
+      },
+      "days_until_wash": {
+        "name": "Olası yıkamaya kalan gün"
+      },
+      "days_since_wash": {
+        "name": "Son yıkamadan bu yana geçen gün"
+      },
+      "last_washed": {
+        "name": "Son yıkama"
+      },
+      "wash_count_30d": {
+        "name": "Yıkama sayısı (30 gün)"
+      },
+      "active_provider": {
+        "name": "Aktif sağlayıcı"
+      },
+      "last_update": {
+        "name": "Son güncelleme"
+      },
+      "days_analyzed": {
+        "name": "Analiz edilen gün"
+      },
+      "hours_analyzed": {
+        "name": "Analiz edilen saat"
+      },
+      "precip_total_mm": {
+        "name": "Toplam tahmin yağışı"
+      },
+      "worst_condition": {
+        "name": "En kötü tahmin koşulu"
+      },
+      "min_temp": {
+        "name": "Minimum tahmin sıcaklığı"
+      },
+      "max_temp": {
+        "name": "Maksimum tahmin sıcaklığı"
+      },
+      "primary_provider_uptime": {
+        "name": "Birincil sağlayıcı çalışma süresi"
+      },
+      "snooze_remaining": {
+        "name": "Kalan erteleme süresi"
+      },
+      "day_score": {
+        "name": "{day}. gün puanı"
+      },
+      "category": {
+        "name": "Kategori",
+        "state": {
+          "car": "Araba",
+          "motorcycle": "Motosiklet",
+          "bicycle": "Bisiklet",
+          "boat": "Tekne",
+          "rv_camper": "Karavan / Kamp Aracı",
+          "windows_house": "Ev pencereleri",
+          "solar_panels": "Güneş panelleri",
+          "patio_deck": "Veranda / Teras",
+          "garden_irrigation": "Bahçe sulaması",
+          "laundry": "Çamaşır",
+          "custom": "Özel"
+        }
+      },
+      "measured_rain_mm": {
+        "name": "Ölçülen yağış"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Yağış ölçer eşiği"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "Yıkandı olarak işaretle"
+      },
+      "mark_irrigated": {
+        "name": "Sulandı olarak işaretle"
+      }
+    }
+  }
+}

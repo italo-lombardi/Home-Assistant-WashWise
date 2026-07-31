@@ -1,0 +1,404 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "Määritä pesuneuvo, joka päättää voitko pestä pinnan sääennusteen perusteella.",
+        "data": {
+          "weather_entities": "Säätietolähteet",
+          "name": "Nimi",
+          "category": "Kategoria",
+          "customize_thresholds": "Mukauta kynnysarvoja"
+        },
+        "data_description": {
+          "weather_entities": "Valitse yksi tai useampi HA:n sääentiteetti. Ensimmäistä saatavilla olevaa lähdettä tässä järjestyksessä käytetään; seuraavaa kokeillaan vain jos edellinen ei ole saatavilla.",
+          "name": "Tämän WashWise-instanssin kutsumanimi. Käytetään etuliitteenä kaikissa tämän merkinnän luomissa entiteeteissä.",
+          "category": "Mitä olet pesemässä. Jokaisella kategorialla on valmiit järkevät oletuskynnysarvot ja oletuskuvake. Valitse Mukautettu aloittaaksesi neutraaleista oletusarvoista.",
+          "customize_thresholds": "Kytke päälle ohittaaksesi kategorian oletusarvot seuraavalla näytöllä. Jätä pois päältä käyttääksesi valitun kategorian esiasettuja arvoja."
+        }
+      },
+      "thresholds": {
+        "title": "Mukautetut kynnysarvot",
+        "description": "Ohita valitun kategorian mukana tulevat oletusarvot. Nämä arvot määräävät mitkä ennustepäivät estävät pesun ja miten pisteet lasketaan.",
+        "data": {
+          "days": "Ennustehorisontti (aikavälit)",
+          "precip_threshold_mm": "Sateen kynnysarvo (mm)",
+          "freeze_check": "Estä jäätymislämpötiloilla",
+          "forecast_type": "Ennustetyyppi",
+          "bad_conditions": "Estävät sääolosuhteet",
+          "precip_weight": "Sateen pistepainotus",
+          "freeze_weight": "Jäätymisen pistepainotus",
+          "condition_weight": "Sääolosuhteen pistepainotus"
+        },
+        "data_description": {
+          "days": "Analysoitavien ennustevälien lukumäärä. Päivittäisessä ennusteessa yksi väli = 1 päivä; tuntikohtaisessa yksi väli = 1 tunti. Suuremmat arvot kattavat enemmän säätä mutta antavat varovaisempia tuloksia.",
+          "precip_threshold_mm": "Päivittäinen kokonaissademäärä tämän arvon ylittäessä estää pesun. Pienemmät arvot (0,1) ovat tiukempia, suuremmat arvot (1,0) sallivat kevyen tihkusateen.",
+          "freeze_check": "Kun päällä, ennustepäivä jonka lämpötila laskee 0 °C:n alapuolelle estää pesun, jotta pesuvesi ei jäädy pinnalle.",
+          "forecast_type": "Päivittäinen käyttää yhtä merkintää päivää kohti; Tuntikohtainen käyttää yhtä merkintää tuntia kohti. Tuntikohtainen on tarkempi, mutta edellyttää että lähde tarjoaa tuntikohtaista dataa.",
+          "bad_conditions": "Sääolosuhdekoodit jotka estävät pesun esiintyessään ennusteessa tai nykyisenä olosuhteena.",
+          "precip_weight": "Kuinka paljon ennusteen sade vähentää 0–100-pisteitä. Suurempi arvo rankaisee sateisista päivistä aggressiivisemmin.",
+          "freeze_weight": "Kuinka paljon jäätymispäivä vähentää 0–100-pisteitä. Aseta 0 ohittaaksesi jäätyminen pisteytyksessä samalla kun se edelleen estää tuloksen.",
+          "condition_weight": "Kuinka paljon huonot sääolosuhteet (myrskyt, rakeet, lumi) vähentävät 0–100-pisteitä. Vakavuus on olosuhdekohtainen."
+        }
+      },
+      "irrigation": {
+        "title": "Kasteluasetukset",
+        "description": "Määritä sademitta ja kastelujärjestelmän kytkin Puutarhan kastelu -neuvoa varten.",
+        "data": {
+          "rain_gauge_entity": "Sademitta-anturi",
+          "rain_gauge_threshold_mm": "Sateen kynnysarvo (mm)",
+          "irrigation_switch_entity": "Kastelujärjestelmän kytkin"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Anturientiteetti joka raportoi mitatun sademäärän millimetreinä (esim. sääaseman pluviometriltä). Jätä tyhjäksi käyttääksesi pelkkää ennustepohjaista esto-ohjausta.",
+          "rain_gauge_threshold_mm": "Kun sademitta lukee tämän arvon tai sen yli, kastelujärjestelmä pysäytetään automaattisesti.",
+          "irrigation_switch_entity": "Kytkin, input_boolean tai automaatio joka käynnistää kastelujärjestelmäsi. WashWise sammuttaa sen kun sade estää kastelun ja kytkee sen takaisin päälle kun olosuhteet selkenevät."
+        }
+      },
+      "reconfigure": {
+        "title": "Määritä WashWise uudelleen",
+        "description": "Muuta säätietolähteitä, nimeä, kategoriaa tai kynnysarvojen mukautusta tälle instanssille.",
+        "data": {
+          "weather_entities": "Säätietolähteet",
+          "name": "Nimi",
+          "category": "Kategoria",
+          "customize_thresholds": "Mukauta kynnysarvoja"
+        },
+        "data_description": {
+          "weather_entities": "Valitse yksi tai useampi HA:n sääentiteetti. Ensimmäistä saatavilla olevaa lähdettä tässä järjestyksessä käytetään; seuraavaa kokeillaan vain jos edellinen ei ole saatavilla.",
+          "name": "Tämän WashWise-instanssin kutsumanimi. Käytetään etuliitteenä kaikissa tämän merkinnän luomissa entiteeteissä.",
+          "category": "Mitä olet pesemässä. Jokaisella kategorialla on valmiit järkevät oletuskynnysarvot ja oletuskuvake. Valitse Mukautettu aloittaaksesi neutraaleista oletusarvoista.",
+          "customize_thresholds": "Kytke päälle ohittaaksesi kategorian oletusarvot seuraavalla näytöllä. Jätä pois päältä käyttääksesi valitun kategorian esiasettuja arvoja."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "Valitse vähintään yksi säätietolähde.",
+      "weather_unavailable": "Kaikki valitut säätietolähteet ovat tällä hetkellä poissa käytöstä.",
+      "duplicate_name": "WashWise-instanssi tällä nimellä on jo olemassa.",
+      "invalid_category": "Valittu kategoria ei ole kelvollinen."
+    },
+    "abort": {
+      "already_configured": "Tämä yhdistelmä on jo määritetty.",
+      "reconfigure_successful": "Määritys päivitetty onnistuneesti."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WashWise-asetukset",
+        "description": "Valitse muokattava osio.",
+        "menu_options": {
+          "providers": "Säätietolähteet",
+          "thresholds": "Kynnysarvot",
+          "scoring": "Pistepainotukset",
+          "conditions": "Estävät olosuhteet",
+          "advanced": "Lisäasetukset",
+          "irrigation": "Kasteluasetukset"
+        }
+      },
+      "providers": {
+        "title": "Säätietolähteet",
+        "description": "Lisää, poista tai järjestä uudelleen ennustelähteinä käytettävät sääentiteetit.",
+        "data": {
+          "weather_entities": "Säätietolähteet"
+        },
+        "data_description": {
+          "weather_entities": "Järjestyksellä on merkitystä. Ensimmäistä saatavilla olevaa entiteettiä tässä listassa käytetään; seuraavaa kokeillaan vain jos edellinen ei ole saatavilla."
+        }
+      },
+      "thresholds": {
+        "title": "Kynnysarvot",
+        "description": "Ohita valitun kategorian mukana tulevat oletusarvot.",
+        "data": {
+          "days": "Ennustehorisontti (aikavälit)",
+          "precip_threshold_mm": "Sateen kynnysarvo (mm)",
+          "freeze_check": "Estä jäätymislämpötiloilla",
+          "forecast_type": "Ennustetyyppi"
+        },
+        "data_description": {
+          "days": "Analysoitavien ennustevälien lukumäärä. Päivittäisessä ennusteessa yksi väli = 1 päivä; tuntikohtaisessa yksi väli = 1 tunti.",
+          "precip_threshold_mm": "Päivittäinen kokonaissademäärä tämän arvon ylittäessä estää pesun.",
+          "freeze_check": "Kun päällä, ennustepäivä jonka lämpötila laskee 0 °C:n alapuolelle estää pesun.",
+          "forecast_type": "Päivittäinen käyttää yhtä merkintää päivää kohti; Tuntikohtainen käyttää yhtä merkintää tuntia kohti. Tuntikohtainen on tarkempi, mutta edellyttää että lähde tarjoaa tuntikohtaista dataa."
+        }
+      },
+      "scoring": {
+        "title": "Pistepainotukset",
+        "description": "Säädä miten 0–100-pisteet lasketaan. Painotusten ei tarvitse olla yhteensä 100 — niitä sovelletaan itsenäisesti päivää kohti.",
+        "data": {
+          "precip_weight": "Sateen pistepainotus",
+          "freeze_weight": "Jäätymisen pistepainotus",
+          "condition_weight": "Sääolosuhteen pistepainotus"
+        },
+        "data_description": {
+          "precip_weight": "Kuinka paljon ennusteen sade vähentää pisteitä.",
+          "freeze_weight": "Kuinka paljon jäätymispäivä vähentää pisteitä.",
+          "condition_weight": "Kuinka paljon huonot sääolosuhteet vähentävät pisteitä."
+        }
+      },
+      "conditions": {
+        "title": "Estävät olosuhteet",
+        "description": "Valitse mitkä HA:n sääolosuhdekoodit estävät pesun.",
+        "data": {
+          "bad_conditions": "Estävät sääolosuhteet"
+        },
+        "data_description": {
+          "bad_conditions": "Kun jokin näistä olosuhteista esiintyy nykyisenä olosuhteena tai ennustepäivässä, tulos estetään."
+        }
+      },
+      "advanced": {
+        "title": "Lisäasetukset",
+        "description": "Harvemmin käytetyt asetukset.",
+        "data": {
+          "snooze_default_hours": "Torkun oletuskesto (tuntia)",
+          "temperature_unit": "Lämpötilayksilö"
+        },
+        "data_description": {
+          "snooze_default_hours": "Oletuskesto jota sovelletaan kun torku-palvelua kutsutaan ilman eksplisiittistä kestoa.",
+          "temperature_unit": "Ohita yksikkö jota käytetään ennusteen lämpötilojen tulkitsemiseen. Auto lukee sen lähteen sääentiteetistä (suositeltu). Valitse Celsius / Fahrenheit / Kelvin vain kun palveluntarjoajan metadata on virheellinen tai puuttuu."
+        }
+      },
+      "irrigation": {
+        "title": "Kasteluasetukset",
+        "description": "Määritä sademitta-anturi ja kastelujärjestelmän kytkin.",
+        "data": {
+          "rain_gauge_entity": "Sademitta-anturi",
+          "rain_gauge_threshold_mm": "Sateen kynnysarvo (mm)",
+          "irrigation_switch_entity": "Kastelujärjestelmän kytkin"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Anturientiteetti joka raportoi mitatun sademäärän millimetreinä. Jätä tyhjäksi käyttääksesi pelkkää ennustepohjaista ohjausta.",
+          "rain_gauge_threshold_mm": "Mitattu sade tässä arvossa tai sen yli estää kastelun automaattisesti.",
+          "irrigation_switch_entity": "Kytkin tai automaatio joka käynnistää kastelujärjestelmäsi. WashWise sammuttaa sen eston aikana ja kytkee sen takaisin päälle kun olosuhteet selkenevät."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "Merkitse pestyksi",
+      "description": "Lisää pesumerkintä valitun WashWise-instanssin pesukirjaan.",
+      "fields": {
+        "entry_id": {
+          "name": "Määritys",
+          "description": "Kohteena oleva WashWise-määritysmerkintä."
+        },
+        "timestamp": {
+          "name": "Aikaleima",
+          "description": "Milloin pesu tapahtui. Oletuksena nyt."
+        }
+      }
+    },
+    "snooze": {
+      "name": "Torku",
+      "description": "Keskeytä WashWise-tulokset tietyksi tuntimääräksi. Oletuksena 24 tuntia ellei toisin määritetä.",
+      "fields": {
+        "entry_id": {
+          "name": "Määritys",
+          "description": "Kohteena oleva WashWise-määritysmerkintä."
+        },
+        "hours": {
+          "name": "Tuntia",
+          "description": "Kuinka monta tuntia torkutaan (vähintään 1). Oletuksena 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Poista torku",
+      "description": "Peruuta aktiivinen torku.",
+      "fields": {
+        "entry_id": {
+          "name": "Määritys",
+          "description": "Kohteena oleva WashWise-määritysmerkintä."
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "Aseta kastelukytkin",
+      "description": "Ohita manuaalisesti kastelujärjestelmän kytkimen tila.",
+      "fields": {
+        "entry_id": {
+          "name": "Määritys",
+          "description": "Kohteena oleva WashWise garden_irrigation -määritysmerkintä."
+        },
+        "state": {
+          "name": "Tila",
+          "description": "Käännä kastelukytkin päälle tai pois päältä."
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "Auto",
+        "motorcycle": "Moottoripyörä",
+        "bicycle": "Polkupyörä",
+        "boat": "Vene",
+        "rv_camper": "Asuntoauto / matkailuvaunu",
+        "windows_house": "Talon ikkunat",
+        "laundry": "Pyykit",
+        "patio_deck": "Terassi / patio",
+        "solar_panels": "Aurinkopaneelit",
+        "garden_irrigation": "Puutarhan kastelu",
+        "custom": "Mukautettu"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "Päivittäinen",
+        "hourly": "Tuntikohtainen"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "Ukkosmyrsky ja sade",
+        "rainy": "Sateinen",
+        "pouring": "Kaatosade",
+        "snowy": "Luminen",
+        "snowy-rainy": "Lumi ja sade",
+        "hail": "Raesade",
+        "exceptional": "Poikkeuksellinen"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "Automaattinen (käytä lähde-entiteettiä)",
+        "celsius": "Celsius (°C)",
+        "fahrenheit": "Fahrenheit (°F)",
+        "kelvin": "Kelvin (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "Voi pestä"
+      },
+      "day_ok": {
+        "name": "Päivä {day} OK"
+      },
+      "freeze_risk": {
+        "name": "Jäätymisriski ennusteessa"
+      },
+      "irrigation_suppressed": {
+        "name": "Kastelu estetty"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Ennuste estää kastelun"
+      },
+      "irrigation_switch_state": {
+        "name": "Kastelukytkimen tila"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "Pesupisteet"
+      },
+      "reason": {
+        "name": "Syy",
+        "state": {
+          "clear": "Selkeä",
+          "rain": "Sade",
+          "freeze": "Jäätyminen",
+          "snow": "Lumi",
+          "bad_condition": "Huono sää",
+          "bad_current_condition": "Huono nykyinen sää",
+          "dirty_now": "Pinta likainen — pese nyt",
+          "snoozed": "Torkussa",
+          "unavailable": "Ei saatavilla"
+        }
+      },
+      "wash_status": {
+        "name": "Pesun tila",
+        "state": {
+          "ok_clear": "Kyllä — Selkeä",
+          "ok_dirty_now": "Kyllä — Pinta likainen — pese nyt",
+          "unknown_clear": "Tuntematon",
+          "no_rain": "Ei — Sade",
+          "no_freeze": "Ei — Jäätyminen",
+          "no_snow": "Ei — Lumi",
+          "no_bad_condition": "Ei — Huono sää",
+          "no_bad_current_condition": "Ei — Huono nykyinen sää",
+          "snoozed": "Torkussa"
+        }
+      },
+      "days_until_wash": {
+        "name": "Päiviä seuraavaan mahdolliseen pesuun"
+      },
+      "days_since_wash": {
+        "name": "Päiviä edellisestä pesusta"
+      },
+      "last_washed": {
+        "name": "Viimeksi pesty"
+      },
+      "wash_count_30d": {
+        "name": "Pesujen määrä (30 päivää)"
+      },
+      "active_provider": {
+        "name": "Aktiivinen lähde"
+      },
+      "last_update": {
+        "name": "Viimeisin päivitys"
+      },
+      "days_analyzed": {
+        "name": "Analysoituja päiviä"
+      },
+      "hours_analyzed": {
+        "name": "Analysoituja tunteja"
+      },
+      "precip_total_mm": {
+        "name": "Ennusteen kokonaissademäärä"
+      },
+      "worst_condition": {
+        "name": "Vakavin ennustettu sääolosuhde"
+      },
+      "min_temp": {
+        "name": "Ennusteen alin lämpötila"
+      },
+      "max_temp": {
+        "name": "Ennusteen korkein lämpötila"
+      },
+      "primary_provider_uptime": {
+        "name": "Ensisijaisen lähteen toiminta-aika"
+      },
+      "snooze_remaining": {
+        "name": "Torkua jäljellä"
+      },
+      "day_score": {
+        "name": "Päivän {day} pisteet"
+      },
+      "category": {
+        "name": "Kategoria",
+        "state": {
+          "car": "Auto",
+          "motorcycle": "Moottoripyörä",
+          "bicycle": "Polkupyörä",
+          "boat": "Vene",
+          "rv_camper": "Asuntoauto / matkailuvaunu",
+          "windows_house": "Talon ikkunat",
+          "solar_panels": "Aurinkopaneelit",
+          "patio_deck": "Terassi / patio",
+          "garden_irrigation": "Puutarhan kastelu",
+          "laundry": "Pyykit",
+          "custom": "Mukautettu"
+        }
+      },
+      "measured_rain_mm": {
+        "name": "Mitattu sademäärä"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Sademitan kynnysarvo"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "Merkitse pestyksi"
+      },
+      "mark_irrigated": {
+        "name": "Merkitse kastelluksi"
+      }
+    }
+  }
+}

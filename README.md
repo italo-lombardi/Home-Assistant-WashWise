@@ -51,7 +51,7 @@ Decide whether to wash your car (or motorcycle, boat, solar panels, patioâ€¦) â€
 - **Wash log** -- mark washes manually; days-since and 30-day count tracked in persistent storage
 - **Provider health** -- success/failure counters and uptime percentage per weather source
 - **Custom Lovelace card** -- verdict, score, forecast strip, diagnostics panel, visual editor
-- **HACS-installable**, 11 backend languages, 100% test coverage gate in CI
+- **HACS-installable**, 29 backend languages, 100% test coverage gate in CI
 
 ---
 

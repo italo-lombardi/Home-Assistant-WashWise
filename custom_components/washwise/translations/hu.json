@@ -1,0 +1,404 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "Állíts be egy mosási tanácsadót, amely az időjárás-előrejelzési adatok alapján dönt arról, hogy le lehet-e mosni egy felületet.",
+        "data": {
+          "weather_entities": "Időjárás-források",
+          "name": "Név",
+          "category": "Kategória",
+          "customize_thresholds": "Küszöbértékek testreszabása"
+        },
+        "data_description": {
+          "weather_entities": "Válassz egy vagy több HA időjárás-entitást. A lista első elérhető forrása lesz használva; ha az nem érhető el, a következőre vált.",
+          "name": "Ez a WashWise-példány barátságos neve. Minden ehhez a bejegyzéshez létrehozott entitás előtageként jelenik meg.",
+          "category": "Amit mosol. Minden kategóriához észszerű alapértelmezett küszöbértékek és alapértelmezett ikon tartozik. Válaszd az Egyéni lehetőséget a semleges alapértelmezettekből indulva.",
+          "customize_thresholds": "Kapcsold be, ha felül szeretnéd írni a kategória alapértelmezettjeit a következő képernyőn. Hagyd kikapcsolva a választott kategória előre beállított értékeinek használatához."
+        }
+      },
+      "thresholds": {
+        "title": "Egyéni küszöbértékek",
+        "description": "Felülírhatod a választott kategóriához tartozó alapértelmezett értékeket. Ezek az értékek szabályozzák, hogy az előrejelzés mely napjai akadályozzák a mosást, és hogyan számítódik ki a pontszám.",
+        "data": {
+          "days": "Előrejelzési horizont (időrések)",
+          "precip_threshold_mm": "Csapadékküszöb (mm)",
+          "freeze_check": "Blokkolás fagyás esetén",
+          "forecast_type": "Előrejelzés típusa",
+          "bad_conditions": "Blokkoló időjárási állapotok",
+          "precip_weight": "Csapadék pontszám súlya",
+          "freeze_weight": "Fagyás pontszám súlya",
+          "condition_weight": "Időjárási állapot pontszám súlya"
+        },
+        "data_description": {
+          "days": "Az elemzendő előrejelzési időrések száma. Napi előrejelzésnél minden időrés = 1 nap; óránkéntnél = 1 óra. Nagyobb értékek több időjárást fognak be, de konzervatívabb verdikteket adnak.",
+          "precip_threshold_mm": "Ha a napi csapadék összege meghaladja ezt az értéket, a mosás le van tiltva. Kisebb értékek (0,1) szigorúbbak, nagyobb értékek (1,0) a szitáló esőt tolerálják.",
+          "freeze_check": "Ha be van kapcsolva, az előrejelzési nap blokkolja a mosást, ha a hőmérséklet 0 °C alá süllyed, hogy elkerüld a mosóvíz befagyását a felületen.",
+          "forecast_type": "A Napi egy bejegyzést használ naponként; az Óránkénti egy bejegyzést óránként. Az óránkénti pontosabb, de a forrástól óránkénti adatok szükségesek hozzá.",
+          "bad_conditions": "Időjárás-állapotkódok, amelyek blokkolják a mosást, ha megjelennek az előrejelzésben vagy aktuális állapotként.",
+          "precip_weight": "Mennyivel von le az előrejelzésben szereplő eső a 0–100-as pontszámból. Magasabb érték agresszívabban bünteti az esős napokat.",
+          "freeze_weight": "Mennyivel von le egy fagyos nap a 0–100-as pontszámból. Állítsd 0-ra, ha a fagyást figyelmen kívül akarod hagyni a pontozásnál, miközben a verdikt blokkolása megmarad.",
+          "condition_weight": "Mennyivel vonnak le a rossz időjárási körülmények (vihar, jégeső, hó) a 0–100-as pontszámból. A mérték állapotonként eltérő."
+        }
+      },
+      "irrigation": {
+        "title": "Öntözési beállítások",
+        "description": "Konfiguráld az esőmérőt és az öntözőprogram-kapcsolót a Kerti öntözés tanácsadóhoz.",
+        "data": {
+          "rain_gauge_entity": "Esőmérő érzékelő",
+          "rain_gauge_threshold_mm": "Esőküszöb (mm)",
+          "irrigation_switch_entity": "Öntözőprogram-kapcsoló"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Egy érzékelő entitás, amely a mért csapadékot jelenti mm-ben (pl. egy időjárás-állomás pluviométeréről). Hagyd üresen, ha csak az előrejelzés alapján szeretnéd elnyomni az öntözést.",
+          "rain_gauge_threshold_mm": "Ha az esőmérő eléri vagy meghaladja ezt az értéket, az öntözőprogram automatikusan le van tiltva.",
+          "irrigation_switch_entity": "A kapcsoló, input_boolean vagy automatizálás, amely elindítja az öntözőprogramot. A WashWise kikapcsolja, ha az eső elnyomja az öntözést, és visszakapcsolja, ha a körülmények rendeződnek."
+        }
+      },
+      "reconfigure": {
+        "title": "WashWise újrakonfigurálása",
+        "description": "Módosítsd az időjárás-forrásokat, nevet, kategóriát vagy küszöbérték-testreszabást ehhez a példányhoz.",
+        "data": {
+          "weather_entities": "Időjárás-források",
+          "name": "Név",
+          "category": "Kategória",
+          "customize_thresholds": "Küszöbértékek testreszabása"
+        },
+        "data_description": {
+          "weather_entities": "Válassz egy vagy több HA időjárás-entitást. A lista első elérhető forrása lesz használva; ha az nem érhető el, a következőre vált.",
+          "name": "Ez a WashWise-példány barátságos neve. Minden ehhez a bejegyzéshez létrehozott entitás előtageként jelenik meg.",
+          "category": "Amit mosol. Minden kategóriához észszerű alapértelmezett küszöbértékek és alapértelmezett ikon tartozik. Válaszd az Egyéni lehetőséget a semleges alapértelmezettekből indulva.",
+          "customize_thresholds": "Kapcsold be, ha felül szeretnéd írni a kategória alapértelmezettjeit a következő képernyőn. Hagyd kikapcsolva a választott kategória előre beállított értékeinek használatához."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "Válassz legalább egy időjárás-forrást.",
+      "weather_unavailable": "Az összes kiválasztott időjárás-forrás jelenleg nem érhető el.",
+      "duplicate_name": "Ilyen nevű WashWise-példány már létezik.",
+      "invalid_category": "A kiválasztott kategória érvénytelen."
+    },
+    "abort": {
+      "already_configured": "Ez a kombináció már konfigurálva van.",
+      "reconfigure_successful": "A konfiguráció sikeresen frissítve."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WashWise beállítások",
+        "description": "Válaszd ki a szerkeszteni kívánt részt.",
+        "menu_options": {
+          "providers": "Időjárás-források",
+          "thresholds": "Küszöbértékek",
+          "scoring": "Pontozási súlyok",
+          "conditions": "Blokkoló körülmények",
+          "advanced": "Speciális",
+          "irrigation": "Öntözési beállítások"
+        }
+      },
+      "providers": {
+        "title": "Időjárás-források",
+        "description": "Időjárás-entitások hozzáadása, eltávolítása vagy átrendezése előrejelzési forrásként.",
+        "data": {
+          "weather_entities": "Időjárás-források"
+        },
+        "data_description": {
+          "weather_entities": "A sorrend számít. A lista első elérhető entitása lesz használva; ha az nem érhető el, a következőre vált."
+        }
+      },
+      "thresholds": {
+        "title": "Küszöbértékek",
+        "description": "Felülírhatod a választott kategóriához tartozó alapértelmezett értékeket.",
+        "data": {
+          "days": "Előrejelzési horizont (időrések)",
+          "precip_threshold_mm": "Csapadékküszöb (mm)",
+          "freeze_check": "Blokkolás fagyás esetén",
+          "forecast_type": "Előrejelzés típusa"
+        },
+        "data_description": {
+          "days": "Az elemzendő előrejelzési időrések száma. Napi előrejelzésnél minden időrés = 1 nap; óránkéntnél = 1 óra.",
+          "precip_threshold_mm": "Ha a napi csapadék összege meghaladja ezt az értéket, a mosás le van tiltva.",
+          "freeze_check": "Ha be van kapcsolva, az előrejelzési nap blokkolja a mosást, ha a hőmérséklet 0 °C alá süllyed.",
+          "forecast_type": "A Napi egy bejegyzést használ naponként; az Óránkénti egy bejegyzést óránként. Az óránkénti pontosabb, de a forrástól óránkénti adatok szükségesek hozzá."
+        }
+      },
+      "scoring": {
+        "title": "Pontozási súlyok",
+        "description": "Hangold be, hogyan számítódik ki a 0–100-as pontszám. A súlyoknak nem kell 100-ra összegződniük — naponta egymástól függetlenül kerülnek alkalmazásra.",
+        "data": {
+          "precip_weight": "Csapadék pontszám súlya",
+          "freeze_weight": "Fagyás pontszám súlya",
+          "condition_weight": "Időjárási állapot pontszám súlya"
+        },
+        "data_description": {
+          "precip_weight": "Mennyivel von le az előrejelzésben szereplő eső a pontszámból.",
+          "freeze_weight": "Mennyivel von le egy fagyos nap a pontszámból.",
+          "condition_weight": "Mennyivel vonnak le a rossz időjárási körülmények a pontszámból."
+        }
+      },
+      "conditions": {
+        "title": "Blokkoló körülmények",
+        "description": "Válaszd ki, mely HA időjárás-állapotkódok blokkolják a mosást.",
+        "data": {
+          "bad_conditions": "Blokkoló időjárási állapotok"
+        },
+        "data_description": {
+          "bad_conditions": "Ha bármelyik ezen állapotok közül aktuális állapotként vagy egy előrejelzési napon megjelenik, a verdikt blokkolva van."
+        }
+      },
+      "advanced": {
+        "title": "Speciális",
+        "description": "Ritkábban használt beállítások.",
+        "data": {
+          "snooze_default_hours": "Alapértelmezett szünet időtartama (óra)",
+          "temperature_unit": "Hőmérséklet egysége"
+        },
+        "data_description": {
+          "snooze_default_hours": "Alapértelmezett időtartam, amelyet a szünet szolgáltatás explicit időtartam nélküli hívásakor alkalmaz.",
+          "temperature_unit": "Felülírja az előrejelzési hőmérsékletek értelmezéséhez használt egységet. Az Automatikus a forrás időjárás-entitástól olvassa ki (ajánlott). Csak akkor válaszd a Celsius / Fahrenheit / Kelvin lehetőséget, ha a szolgáltató metaadatai hibásak vagy hiányoznak."
+        }
+      },
+      "irrigation": {
+        "title": "Öntözési beállítások",
+        "description": "Konfiguráld az esőmérő érzékelőt és az öntözőprogram-kapcsolót.",
+        "data": {
+          "rain_gauge_entity": "Esőmérő érzékelő",
+          "rain_gauge_threshold_mm": "Esőküszöb (mm)",
+          "irrigation_switch_entity": "Öntözőprogram-kapcsoló"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Egy érzékelő entitás, amely a mért csapadékot jelenti mm-ben. Hagyd üresen, ha csak az előrejelzésre szeretnél támaszkodni.",
+          "rain_gauge_threshold_mm": "Ha a mért csapadék eléri vagy meghaladja ezt az értéket, az öntözés automatikusan le van tiltva.",
+          "irrigation_switch_entity": "A kapcsoló vagy automatizálás, amely elindítja az öntözőprogramot. A WashWise kikapcsolja, ha le van tiltva, és visszakapcsolja, ha a körülmények rendeződnek."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "Megmosottnak jelöl",
+      "description": "Mosási bejegyzést fűz a kiválasztott WashWise-példány mosási naplójához.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfiguráció",
+          "description": "A célzott WashWise konfigurációs bejegyzés."
+        },
+        "timestamp": {
+          "name": "Időbélyeg",
+          "description": "Mikor történt a mosás. Alapértelmezés: most."
+        }
+      }
+    },
+    "snooze": {
+      "name": "Szünet",
+      "description": "A WashWise verdiktjeit meghatározott számú órára szünetelteti. Ha nincs megadva, alapértelmezés szerint 24 óra.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfiguráció",
+          "description": "A célzott WashWise konfigurációs bejegyzés."
+        },
+        "hours": {
+          "name": "Óra",
+          "description": "Hány órára szüneteltet (minimum 1). Alapértelmezés: 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Szünet törlése",
+      "description": "Az aktív szünetet megszünteti.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfiguráció",
+          "description": "A célzott WashWise konfigurációs bejegyzés."
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "Öntözőkapcsoló beállítása",
+      "description": "Manuálisan felülírja az öntözőprogram-kapcsoló állapotát.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfiguráció",
+          "description": "A célzott WashWise garden_irrigation konfigurációs bejegyzés."
+        },
+        "state": {
+          "name": "Állapot",
+          "description": "Az öntözőkapcsoló bekapcsolása vagy kikapcsolása."
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "Autó",
+        "motorcycle": "Motor",
+        "bicycle": "Kerékpár",
+        "boat": "Csónak",
+        "rv_camper": "Lakóautó / Lakókocsi",
+        "windows_house": "Ház ablakai",
+        "laundry": "Ruhamosás",
+        "patio_deck": "Terasz / Fedélzet",
+        "solar_panels": "Napelemek",
+        "garden_irrigation": "Kerti öntözés",
+        "custom": "Egyéni"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "Napi",
+        "hourly": "Óránkénti"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "Zivatar esővel",
+        "rainy": "Esős",
+        "pouring": "Zuhogó eső",
+        "snowy": "Havas",
+        "snowy-rainy": "Havas eső",
+        "hail": "Jégeső",
+        "exceptional": "Rendkívüli"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "Automatikus (forrás entitásból)",
+        "celsius": "Celsius (°C)",
+        "fahrenheit": "Fahrenheit (°F)",
+        "kelvin": "Kelvin (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "Lehet mosni"
+      },
+      "day_ok": {
+        "name": "{day}. nap rendben"
+      },
+      "freeze_risk": {
+        "name": "Fagyásveszély az előrejelzésben"
+      },
+      "irrigation_suppressed": {
+        "name": "Öntözés letiltva"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Az előrejelzés blokkolja az öntözést"
+      },
+      "irrigation_switch_state": {
+        "name": "Öntözőkapcsoló állapota"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "Mosási pontszám"
+      },
+      "reason": {
+        "name": "Ok",
+        "state": {
+          "clear": "Tiszta",
+          "rain": "Eső",
+          "freeze": "Fagyás",
+          "snow": "Hó",
+          "bad_condition": "Rossz időjárás",
+          "bad_current_condition": "Rossz jelenlegi időjárás",
+          "dirty_now": "Felület piszkos — most mosd le",
+          "snoozed": "Szüneteltetve",
+          "unavailable": "Nem elérhető"
+        }
+      },
+      "wash_status": {
+        "name": "Mosási állapot",
+        "state": {
+          "ok_clear": "Igen — Tiszta",
+          "ok_dirty_now": "Igen — Felület piszkos — most mosd le",
+          "unknown_clear": "Ismeretlen",
+          "no_rain": "Nem — Eső",
+          "no_freeze": "Nem — Fagyás",
+          "no_snow": "Nem — Hó",
+          "no_bad_condition": "Nem — Rossz időjárás",
+          "no_bad_current_condition": "Nem — Rossz jelenlegi időjárás",
+          "snoozed": "Szüneteltetve"
+        }
+      },
+      "days_until_wash": {
+        "name": "Napok a lehetséges mosásig"
+      },
+      "days_since_wash": {
+        "name": "Napok az utolsó mosás óta"
+      },
+      "last_washed": {
+        "name": "Utoljára mosva"
+      },
+      "wash_count_30d": {
+        "name": "Mosások száma (30 nap)"
+      },
+      "active_provider": {
+        "name": "Aktív forrás"
+      },
+      "last_update": {
+        "name": "Utolsó frissítés"
+      },
+      "days_analyzed": {
+        "name": "Elemzett napok"
+      },
+      "hours_analyzed": {
+        "name": "Elemzett órák"
+      },
+      "precip_total_mm": {
+        "name": "Előrejelzett csapadék összege"
+      },
+      "worst_condition": {
+        "name": "Legsúlyosabb előrejelzett állapot"
+      },
+      "min_temp": {
+        "name": "Minimális előrejelzett hőmérséklet"
+      },
+      "max_temp": {
+        "name": "Maximális előrejelzett hőmérséklet"
+      },
+      "primary_provider_uptime": {
+        "name": "Elsődleges forrás üzemideje"
+      },
+      "snooze_remaining": {
+        "name": "Szünetből hátralévő idő"
+      },
+      "day_score": {
+        "name": "{day}. nap pontszáma"
+      },
+      "category": {
+        "name": "Kategória",
+        "state": {
+          "car": "Autó",
+          "motorcycle": "Motor",
+          "bicycle": "Kerékpár",
+          "boat": "Csónak",
+          "rv_camper": "Lakóautó / Lakókocsi",
+          "windows_house": "Ház ablakai",
+          "solar_panels": "Napelemek",
+          "patio_deck": "Terasz / Fedélzet",
+          "garden_irrigation": "Kerti öntözés",
+          "laundry": "Ruhamosás",
+          "custom": "Egyéni"
+        }
+      },
+      "measured_rain_mm": {
+        "name": "Mért csapadék"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Esőmérő küszöbértéke"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "Megmosottnak jelöl"
+      },
+      "mark_irrigated": {
+        "name": "Megöntözöttnek jelöl"
+      }
+    }
+  }
+}

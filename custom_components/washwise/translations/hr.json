@@ -1,0 +1,404 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "Postavi savjetnik za pranje koji odlučuje možeš li oprati površinu na temelju podataka o vremenskoj prognozi.",
+        "data": {
+          "weather_entities": "Vremenski izvori",
+          "name": "Naziv",
+          "category": "Kategorija",
+          "customize_thresholds": "Prilagodi pragove"
+        },
+        "data_description": {
+          "weather_entities": "Odaberi jedan ili više HA vremenskih entiteta. Koristi se prvi dostupni izvor s ovog popisa; sljedeći se isprobava samo ako prethodni nije dostupan.",
+          "name": "Prijateljski naziv za ovu WashWise instancu. Koristi se kao prefiks svakog entiteta koji stvori ovaj unos.",
+          "category": "Što pereš. Svaka kategorija dolazi s razumnim zadanim pragovima i zadanom ikonom. Odaberi Prilagođeno za početak s neutralnim zadanim vrijednostima.",
+          "customize_thresholds": "Uključi za nadjačavanje zadanih vrijednosti kategorije na sljedećem zaslonu. Ostavi isključeno za korištenje unaprijed postavljenih vrijednosti odabrane kategorije."
+        }
+      },
+      "thresholds": {
+        "title": "Prilagođeni pragovi",
+        "description": "Nadjači zadane vrijednosti koje dolaze s odabranom kategorijom. Ove vrijednosti kontroliraju koji dani prognoze blokiraju pranje i kako se izračunava rezultat.",
+        "data": {
+          "days": "Horizont prognoze (vremenski okviri)",
+          "precip_threshold_mm": "Prag oborina (mm)",
+          "freeze_check": "Blokira pri temperaturama smrzavanja",
+          "forecast_type": "Vrsta prognoze",
+          "bad_conditions": "Vremenski uvjeti koji blokiraju pranje",
+          "precip_weight": "Težina rezultata za oborine",
+          "freeze_weight": "Težina rezultata za smrzavanje",
+          "condition_weight": "Težina rezultata za vremenske uvjete"
+        },
+        "data_description": {
+          "days": "Broj vremenskih okvira prognoze za analizu. S dnevnom prognozom svaki okvir = 1 dan; s satnom svaki okvir = 1 sat. Veće vrijednosti hvataju više vremena, ali daju konzervativnije presude.",
+          "precip_threshold_mm": "Ukupne oborine po danu iznad ove vrijednosti blokiraju pranje. Niže vrijednosti (0,1) su strože, više vrijednosti (1,0) toleriraju laganu rosuljicu.",
+          "freeze_check": "Kad je uključeno, dan prognoze čija temperatura prelazi 0 °C blokira pranje kako bi se izbjeglo smrzavanje vode za pranje na površini.",
+          "forecast_type": "Dnevno koristi jedan unos po danu; Satno koristi jedan unos po satu. Satno je preciznije, ali zahtijeva da izvor pruža satne podatke.",
+          "bad_conditions": "Kodovi vremenskih uvjeta koji blokiraju pranje kad se pojave u prognozi ili kao trenutni uvjet.",
+          "precip_weight": "Koliko oborine u prognozi oduzimaju od rezultata 0–100. Viša vrijednost agresivnije kažnjava kišne dane.",
+          "freeze_weight": "Koliko dan smrzavanja oduzima od rezultata 0–100. Postavi na 0 da se smrzavanje ignorira u bodovanju, ali i dalje blokira presudu.",
+          "condition_weight": "Koliko loši vremenski uvjeti (oluje, tuča, snijeg) oduzimaju od rezultata 0–100. Ozbiljnost je po uvjetu."
+        }
+      },
+      "irrigation": {
+        "title": "Postavke navodnjavanja",
+        "description": "Konfiguriraj kišomjer i prekidač programa navodnjavanja za savjetnik Vrtno navodnjavanje.",
+        "data": {
+          "rain_gauge_entity": "Senzor kišomjera",
+          "rain_gauge_threshold_mm": "Prag oborina (mm)",
+          "irrigation_switch_entity": "Prekidač programa navodnjavanja"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Entitet senzora koji prijavljuje izmjerene oborine u mm (npr. s pluviometra meteorološke stanice). Ostavi prazno za korištenje samo potiskivanja na temelju prognoze.",
+          "rain_gauge_threshold_mm": "Kada kišomjer očita vrijednost jednaku ili veću od ove, program navodnjavanja se automatski potiskuje.",
+          "irrigation_switch_entity": "Prekidač, input_boolean ili automatizacija koja pokreće tvoj program navodnjavanja. WashWise će ga isključiti kada kiša potisne navodnjavanje i uključiti natrag kada se uvjeti poboljšaju."
+        }
+      },
+      "reconfigure": {
+        "title": "Rekonfiguracija WashWise",
+        "description": "Promijeni vremenske izvore, naziv, kategoriju ili prilagodbu pragova za ovu instancu.",
+        "data": {
+          "weather_entities": "Vremenski izvori",
+          "name": "Naziv",
+          "category": "Kategorija",
+          "customize_thresholds": "Prilagodi pragove"
+        },
+        "data_description": {
+          "weather_entities": "Odaberi jedan ili više HA vremenskih entiteta. Koristi se prvi dostupni izvor s ovog popisa; sljedeći se isprobava samo ako prethodni nije dostupan.",
+          "name": "Prijateljski naziv za ovu WashWise instancu. Koristi se kao prefiks svakog entiteta koji stvori ovaj unos.",
+          "category": "Što pereš. Svaka kategorija dolazi s razumnim zadanim pragovima i zadanom ikonom. Odaberi Prilagođeno za početak s neutralnim zadanim vrijednostima.",
+          "customize_thresholds": "Uključi za nadjačavanje zadanih vrijednosti kategorije na sljedećem zaslonu. Ostavi isključeno za korištenje unaprijed postavljenih vrijednosti odabrane kategorije."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "Odaberi barem jedan vremenski izvor.",
+      "weather_unavailable": "Svi odabrani vremenski izvori trenutno nisu dostupni.",
+      "duplicate_name": "WashWise instanca s ovim nazivom već postoji.",
+      "invalid_category": "Odabrana kategorija nije valjana."
+    },
+    "abort": {
+      "already_configured": "Ova kombinacija je već konfigurirana.",
+      "reconfigure_successful": "Konfiguracija uspješno ažurirana."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WashWise opcije",
+        "description": "Odaberi odjeljak za uređivanje.",
+        "menu_options": {
+          "providers": "Vremenski izvori",
+          "thresholds": "Pragovi",
+          "scoring": "Težine bodovanja",
+          "conditions": "Uvjeti blokiranja",
+          "advanced": "Napredno",
+          "irrigation": "Postavke navodnjavanja"
+        }
+      },
+      "providers": {
+        "title": "Vremenski izvori",
+        "description": "Dodaj, ukloni ili promijeni redoslijed vremenskih entiteta koji se koriste kao izvori prognoze.",
+        "data": {
+          "weather_entities": "Vremenski izvori"
+        },
+        "data_description": {
+          "weather_entities": "Redoslijed je važan. Koristi se prvi dostupni entitet s ovog popisa; sljedeći se isprobava samo ako prethodni nije dostupan."
+        }
+      },
+      "thresholds": {
+        "title": "Pragovi",
+        "description": "Nadjači zadane vrijednosti koje dolaze s odabranom kategorijom.",
+        "data": {
+          "days": "Horizont prognoze (vremenski okviri)",
+          "precip_threshold_mm": "Prag oborina (mm)",
+          "freeze_check": "Blokira pri temperaturama smrzavanja",
+          "forecast_type": "Vrsta prognoze"
+        },
+        "data_description": {
+          "days": "Broj vremenskih okvira prognoze za analizu. S dnevnom prognozom svaki okvir = 1 dan; s satnom svaki okvir = 1 sat.",
+          "precip_threshold_mm": "Ukupne oborine po danu iznad ove vrijednosti blokiraju pranje.",
+          "freeze_check": "Kad je uključeno, dan prognoze čija temperatura prelazi 0 °C blokira pranje.",
+          "forecast_type": "Dnevno koristi jedan unos po danu; Satno koristi jedan unos po satu. Satno je preciznije, ali zahtijeva da izvor pruža satne podatke."
+        }
+      },
+      "scoring": {
+        "title": "Težine bodovanja",
+        "description": "Podesi kako se izračunava rezultat 0–100. Težine ne moraju zbrajati 100 — primjenjuju se neovisno po danu.",
+        "data": {
+          "precip_weight": "Težina rezultata za oborine",
+          "freeze_weight": "Težina rezultata za smrzavanje",
+          "condition_weight": "Težina rezultata za vremenske uvjete"
+        },
+        "data_description": {
+          "precip_weight": "Koliko oborine u prognozi oduzimaju od rezultata.",
+          "freeze_weight": "Koliko dan smrzavanja oduzima od rezultata.",
+          "condition_weight": "Koliko loši vremenski uvjeti oduzimaju od rezultata."
+        }
+      },
+      "conditions": {
+        "title": "Uvjeti blokiranja",
+        "description": "Odaberi koji HA kodovi vremenskih uvjeta trebaju blokirati pranje.",
+        "data": {
+          "bad_conditions": "Vremenski uvjeti koji blokiraju pranje"
+        },
+        "data_description": {
+          "bad_conditions": "Kada se bilo koji od ovih uvjeta pojavi kao trenutni uvjet ili u danu prognoze, presuda je blokirana."
+        }
+      },
+      "advanced": {
+        "title": "Napredno",
+        "description": "Manje uobičajene postavke.",
+        "data": {
+          "snooze_default_hours": "Zadano trajanje odgode (sati)",
+          "temperature_unit": "Jedinica temperature"
+        },
+        "data_description": {
+          "snooze_default_hours": "Zadano trajanje primijenjeno kada se pozove usluga odgode bez eksplicitnog trajanja.",
+          "temperature_unit": "Nadjači jedinicu koja se koristi za interpretaciju temperatura prognoze. Automatski je čita iz izvornog vremenskog entiteta (preporučeno). Odaberi Celzij / Fahrenheit / Kelvin samo kada su metapodaci davatelja pogrešni ili nedostaju."
+        }
+      },
+      "irrigation": {
+        "title": "Postavke navodnjavanja",
+        "description": "Konfiguriraj senzor kišomjera i prekidač programa navodnjavanja.",
+        "data": {
+          "rain_gauge_entity": "Senzor kišomjera",
+          "rain_gauge_threshold_mm": "Prag oborina (mm)",
+          "irrigation_switch_entity": "Prekidač programa navodnjavanja"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Entitet senzora koji prijavljuje izmjerene oborine u mm. Ostavi prazno za oslanjanje samo na prognozu.",
+          "rain_gauge_threshold_mm": "Izmjerena kiša jednaka ili veća od ove vrijednosti automatski potiskuje navodnjavanje.",
+          "irrigation_switch_entity": "Prekidač ili automatizacija koja pokreće tvoj program navodnjavanja. WashWise ga isključuje kada je potisnut i uključuje natrag kada se uvjeti poboljšaju."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "Označi kao oprano",
+      "description": "Dodaj unos pranja u zapisnik pranja za odabranu WashWise instancu.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfiguracija",
+          "description": "Ciljni unos konfiguracije WashWise."
+        },
+        "timestamp": {
+          "name": "Vremenska oznaka",
+          "description": "Kada je pranje obavljeno. Zadano je sada."
+        }
+      }
+    },
+    "snooze": {
+      "name": "Odgodi",
+      "description": "Pauziraj WashWise presude na određeni broj sati. Zadano je 24 sata ako nije navedeno.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfiguracija",
+          "description": "Ciljni unos konfiguracije WashWise."
+        },
+        "hours": {
+          "name": "Sati",
+          "description": "Koliko sati odgoditi (najmanje 1). Zadano je 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Poništi odgodu",
+      "description": "Otkaži aktivnu odgodu.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfiguracija",
+          "description": "Ciljni unos konfiguracije WashWise."
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "Postavi prekidač navodnjavanja",
+      "description": "Ručno nadjači stanje prekidača programa navodnjavanja.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfiguracija",
+          "description": "Ciljni WashWise unos konfiguracije garden_irrigation."
+        },
+        "state": {
+          "name": "Stanje",
+          "description": "Uključi ili isključi prekidač navodnjavanja."
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "Automobil",
+        "motorcycle": "Motocikl",
+        "bicycle": "Bicikl",
+        "boat": "Brod",
+        "rv_camper": "Kamper / Karavan",
+        "windows_house": "Prozori kuće",
+        "laundry": "Rublje",
+        "patio_deck": "Terasa / Deck",
+        "solar_panels": "Solarni paneli",
+        "garden_irrigation": "Vrtno navodnjavanje",
+        "custom": "Prilagođeno"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "Dnevno",
+        "hourly": "Satno"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "Grmljavinska oluja s kišom",
+        "rainy": "Kišovito",
+        "pouring": "Pljusak",
+        "snowy": "Snježno",
+        "snowy-rainy": "Snijeg i kiša",
+        "hail": "Tuča",
+        "exceptional": "Iznimno"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "Automatski (koristi izvorni entitet)",
+        "celsius": "Celzij (°C)",
+        "fahrenheit": "Fahrenheit (°F)",
+        "kelvin": "Kelvin (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "Može se prati"
+      },
+      "day_ok": {
+        "name": "Dan {day} u redu"
+      },
+      "freeze_risk": {
+        "name": "Rizik od smrzavanja u prognozi"
+      },
+      "irrigation_suppressed": {
+        "name": "Navodnjavanje potisnuto"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Prognoza blokira navodnjavanje"
+      },
+      "irrigation_switch_state": {
+        "name": "Stanje prekidača navodnjavanja"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "Rezultat pranja"
+      },
+      "reason": {
+        "name": "Razlog",
+        "state": {
+          "clear": "Vedro",
+          "rain": "Kiša",
+          "freeze": "Smrzavanje",
+          "snow": "Snijeg",
+          "bad_condition": "Loše vrijeme",
+          "bad_current_condition": "Loši trenutni vremenski uvjeti",
+          "dirty_now": "Površina prljava — operi odmah",
+          "snoozed": "Odgođeno",
+          "unavailable": "Nedostupno"
+        }
+      },
+      "wash_status": {
+        "name": "Status pranja",
+        "state": {
+          "ok_clear": "Da — Vedro",
+          "ok_dirty_now": "Da — Površina prljava — operi odmah",
+          "unknown_clear": "Nepoznato",
+          "no_rain": "Ne — Kiša",
+          "no_freeze": "Ne — Smrzavanje",
+          "no_snow": "Ne — Snijeg",
+          "no_bad_condition": "Ne — Loše vrijeme",
+          "no_bad_current_condition": "Ne — Loši trenutni vremenski uvjeti",
+          "snoozed": "Odgođeno"
+        }
+      },
+      "days_until_wash": {
+        "name": "Dani do mogućeg pranja"
+      },
+      "days_since_wash": {
+        "name": "Dani od posljednjeg pranja"
+      },
+      "last_washed": {
+        "name": "Zadnje oprano"
+      },
+      "wash_count_30d": {
+        "name": "Broj pranja (30 dana)"
+      },
+      "active_provider": {
+        "name": "Aktivni davatelj"
+      },
+      "last_update": {
+        "name": "Zadnje ažuriranje"
+      },
+      "days_analyzed": {
+        "name": "Analizirani dani"
+      },
+      "hours_analyzed": {
+        "name": "Analizirani sati"
+      },
+      "precip_total_mm": {
+        "name": "Ukupne prognozovane oborine"
+      },
+      "worst_condition": {
+        "name": "Najteži prognozovani uvjet"
+      },
+      "min_temp": {
+        "name": "Minimalna prognozovana temperatura"
+      },
+      "max_temp": {
+        "name": "Maksimalna prognozovana temperatura"
+      },
+      "primary_provider_uptime": {
+        "name": "Dostupnost primarnog davatelja"
+      },
+      "snooze_remaining": {
+        "name": "Preostalo odgode"
+      },
+      "day_score": {
+        "name": "Rezultat dana {day}"
+      },
+      "category": {
+        "name": "Kategorija",
+        "state": {
+          "car": "Automobil",
+          "motorcycle": "Motocikl",
+          "bicycle": "Bicikl",
+          "boat": "Brod",
+          "rv_camper": "Kamper / Karavan",
+          "windows_house": "Prozori kuće",
+          "solar_panels": "Solarni paneli",
+          "patio_deck": "Terasa / Deck",
+          "garden_irrigation": "Vrtno navodnjavanje",
+          "laundry": "Rublje",
+          "custom": "Prilagođeno"
+        }
+      },
+      "measured_rain_mm": {
+        "name": "Izmjerene oborine"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Prag kišomjera"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "Označi kao oprano"
+      },
+      "mark_irrigated": {
+        "name": "Označi kao navodnjavano"
+      }
+    }
+  }
+}

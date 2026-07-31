@@ -1,0 +1,404 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "Nastavte poradcu umývania, ktorý na základe predpovede počasia rozhoduje, či môžete umyť daný povrch.",
+        "data": {
+          "weather_entities": "Zdroje počasia",
+          "name": "Názov",
+          "category": "Kategória",
+          "customize_thresholds": "Prispôsobiť prahové hodnoty"
+        },
+        "data_description": {
+          "weather_entities": "Vyberte jednu alebo viac entít počasia z HA. Použije sa prvý dostupný zdroj v tomto zoradenom zozname; ďalší sa skúsi iba vtedy, ak predchádzajúci nie je dostupný.",
+          "name": "Priateľský názov tejto inštancie WashWise. Používa sa ako predpona každej entity vytvorenej týmto zápisom.",
+          "category": "Čo umývate. Každá kategória má rozumné predvolené prahové hodnoty a predvolenú ikonu. Vyberte Vlastná, ak chcete začať od neutrálnych predvolených hodnôt.",
+          "customize_thresholds": "Zapnite, ak chcete na ďalšej obrazovke prepísať predvolené hodnoty kategórie. Nechajte vypnuté, aby ste použili prednastavené hodnoty zvolenej kategórie."
+        }
+      },
+      "thresholds": {
+        "title": "Vlastné prahové hodnoty",
+        "description": "Prepíšte predvolené hodnoty dodávané so zvolenou kategóriou. Tieto hodnoty určujú, ktoré dni predpovede blokujú umývanie a ako sa vypočítava skóre.",
+        "data": {
+          "days": "Horizont predpovede (úseky)",
+          "precip_threshold_mm": "Prahová hodnota zrážok (mm)",
+          "freeze_check": "Blokovať pri mrazivých teplotách",
+          "forecast_type": "Typ predpovede",
+          "bad_conditions": "Blokujúce poveternostné podmienky",
+          "precip_weight": "Váha skóre zrážok",
+          "freeze_weight": "Váha skóre mrazu",
+          "condition_weight": "Váha skóre podmienok počasia"
+        },
+        "data_description": {
+          "days": "Počet úsekov predpovede na analýzu. Pri dennej predpovedi každý úsek = 1 deň; pri hodinovej každý úsek = 1 hodina. Väčšie hodnoty zachytia viac počasia, ale dávajú konzervatívnejšie verdikty.",
+          "precip_threshold_mm": "Celkové denné zrážky nad touto hodnotou blokujú umývanie. Nižšie hodnoty (0,1) sú prísnejšie, vyššie hodnoty (1,0) tolerujú slabé mrholenie.",
+          "freeze_check": "Keď je zapnuté, deň predpovede, v ktorom teplota klesne pod 0 °C, blokuje umývanie, aby sa zabránilo zamrznutiu vody na umytom povrchu.",
+          "forecast_type": "Denná používa jeden záznam na deň; hodinová používa jeden záznam na hodinu. Hodinová je presnejšia, ale vyžaduje, aby zdroj poskytoval hodinové dáta.",
+          "bad_conditions": "Kódy poveternostných podmienok, ktoré blokujú umývanie, keď sa objavia v predpovedi alebo ako aktuálna podmienka.",
+          "precip_weight": "O koľko dážď v predpovedi znižuje skóre 0–100. Vyššia hodnota prísnejšie penalizuje daždivé dni.",
+          "freeze_weight": "O koľko mrazivý deň znižuje skóre 0–100. Nastavte na 0, ak chcete ignorovať mráz pri skórovaní, ale stále blokovať verdikt.",
+          "condition_weight": "O koľko zlé poveternostné podmienky (búrky, krúpy, sneh) znižujú skóre 0–100. Závažnosť je individuálna pre každú podmienku."
+        }
+      },
+      "irrigation": {
+        "title": "Nastavenia zavlažovania",
+        "description": "Nakonfigurujte snímač dažďomeru a prepínač programu zavlažovania pre poradcu Záhradné zavlažovanie.",
+        "data": {
+          "rain_gauge_entity": "Snímač dažďomeru",
+          "rain_gauge_threshold_mm": "Prahová hodnota dažďa (mm)",
+          "irrigation_switch_entity": "Prepínač programu zavlažovania"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Entita snímača, ktorá hlási namerané zrážky v mm (napr. z pluviometra meteostanice). Nechajte prázdne, ak chcete používať iba potlačenie na základe predpovede.",
+          "rain_gauge_threshold_mm": "Keď dažďomer nameraná hodnota dosiahne alebo prekročí túto hodnotu, program zavlažovania sa automaticky potlačí.",
+          "irrigation_switch_entity": "Prepínač, input_boolean alebo automatizácia, ktorá spúšťa váš program zavlažovania. WashWise ho vypne, keď dážď potlačí zavlažovanie, a znova zapne, keď sa podmienky zlepšia."
+        }
+      },
+      "reconfigure": {
+        "title": "Prekonfigurovať WashWise",
+        "description": "Zmeňte zdroje počasia, názov, kategóriu alebo prispôsobenie prahových hodnôt pre túto inštanciu.",
+        "data": {
+          "weather_entities": "Zdroje počasia",
+          "name": "Názov",
+          "category": "Kategória",
+          "customize_thresholds": "Prispôsobiť prahové hodnoty"
+        },
+        "data_description": {
+          "weather_entities": "Vyberte jednu alebo viac entít počasia z HA. Použije sa prvý dostupný zdroj v tomto zoradenom zozname; ďalší sa skúsi iba vtedy, ak predchádzajúci nie je dostupný.",
+          "name": "Priateľský názov tejto inštancie WashWise. Používa sa ako predpona každej entity vytvorenej týmto zápisom.",
+          "category": "Čo umývate. Každá kategória má rozumné predvolené prahové hodnoty a predvolenú ikonu. Vyberte Vlastná, ak chcete začať od neutrálnych predvolených hodnôt.",
+          "customize_thresholds": "Zapnite, ak chcete na ďalšej obrazovke prepísať predvolené hodnoty kategórie. Nechajte vypnuté, aby ste použili prednastavené hodnoty zvolenej kategórie."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "Vyberte aspoň jeden zdroj počasia.",
+      "weather_unavailable": "Všetky vybraté zdroje počasia sú momentálne nedostupné.",
+      "duplicate_name": "Inštancia WashWise s týmto názvom už existuje.",
+      "invalid_category": "Zvolená kategória nie je platná."
+    },
+    "abort": {
+      "already_configured": "Táto kombinácia je už nakonfigurovaná.",
+      "reconfigure_successful": "Konfigurácia bola úspešne aktualizovaná."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Možnosti WashWise",
+        "description": "Vyberte sekciu na úpravu.",
+        "menu_options": {
+          "providers": "Zdroje počasia",
+          "thresholds": "Prahové hodnoty",
+          "scoring": "Váhy skórovania",
+          "conditions": "Blokujúce podmienky",
+          "advanced": "Rozšírené",
+          "irrigation": "Nastavenia zavlažovania"
+        }
+      },
+      "providers": {
+        "title": "Zdroje počasia",
+        "description": "Pridajte, odstraňte alebo preusporiadajte entity počasia používané ako zdroje predpovede.",
+        "data": {
+          "weather_entities": "Zdroje počasia"
+        },
+        "data_description": {
+          "weather_entities": "Na poradí záleží. Použije sa prvá dostupná entita v tomto zozname; ďalšia sa skúsi iba vtedy, ak predchádzajúca nie je dostupná."
+        }
+      },
+      "thresholds": {
+        "title": "Prahové hodnoty",
+        "description": "Prepíšte predvolené hodnoty dodávané so zvolenou kategóriou.",
+        "data": {
+          "days": "Horizont predpovede (úseky)",
+          "precip_threshold_mm": "Prahová hodnota zrážok (mm)",
+          "freeze_check": "Blokovať pri mrazivých teplotách",
+          "forecast_type": "Typ predpovede"
+        },
+        "data_description": {
+          "days": "Počet úsekov predpovede na analýzu. Pri dennej predpovedi každý úsek = 1 deň; pri hodinovej každý úsek = 1 hodina.",
+          "precip_threshold_mm": "Celkové denné zrážky nad touto hodnotou blokujú umývanie.",
+          "freeze_check": "Keď je zapnuté, deň predpovede, v ktorom teplota klesne pod 0 °C, blokuje umývanie.",
+          "forecast_type": "Denná používa jeden záznam na deň; hodinová používa jeden záznam na hodinu. Hodinová je presnejšia, ale vyžaduje, aby zdroj poskytoval hodinové dáta."
+        }
+      },
+      "scoring": {
+        "title": "Váhy skórovania",
+        "description": "Nastavte, ako sa vypočítava skóre 0–100. Váhy nemusia dať súčet 100 — aplikujú sa nezávisle pre každý deň.",
+        "data": {
+          "precip_weight": "Váha skóre zrážok",
+          "freeze_weight": "Váha skóre mrazu",
+          "condition_weight": "Váha skóre podmienok počasia"
+        },
+        "data_description": {
+          "precip_weight": "O koľko dážď v predpovedi znižuje skóre.",
+          "freeze_weight": "O koľko mrazivý deň znižuje skóre.",
+          "condition_weight": "O koľko zlé poveternostné podmienky znižujú skóre."
+        }
+      },
+      "conditions": {
+        "title": "Blokujúce podmienky",
+        "description": "Vyberte, ktoré kódy poveternostných podmienok HA majú blokovať umývanie.",
+        "data": {
+          "bad_conditions": "Blokujúce poveternostné podmienky"
+        },
+        "data_description": {
+          "bad_conditions": "Keď sa niektorá z týchto podmienok objaví ako aktuálna podmienka alebo v niektorom dni predpovede, verdikt sa zablokuje."
+        }
+      },
+      "advanced": {
+        "title": "Rozšírené",
+        "description": "Menej časté nastavenia.",
+        "data": {
+          "snooze_default_hours": "Predvolená dĺžka odloženia (hodiny)",
+          "temperature_unit": "Jednotka teploty"
+        },
+        "data_description": {
+          "snooze_default_hours": "Predvolená dĺžka platná pri volaní služby odloženia bez explicitnej dĺžky.",
+          "temperature_unit": "Prepíše jednotku používanú na interpretáciu teplôt z predpovede. Automaticky ju načítava zo zdrojovej entity počasia (odporúčané). Zvoľte Celsius / Fahrenheit / Kelvin iba vtedy, ak sú metadáta poskytovateľa nesprávne alebo chýbajú."
+        }
+      },
+      "irrigation": {
+        "title": "Nastavenia zavlažovania",
+        "description": "Nakonfigurujte snímač dažďomeru a prepínač programu zavlažovania.",
+        "data": {
+          "rain_gauge_entity": "Snímač dažďomeru",
+          "rain_gauge_threshold_mm": "Prahová hodnota dažďa (mm)",
+          "irrigation_switch_entity": "Prepínač programu zavlažovania"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Entita snímača hlásiaца namerané zrážky v mm. Nechajte prázdne, ak chcete spoliehať sa iba na predpoveď.",
+          "rain_gauge_threshold_mm": "Namerané zrážky rovné alebo vyššie ako táto hodnota automaticky potlačia zavlažovanie.",
+          "irrigation_switch_entity": "Prepínač alebo automatizácia, ktorá spúšťa váš program zavlažovania. WashWise ho vypne pri potlačení a znova zapne, keď sa podmienky zlepšia."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "Označiť ako umyté",
+      "description": "Pridá záznam umytia do denníka umývania pre vybranú inštanciu WashWise.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurácia",
+          "description": "Konfiguračný záznam WashWise, ktorý sa má použiť."
+        },
+        "timestamp": {
+          "name": "Časová pečiatka",
+          "description": "Kedy prebehlo umývanie. Predvolene teraz."
+        }
+      }
+    },
+    "snooze": {
+      "name": "Odložiť",
+      "description": "Pozastaví verdikty WashWise na určitý počet hodín. Predvolene 24 hodín, ak nie je zadané.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurácia",
+          "description": "Konfiguračný záznam WashWise, ktorý sa má použiť."
+        },
+        "hours": {
+          "name": "Hodiny",
+          "description": "Počet hodín odloženia (minimálne 1). Predvolene 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Zrušiť odloženie",
+      "description": "Zruší aktívne odloženie.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurácia",
+          "description": "Konfiguračný záznam WashWise, ktorý sa má použiť."
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "Nastaviť prepínač zavlažovania",
+      "description": "Ručne prepíše stav prepínača programu zavlažovania.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurácia",
+          "description": "Konfiguračný záznam WashWise pre garden_irrigation, ktorý sa má použiť."
+        },
+        "state": {
+          "name": "Stav",
+          "description": "Zapnúť alebo vypnúť prepínač zavlažovania."
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "Auto",
+        "motorcycle": "Motorka",
+        "bicycle": "Bicykel",
+        "boat": "Loď",
+        "rv_camper": "Obytné vozidlo / Karavan",
+        "windows_house": "Okná domu",
+        "laundry": "Prádlo",
+        "patio_deck": "Terasa / Paluba",
+        "solar_panels": "Solárne panely",
+        "garden_irrigation": "Záhradné zavlažovanie",
+        "custom": "Vlastná"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "Denná",
+        "hourly": "Hodinová"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "Búrka s dažďom",
+        "rainy": "Dažďovo",
+        "pouring": "Silný dážď",
+        "snowy": "Sneženie",
+        "snowy-rainy": "Sneh s dažďom",
+        "hail": "Krúpy",
+        "exceptional": "Výnimočné podmienky"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "Automaticky (použiť zdrojovú entitu)",
+        "celsius": "Celsius (°C)",
+        "fahrenheit": "Fahrenheit (°F)",
+        "kelvin": "Kelvin (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "Možno umyť"
+      },
+      "day_ok": {
+        "name": "Deň {day} OK"
+      },
+      "freeze_risk": {
+        "name": "Riziko mrazu v predpovedi"
+      },
+      "irrigation_suppressed": {
+        "name": "Zavlažovanie potlačené"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Predpoveď blokuje zavlažovanie"
+      },
+      "irrigation_switch_state": {
+        "name": "Stav prepínača zavlažovania"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "Skóre umývania"
+      },
+      "reason": {
+        "name": "Dôvod",
+        "state": {
+          "clear": "Bez prekážok",
+          "rain": "Dážď",
+          "freeze": "Mráz",
+          "snow": "Sneh",
+          "bad_condition": "Zlé počasie",
+          "bad_current_condition": "Zlé aktuálne počasie",
+          "dirty_now": "Povrch špinavý — umyte teraz",
+          "snoozed": "Odložené",
+          "unavailable": "Nedostupné"
+        }
+      },
+      "wash_status": {
+        "name": "Stav umývania",
+        "state": {
+          "ok_clear": "Áno — Bez prekážok",
+          "ok_dirty_now": "Áno — Povrch špinavý — umyte teraz",
+          "unknown_clear": "Neznámy",
+          "no_rain": "Nie — Dážď",
+          "no_freeze": "Nie — Mráz",
+          "no_snow": "Nie — Sneh",
+          "no_bad_condition": "Nie — Zlé počasie",
+          "no_bad_current_condition": "Nie — Zlé aktuálne počasie",
+          "snoozed": "Odložené"
+        }
+      },
+      "days_until_wash": {
+        "name": "Dni do možného umytia"
+      },
+      "days_since_wash": {
+        "name": "Dni od posledného umytia"
+      },
+      "last_washed": {
+        "name": "Naposledy umyté"
+      },
+      "wash_count_30d": {
+        "name": "Počet umytí (30 dní)"
+      },
+      "active_provider": {
+        "name": "Aktívny poskytovateľ"
+      },
+      "last_update": {
+        "name": "Posledná aktualizácia"
+      },
+      "days_analyzed": {
+        "name": "Analyzované dni"
+      },
+      "hours_analyzed": {
+        "name": "Analyzované hodiny"
+      },
+      "precip_total_mm": {
+        "name": "Celkové zrážky v predpovedi"
+      },
+      "worst_condition": {
+        "name": "Najhoršia predpovedaná podmienka"
+      },
+      "min_temp": {
+        "name": "Minimálna predpovedaná teplota"
+      },
+      "max_temp": {
+        "name": "Maximálna predpovedaná teplota"
+      },
+      "primary_provider_uptime": {
+        "name": "Dostupnosť primárneho poskytovateľa"
+      },
+      "snooze_remaining": {
+        "name": "Zostatok odloženia"
+      },
+      "day_score": {
+        "name": "Skóre dňa {day}"
+      },
+      "category": {
+        "name": "Kategória",
+        "state": {
+          "car": "Auto",
+          "motorcycle": "Motorka",
+          "bicycle": "Bicykel",
+          "boat": "Loď",
+          "rv_camper": "Obytné vozidlo / Karavan",
+          "windows_house": "Okná domu",
+          "solar_panels": "Solárne panely",
+          "patio_deck": "Terasa / Paluba",
+          "garden_irrigation": "Záhradné zavlažovanie",
+          "laundry": "Prádlo",
+          "custom": "Vlastná"
+        }
+      },
+      "measured_rain_mm": {
+        "name": "Namerané zrážky"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Prahová hodnota dažďomeru"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "Označiť ako umyté"
+      },
+      "mark_irrigated": {
+        "name": "Označiť ako zavlažené"
+      }
+    }
+  }
+}

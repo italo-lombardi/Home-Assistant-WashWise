@@ -1,0 +1,404 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "Configurați un consilier de spălare care decide dacă puteți spăla o suprafață pe baza datelor din prognoza meteo.",
+        "data": {
+          "weather_entities": "Surse meteo",
+          "name": "Nume",
+          "category": "Categorie",
+          "customize_thresholds": "Personalizare praguri"
+        },
+        "data_description": {
+          "weather_entities": "Selectați una sau mai multe entități meteo din HA. Prima sursă disponibilă din această listă ordonată este utilizată; următoarea este încercată doar dacă cea anterioară nu este disponibilă.",
+          "name": "Nume afișat pentru această instanță WashWise. Folosit ca prefix pentru fiecare entitate creată de această intrare.",
+          "category": "Ce spălați. Fiecare categorie vine cu praguri implicite și o pictogramă implicită. Selectați Personalizat pentru a începe de la valori neutre.",
+          "customize_thresholds": "Activați pentru a suprascrie valorile implicite ale categoriei pe ecranul următor. Lăsați dezactivat pentru a folosi valorile prestabilite pentru categoria aleasă."
+        }
+      },
+      "thresholds": {
+        "title": "Praguri personalizate",
+        "description": "Suprascrieți valorile implicite ale categoriei alese. Aceste valori controlează care zile din prognoză blochează o spălare și cum se calculează scorul.",
+        "data": {
+          "days": "Orizont prognoză (intervale)",
+          "precip_threshold_mm": "Prag precipitații (mm)",
+          "freeze_check": "Blocare la temperaturi de îngheț",
+          "forecast_type": "Tip prognoză",
+          "bad_conditions": "Condiții meteo care blochează spălarea",
+          "precip_weight": "Pondere precipitații în scor",
+          "freeze_weight": "Pondere îngheț în scor",
+          "condition_weight": "Pondere condiții în scor"
+        },
+        "data_description": {
+          "days": "Numărul de intervale din prognoză de analizat. Cu prognoză zilnică, fiecare interval = 1 zi; cu prognoză orară, fiecare interval = 1 oră. Valorile mai mari captează mai mult timp, dar produc verdicte mai conservatoare.",
+          "precip_threshold_mm": "Precipitațiile totale pe zi care depășesc această valoare blochează spălarea. Valorile mici (0,1) sunt mai stricte, valorile mari (1,0) tolerează o ploaie ușoară.",
+          "freeze_check": "Când este activat, o zi din prognoză cu temperatura sub 0 °C blochează spălarea pentru a evita înghețarea apei de spălare pe suprafață.",
+          "forecast_type": "Zilnic folosește o intrare pe zi; Orar folosește o intrare pe oră. Prognoza orară este mai precisă, dar necesită ca sursa să expună date orare.",
+          "bad_conditions": "Coduri de condiții meteo care blochează spălarea când apar în prognoză sau ca stare curentă.",
+          "precip_weight": "Cât de mult scade ploaia din prognoză scorul de la 0 la 100. O valoare mai mare penalizează mai agresiv zilele ploioase.",
+          "freeze_weight": "Cât de mult scade o zi de îngheț din scorul de la 0 la 100. Setați la 0 pentru a ignora înghețul în calcul, menținând totuși blocarea verdictului.",
+          "condition_weight": "Cât de mult scad condițiile meteo nefavorabile (furtuni, grindină, ninsoare) din scorul de la 0 la 100. Severitatea este per condiție."
+        }
+      },
+      "irrigation": {
+        "title": "Setări irigare",
+        "description": "Configurați pluviometrul și comutatorul programului de irigare pentru consilierul Irigare Grădină.",
+        "data": {
+          "rain_gauge_entity": "Senzor pluviometru",
+          "rain_gauge_threshold_mm": "Prag precipitații (mm)",
+          "irrigation_switch_entity": "Comutator program irigare"
+        },
+        "data_description": {
+          "rain_gauge_entity": "O entitate senzor care raportează precipitațiile măsurate în mm (de ex. de la un pluviometru al unei stații meteo). Lăsați gol pentru a folosi doar suprimarea bazată pe prognoză.",
+          "rain_gauge_threshold_mm": "Când pluviometrul indică această valoare sau mai mult, programul de irigare este suprimate automat.",
+          "irrigation_switch_entity": "Comutatorul, input_boolean sau automatizarea care pornește programul de irigare. WashWise îl va opri când ploaia suprimă irigarea și îl va reporni când condițiile se ameliorează."
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigurare WashWise",
+        "description": "Modificați sursele meteo, numele, categoria sau personalizarea pragurilor pentru această instanță.",
+        "data": {
+          "weather_entities": "Surse meteo",
+          "name": "Nume",
+          "category": "Categorie",
+          "customize_thresholds": "Personalizare praguri"
+        },
+        "data_description": {
+          "weather_entities": "Selectați una sau mai multe entități meteo din HA. Prima sursă disponibilă din această listă ordonată este utilizată; următoarea este încercată doar dacă cea anterioară nu este disponibilă.",
+          "name": "Nume afișat pentru această instanță WashWise. Folosit ca prefix pentru fiecare entitate creată de această intrare.",
+          "category": "Ce spălați. Fiecare categorie vine cu praguri implicite și o pictogramă implicită. Selectați Personalizat pentru a începe de la valori neutre.",
+          "customize_thresholds": "Activați pentru a suprascrie valorile implicite ale categoriei pe ecranul următor. Lăsați dezactivat pentru a folosi valorile prestabilite pentru categoria aleasă."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "Selectați cel puțin o sursă meteo.",
+      "weather_unavailable": "Toate sursele meteo selectate sunt momentan indisponibile.",
+      "duplicate_name": "O instanță WashWise cu acest nume există deja.",
+      "invalid_category": "Categoria selectată nu este validă."
+    },
+    "abort": {
+      "already_configured": "Această combinație este deja configurată.",
+      "reconfigure_successful": "Configurația a fost actualizată cu succes."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opțiuni WashWise",
+        "description": "Selectați o secțiune de editat.",
+        "menu_options": {
+          "providers": "Surse meteo",
+          "thresholds": "Praguri",
+          "scoring": "Ponderi scor",
+          "conditions": "Condiții de blocare",
+          "advanced": "Avansat",
+          "irrigation": "Setări irigare"
+        }
+      },
+      "providers": {
+        "title": "Surse meteo",
+        "description": "Adăugați, eliminați sau reordonați entitățile meteo folosite ca surse de prognoză.",
+        "data": {
+          "weather_entities": "Surse meteo"
+        },
+        "data_description": {
+          "weather_entities": "Ordinea contează. Prima entitate disponibilă din această listă este utilizată; următoarea este încercată doar dacă cea anterioară nu este disponibilă."
+        }
+      },
+      "thresholds": {
+        "title": "Praguri",
+        "description": "Suprascrieți valorile implicite ale categoriei alese.",
+        "data": {
+          "days": "Orizont prognoză (intervale)",
+          "precip_threshold_mm": "Prag precipitații (mm)",
+          "freeze_check": "Blocare la temperaturi de îngheț",
+          "forecast_type": "Tip prognoză"
+        },
+        "data_description": {
+          "days": "Numărul de intervale din prognoză de analizat. Cu prognoză zilnică, fiecare interval = 1 zi; cu prognoză orară, fiecare interval = 1 oră.",
+          "precip_threshold_mm": "Precipitațiile totale pe zi care depășesc această valoare blochează spălarea.",
+          "freeze_check": "Când este activat, o zi din prognoză cu temperatura sub 0 °C blochează spălarea.",
+          "forecast_type": "Zilnic folosește o intrare pe zi; Orar folosește o intrare pe oră. Prognoza orară este mai precisă, dar necesită ca sursa să expună date orare."
+        }
+      },
+      "scoring": {
+        "title": "Ponderi scor",
+        "description": "Ajustați modul în care se calculează scorul de la 0 la 100. Ponderile nu trebuie să sumeze 100 — sunt aplicate independent pe zi.",
+        "data": {
+          "precip_weight": "Pondere precipitații în scor",
+          "freeze_weight": "Pondere îngheț în scor",
+          "condition_weight": "Pondere condiții în scor"
+        },
+        "data_description": {
+          "precip_weight": "Cât de mult scade ploaia din prognoză din scor.",
+          "freeze_weight": "Cât de mult scade o zi de îngheț din scor.",
+          "condition_weight": "Cât de mult scad condițiile meteo nefavorabile din scor."
+        }
+      },
+      "conditions": {
+        "title": "Condiții de blocare",
+        "description": "Selectați codurile de condiții meteo din HA care ar trebui să blocheze o spălare.",
+        "data": {
+          "bad_conditions": "Condiții meteo care blochează spălarea"
+        },
+        "data_description": {
+          "bad_conditions": "Când oricare dintre aceste condiții apare ca stare curentă sau într-o zi din prognoză, verdictul este blocat."
+        }
+      },
+      "advanced": {
+        "title": "Avansat",
+        "description": "Setări mai puțin utilizate.",
+        "data": {
+          "snooze_default_hours": "Durată implicită amânare (ore)",
+          "temperature_unit": "Unitate de temperatură"
+        },
+        "data_description": {
+          "snooze_default_hours": "Durata implicită aplicată când serviciul de amânare este apelat fără o durată explicită.",
+          "temperature_unit": "Suprascrieți unitatea folosită pentru interpretarea temperaturilor din prognoză. Auto o citește din entitatea meteo sursă (recomandat). Selectați Celsius / Fahrenheit / Kelvin doar când metadatele unui furnizor sunt greșite sau lipsesc."
+        }
+      },
+      "irrigation": {
+        "title": "Setări irigare",
+        "description": "Configurați senzorul pluviometrului și comutatorul programului de irigare.",
+        "data": {
+          "rain_gauge_entity": "Senzor pluviometru",
+          "rain_gauge_threshold_mm": "Prag precipitații (mm)",
+          "irrigation_switch_entity": "Comutator program irigare"
+        },
+        "data_description": {
+          "rain_gauge_entity": "O entitate senzor care raportează precipitațiile măsurate în mm. Lăsați gol pentru a se baza doar pe prognoză.",
+          "rain_gauge_threshold_mm": "Precipitațiile măsurate la sau peste această valoare suprimă irigarea automat.",
+          "irrigation_switch_entity": "Comutatorul sau automatizarea care pornește programul de irigare. WashWise îl oprește când este suprimate și îl repornește când condițiile se ameliorează."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "Marchează ca spălat",
+      "description": "Adaugă o înregistrare de spălare în jurnalul de spălări pentru instanța WashWise selectată.",
+      "fields": {
+        "entry_id": {
+          "name": "Configurație",
+          "description": "Intrarea de configurație WashWise vizată."
+        },
+        "timestamp": {
+          "name": "Marcaj temporal",
+          "description": "Când a avut loc spălarea. Implicit este acum."
+        }
+      }
+    },
+    "snooze": {
+      "name": "Amânare",
+      "description": "Suspendă verdictele WashWise pentru un număr de ore. Implicit 24 de ore dacă nu este specificat.",
+      "fields": {
+        "entry_id": {
+          "name": "Configurație",
+          "description": "Intrarea de configurație WashWise vizată."
+        },
+        "hours": {
+          "name": "Ore",
+          "description": "Câte ore să amânați (minim 1). Implicit 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Anulare amânare",
+      "description": "Anulează amânarea activă.",
+      "fields": {
+        "entry_id": {
+          "name": "Configurație",
+          "description": "Intrarea de configurație WashWise vizată."
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "Setare comutator irigare",
+      "description": "Suprascrie manual starea comutatorului programului de irigare.",
+      "fields": {
+        "entry_id": {
+          "name": "Configurație",
+          "description": "Intrarea de configurație WashWise garden_irrigation vizată."
+        },
+        "state": {
+          "name": "Stare",
+          "description": "Activați sau dezactivați comutatorul de irigare."
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "Mașină",
+        "motorcycle": "Motocicletă",
+        "bicycle": "Bicicletă",
+        "boat": "Barcă",
+        "rv_camper": "Rulotă / Autorulotă",
+        "windows_house": "Ferestre casă",
+        "laundry": "Rufe",
+        "patio_deck": "Terasă / Deck",
+        "solar_panels": "Panouri solare",
+        "garden_irrigation": "Irigare grădină",
+        "custom": "Personalizat"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "Zilnic",
+        "hourly": "Orar"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "Furtună cu ploaie",
+        "rainy": "Ploios",
+        "pouring": "Ploaie torențială",
+        "snowy": "Ninsoare",
+        "snowy-rainy": "Ninsoare cu ploaie",
+        "hail": "Grindină",
+        "exceptional": "Excepțional"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "Auto (din entitatea sursă)",
+        "celsius": "Celsius (°C)",
+        "fahrenheit": "Fahrenheit (°F)",
+        "kelvin": "Kelvin (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "Poate spăla"
+      },
+      "day_ok": {
+        "name": "Ziua {day} OK"
+      },
+      "freeze_risk": {
+        "name": "Risc de îngheț în prognoză"
+      },
+      "irrigation_suppressed": {
+        "name": "Irigare suprimată"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Prognoza blochează irigarea"
+      },
+      "irrigation_switch_state": {
+        "name": "Stare comutator irigare"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "Scor spălare"
+      },
+      "reason": {
+        "name": "Motiv",
+        "state": {
+          "clear": "Senin",
+          "rain": "Ploaie",
+          "freeze": "Îngheț",
+          "snow": "Ninsoare",
+          "bad_condition": "Condiții meteo nefavorabile",
+          "bad_current_condition": "Condiții meteo curente nefavorabile",
+          "dirty_now": "Suprafață murdară — spălați acum",
+          "snoozed": "Amânat",
+          "unavailable": "Indisponibil"
+        }
+      },
+      "wash_status": {
+        "name": "Stare spălare",
+        "state": {
+          "ok_clear": "Da — Senin",
+          "ok_dirty_now": "Da — Suprafață murdară — spălați acum",
+          "unknown_clear": "Necunoscut",
+          "no_rain": "Nu — Ploaie",
+          "no_freeze": "Nu — Îngheț",
+          "no_snow": "Nu — Ninsoare",
+          "no_bad_condition": "Nu — Condiții meteo nefavorabile",
+          "no_bad_current_condition": "Nu — Condiții meteo curente nefavorabile",
+          "snoozed": "Amânat"
+        }
+      },
+      "days_until_wash": {
+        "name": "Zile până la posibila spălare"
+      },
+      "days_since_wash": {
+        "name": "Zile de la ultima spălare"
+      },
+      "last_washed": {
+        "name": "Ultima spălare"
+      },
+      "wash_count_30d": {
+        "name": "Număr spălări (30 zile)"
+      },
+      "active_provider": {
+        "name": "Furnizor activ"
+      },
+      "last_update": {
+        "name": "Ultima actualizare"
+      },
+      "days_analyzed": {
+        "name": "Zile analizate"
+      },
+      "hours_analyzed": {
+        "name": "Ore analizate"
+      },
+      "precip_total_mm": {
+        "name": "Total precipitații prognozate"
+      },
+      "worst_condition": {
+        "name": "Condiția meteo cea mai severă prognozată"
+      },
+      "min_temp": {
+        "name": "Temperatura minimă prognozată"
+      },
+      "max_temp": {
+        "name": "Temperatura maximă prognozată"
+      },
+      "primary_provider_uptime": {
+        "name": "Disponibilitate furnizor principal"
+      },
+      "snooze_remaining": {
+        "name": "Timp amânare rămas"
+      },
+      "day_score": {
+        "name": "Scor ziua {day}"
+      },
+      "category": {
+        "name": "Categorie",
+        "state": {
+          "car": "Mașină",
+          "motorcycle": "Motocicletă",
+          "bicycle": "Bicicletă",
+          "boat": "Barcă",
+          "rv_camper": "Rulotă / Autorulotă",
+          "windows_house": "Ferestre casă",
+          "solar_panels": "Panouri solare",
+          "patio_deck": "Terasă / Deck",
+          "garden_irrigation": "Irigare grădină",
+          "laundry": "Rufe",
+          "custom": "Personalizat"
+        }
+      },
+      "measured_rain_mm": {
+        "name": "Precipitații măsurate"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Prag pluviometru"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "Marchează ca spălat"
+      },
+      "mark_irrigated": {
+        "name": "Marchează ca irigat"
+      }
+    }
+  }
+}
