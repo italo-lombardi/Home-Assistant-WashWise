@@ -1,0 +1,404 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "Nustatykite skalbimo patarėją, kuris sprendžia, ar galima plauti paviršių pagal orų prognozės duomenis.",
+        "data": {
+          "weather_entities": "Orų šaltiniai",
+          "name": "Pavadinimas",
+          "category": "Kategorija",
+          "customize_thresholds": "Tinkinti ribines vertes"
+        },
+        "data_description": {
+          "weather_entities": "Pasirinkite vieną ar daugiau HA orų objektų. Naudojamas pirmasis pasiekiamas šaltinis šiame sąraše; kitas bandomas tik jei ankstesnis nepasiekiamas.",
+          "name": "Draugiškas šio WashWise egzemplioriaus pavadinimas. Naudojamas kaip prefiksas kiekvienam šio įrašo sukurtam objektui.",
+          "category": "Ką plaunate. Kiekviena kategorija turi protingas numatytąsias ribines vertes ir numatytąją piktogramą. Pasirinkite Pasirinktinė, kad pradėtumėte nuo neutralių numatytųjų reikšmių.",
+          "customize_thresholds": "Įjunkite, kad kitame ekrane galėtumėte perrašyti kategorijos numatytąsias reikšmes. Išjunkite, jei norite naudoti pasirinktos kategorijos išankstines reikšmes."
+        }
+      },
+      "thresholds": {
+        "title": "Pasirinktinės ribinės vertės",
+        "description": "Perrašykite numatytąsias pasirinktos kategorijos reikšmes. Šios vertės kontroliuoja, kurios prognozės dienos blokuoja skalbimą ir kaip skaičiuojamas balas.",
+        "data": {
+          "days": "Prognozės horizontas (intervalai)",
+          "precip_threshold_mm": "Kritulių ribinė vertė (mm)",
+          "freeze_check": "Blokuoti esant šalnaoms",
+          "forecast_type": "Prognozės tipas",
+          "bad_conditions": "Blokuojančios orų sąlygos",
+          "precip_weight": "Kritulių balo svoris",
+          "freeze_weight": "Šalnų balo svoris",
+          "condition_weight": "Sąlygų balo svoris"
+        },
+        "data_description": {
+          "days": "Analizuojamų prognozės intervalų skaičius. Naudojant dienos prognozę kiekvienas intervalas = 1 diena; naudojant valandinę — 1 valanda. Didesnės vertės aptinka daugiau orų, tačiau pateikia konservatyvesnes išvadas.",
+          "precip_threshold_mm": "Bendra kritulių suma per dieną, viršijanti šią vertę, blokuoja skalbimą. Mažesnės vertės (0,1) yra griežtesnės, didesnės vertės (1,0) toleruoja nedidelį lietų.",
+          "freeze_check": "Kai įjungta, prognozės diena, kurios temperatūra kerta 0 °C, blokuoja skalbimą, kad ant paviršiaus neužšaltų skalbimo vanduo.",
+          "forecast_type": "Dieninė naudoja po vieną įrašą per dieną; Valandinė — po vieną per valandą. Valandinė tikslesnė, tačiau šaltinis turi pateikti valandinę prognozę.",
+          "bad_conditions": "Orų sąlygų kodai, blokuojantys skalbimą, kai jie rodomi prognozėje arba kaip dabartinė sąlyga.",
+          "precip_weight": "Kiek lietus prognozėje atima iš 0–100 balo. Didesnė vertė griežčiau baudžia lietingas dienas.",
+          "freeze_weight": "Kiek šalnų diena atima iš 0–100 balo. Nustatykite 0, jei norite ignoruoti šalnas skaičiuojant balą, vis dar blokuojant verdiktą.",
+          "condition_weight": "Kiek blogos orų sąlygos (audros, kruša, sniegas) atima iš 0–100 balo. Griežtumas priklauso nuo sąlygos."
+        }
+      },
+      "irrigation": {
+        "title": "Drėkinimo nustatymai",
+        "description": "Sukonfigūruokite lietaus matuoklį ir drėkinimo programos jungiklį, skirtą Sodo drėkinimo patarėjui.",
+        "data": {
+          "rain_gauge_entity": "Lietaus matuoklio jutiklis",
+          "rain_gauge_threshold_mm": "Lietaus ribinė vertė (mm)",
+          "irrigation_switch_entity": "Drėkinimo programos jungiklis"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Jutiklio objektas, pranešantis išmatuotą kritulių kiekį mm (pvz., iš meteorologinės stoties pluviometro). Palikite tuščią, kad naudotumėte tik prognozės slopinimą.",
+          "rain_gauge_threshold_mm": "Kai lietaus matuoklio rodmuo pasiekia arba viršija šią vertę, drėkinimo programa automatiškai sustabdoma.",
+          "irrigation_switch_entity": "Jungiklis, input_boolean arba automatizavimas, paleidžiantis drėkinimo programą. WashWise jį išjungs, kai lietus slopina drėkinimą, ir vėl įjungs, kai sąlygos pagerės."
+        }
+      },
+      "reconfigure": {
+        "title": "Iš naujo konfigūruoti WashWise",
+        "description": "Pakeiskite orų šaltinius, pavadinimą, kategoriją arba ribinių verčių tinkinimą šiam egzemplioriui.",
+        "data": {
+          "weather_entities": "Orų šaltiniai",
+          "name": "Pavadinimas",
+          "category": "Kategorija",
+          "customize_thresholds": "Tinkinti ribines vertes"
+        },
+        "data_description": {
+          "weather_entities": "Pasirinkite vieną ar daugiau HA orų objektų. Naudojamas pirmasis pasiekiamas šaltinis šiame sąraše; kitas bandomas tik jei ankstesnis nepasiekiamas.",
+          "name": "Draugiškas šio WashWise egzemplioriaus pavadinimas. Naudojamas kaip prefiksas kiekvienam šio įrašo sukurtam objektui.",
+          "category": "Ką plaunate. Kiekviena kategorija turi protingas numatytąsias ribines vertes ir numatytąją piktogramą. Pasirinkite Pasirinktinė, kad pradėtumėte nuo neutralių numatytųjų reikšmių.",
+          "customize_thresholds": "Įjunkite, kad kitame ekrane galėtumėte perrašyti kategorijos numatytąsias reikšmes. Išjunkite, jei norite naudoti pasirinktos kategorijos išankstines reikšmes."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "Pasirinkite bent vieną orų šaltinį.",
+      "weather_unavailable": "Visi pasirinkti orų šaltiniai šiuo metu nepasiekiami.",
+      "duplicate_name": "WashWise egzempliorius su šiuo pavadinimu jau egzistuoja.",
+      "invalid_category": "Pasirinkta kategorija nėra tinkama."
+    },
+    "abort": {
+      "already_configured": "Ši kombinacija jau sukonfigūruota.",
+      "reconfigure_successful": "Konfigūracija sėkmingai atnaujinta."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WashWise parinktys",
+        "description": "Pasirinkite skyrių, kurį norite redaguoti.",
+        "menu_options": {
+          "providers": "Orų šaltiniai",
+          "thresholds": "Ribinės vertės",
+          "scoring": "Balo svoriai",
+          "conditions": "Blokuojančios sąlygos",
+          "advanced": "Išplėstiniai",
+          "irrigation": "Drėkinimo nustatymai"
+        }
+      },
+      "providers": {
+        "title": "Orų šaltiniai",
+        "description": "Pridėkite, pašalinkite arba pertvarkykite orų objektus, naudojamus kaip prognozės šaltiniai.",
+        "data": {
+          "weather_entities": "Orų šaltiniai"
+        },
+        "data_description": {
+          "weather_entities": "Eilė svarbi. Naudojamas pirmasis pasiekiamas objektas šiame sąraše; kitas bandomas tik jei ankstesnis nepasiekiamas."
+        }
+      },
+      "thresholds": {
+        "title": "Ribinės vertės",
+        "description": "Perrašykite numatytąsias pasirinktos kategorijos reikšmes.",
+        "data": {
+          "days": "Prognozės horizontas (intervalai)",
+          "precip_threshold_mm": "Kritulių ribinė vertė (mm)",
+          "freeze_check": "Blokuoti esant šalnaoms",
+          "forecast_type": "Prognozės tipas"
+        },
+        "data_description": {
+          "days": "Analizuojamų prognozės intervalų skaičius. Naudojant dienos prognozę kiekvienas intervalas = 1 diena; naudojant valandinę — 1 valanda.",
+          "precip_threshold_mm": "Bendra kritulių suma per dieną, viršijanti šią vertę, blokuoja skalbimą.",
+          "freeze_check": "Kai įjungta, prognozės diena, kurios temperatūra kerta 0 °C, blokuoja skalbimą.",
+          "forecast_type": "Dieninė naudoja po vieną įrašą per dieną; Valandinė — po vieną per valandą. Valandinė tikslesnė, tačiau šaltinis turi pateikti valandinę prognozę."
+        }
+      },
+      "scoring": {
+        "title": "Balo svoriai",
+        "description": "Sureguliuokite, kaip skaičiuojamas 0–100 balas. Svoriai neprivalo sudaryti 100 — jie taikomi nepriklausomai kiekvienai dienai.",
+        "data": {
+          "precip_weight": "Kritulių balo svoris",
+          "freeze_weight": "Šalnų balo svoris",
+          "condition_weight": "Sąlygų balo svoris"
+        },
+        "data_description": {
+          "precip_weight": "Kiek lietus prognozėje atima iš balo.",
+          "freeze_weight": "Kiek šalnų diena atima iš balo.",
+          "condition_weight": "Kiek blogos orų sąlygos atima iš balo."
+        }
+      },
+      "conditions": {
+        "title": "Blokuojančios sąlygos",
+        "description": "Pasirinkite, kurie HA orų sąlygų kodai turėtų blokuoti skalbimą.",
+        "data": {
+          "bad_conditions": "Blokuojančios orų sąlygos"
+        },
+        "data_description": {
+          "bad_conditions": "Kai kuri nors iš šių sąlygų rodoma kaip dabartinė sąlyga arba prognozės dieną, verdiktas blokuojamas."
+        }
+      },
+      "advanced": {
+        "title": "Išplėstiniai",
+        "description": "Rečiau naudojami nustatymai.",
+        "data": {
+          "snooze_default_hours": "Numatytoji atidėjimo trukmė (valandos)",
+          "temperature_unit": "Temperatūros vienetas"
+        },
+        "data_description": {
+          "snooze_default_hours": "Numatytoji trukmė, taikoma, kai atidėjimo paslauga iškviečiama be aiškios trukmės.",
+          "temperature_unit": "Perrašykite vienetą, naudojamą prognozės temperatūroms interpretuoti. Automatinis nuskaito jį iš šaltinio orų objekto (rekomenduojama). Pasirinkite Celsijų / Farenheitą / Kelviną tik tada, kai tiekėjo metaduomenys neteisingi arba trūksta."
+        }
+      },
+      "irrigation": {
+        "title": "Drėkinimo nustatymai",
+        "description": "Sukonfigūruokite lietaus matuoklio jutiklį ir drėkinimo programos jungiklį.",
+        "data": {
+          "rain_gauge_entity": "Lietaus matuoklio jutiklis",
+          "rain_gauge_threshold_mm": "Lietaus ribinė vertė (mm)",
+          "irrigation_switch_entity": "Drėkinimo programos jungiklis"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Jutiklio objektas, pranešantis išmatuotą kritulių kiekį mm. Palikite tuščią, kad naudotumėte tik prognozę.",
+          "rain_gauge_threshold_mm": "Išmatuoti krituliai, pasiekę arba viršiję šią vertę, automatiškai slopina drėkinimą.",
+          "irrigation_switch_entity": "Jungiklis arba automatizavimas, paleidžiantis drėkinimo programą. WashWise jį išjungs, kai slopinama, ir vėl įjungs, kai sąlygos pagerės."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "Pažymėti kaip išplautą",
+      "description": "Pridėti skalbimo įrašą į skalbimo žurnalą pasirinktam WashWise egzemplioriui.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigūracija",
+          "description": "WashWise konfigūracijos įrašas, kurį norite pasirinkti."
+        },
+        "timestamp": {
+          "name": "Laiko žyma",
+          "description": "Kada įvyko skalbimas. Numatytasis — dabar."
+        }
+      }
+    },
+    "snooze": {
+      "name": "Atidėti",
+      "description": "Pristabdyti WashWise verdiktus tam tikram valandų skaičiui. Numatytasis — 24 valandos, jei nenurodyta.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigūracija",
+          "description": "WashWise konfigūracijos įrašas, kurį norite pasirinkti."
+        },
+        "hours": {
+          "name": "Valandos",
+          "description": "Kiek valandų atidėti (mažiausiai 1). Numatytasis — 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Atšaukti atidėjimą",
+      "description": "Atšaukti aktyvų atidėjimą.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigūracija",
+          "description": "WashWise konfigūracijos įrašas, kurį norite pasirinkti."
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "Nustatyti drėkinimo jungiklį",
+      "description": "Rankiniu būdu perrašyti drėkinimo programos jungiklio būseną.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigūracija",
+          "description": "WashWise garden_irrigation konfigūracijos įrašas, kurį norite pasirinkti."
+        },
+        "state": {
+          "name": "Būsena",
+          "description": "Įjungti arba išjungti drėkinimo jungiklį."
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "Automobilis",
+        "motorcycle": "Motociklas",
+        "bicycle": "Dviratis",
+        "boat": "Valtis",
+        "rv_camper": "Kemperis / Karavan",
+        "windows_house": "Namo langai",
+        "laundry": "Skalbiniai",
+        "patio_deck": "Terasa / Deka",
+        "solar_panels": "Saulės kolektoriai",
+        "garden_irrigation": "Sodo drėkinimas",
+        "custom": "Pasirinktinė"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "Dieninė",
+        "hourly": "Valandinė"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "Perkūnija su lietumi",
+        "rainy": "Lietinga",
+        "pouring": "Smarkus lietus",
+        "snowy": "Snieginga",
+        "snowy-rainy": "Sniegas ir lietus",
+        "hail": "Kruša",
+        "exceptional": "Išskirtinė"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "Automatinis (naudoti šaltinio objektą)",
+        "celsius": "Celsijus (°C)",
+        "fahrenheit": "Farenheitas (°F)",
+        "kelvin": "Kelvinas (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "Galima plauti"
+      },
+      "day_ok": {
+        "name": "{day} diena tinkama"
+      },
+      "freeze_risk": {
+        "name": "Šalnų pavojus prognozėje"
+      },
+      "irrigation_suppressed": {
+        "name": "Drėkinimas slopinamas"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Prognozė blokuoja drėkinimą"
+      },
+      "irrigation_switch_state": {
+        "name": "Drėkinimo jungiklio būsena"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "Skalbimo balas"
+      },
+      "reason": {
+        "name": "Priežastis",
+        "state": {
+          "clear": "Aišku",
+          "rain": "Lietus",
+          "freeze": "Šalna",
+          "snow": "Sniegas",
+          "bad_condition": "Blogas oras",
+          "bad_current_condition": "Bloga dabartinė orų sąlyga",
+          "dirty_now": "Paviršius nešvarus — plaukite dabar",
+          "snoozed": "Atidėta",
+          "unavailable": "Nepasiekiama"
+        }
+      },
+      "wash_status": {
+        "name": "Skalbimo statusas",
+        "state": {
+          "ok_clear": "Taip — Aišku",
+          "ok_dirty_now": "Taip — Paviršius nešvarus — plaukite dabar",
+          "unknown_clear": "Nežinoma",
+          "no_rain": "Ne — Lietus",
+          "no_freeze": "Ne — Šalna",
+          "no_snow": "Ne — Sniegas",
+          "no_bad_condition": "Ne — Blogas oras",
+          "no_bad_current_condition": "Ne — Bloga dabartinė orų sąlyga",
+          "snoozed": "Atidėta"
+        }
+      },
+      "days_until_wash": {
+        "name": "Dienos iki galimo skalbimo"
+      },
+      "days_since_wash": {
+        "name": "Dienos nuo paskutinio skalbimo"
+      },
+      "last_washed": {
+        "name": "Paskutinį kartą plauta"
+      },
+      "wash_count_30d": {
+        "name": "Skalbimų skaičius (30 dienų)"
+      },
+      "active_provider": {
+        "name": "Aktyvus šaltinis"
+      },
+      "last_update": {
+        "name": "Paskutinis atnaujinimas"
+      },
+      "days_analyzed": {
+        "name": "Analizuotos dienos"
+      },
+      "hours_analyzed": {
+        "name": "Analizuotos valandos"
+      },
+      "precip_total_mm": {
+        "name": "Bendra prognozuojamų kritulių suma"
+      },
+      "worst_condition": {
+        "name": "Sunkiausia prognozuojama sąlyga"
+      },
+      "min_temp": {
+        "name": "Minimali prognozuojama temperatūra"
+      },
+      "max_temp": {
+        "name": "Maksimali prognozuojama temperatūra"
+      },
+      "primary_provider_uptime": {
+        "name": "Pagrindinio šaltinio veikimo laikas"
+      },
+      "snooze_remaining": {
+        "name": "Likusio atidėjimo laikas"
+      },
+      "day_score": {
+        "name": "{day} dienos balas"
+      },
+      "category": {
+        "name": "Kategorija",
+        "state": {
+          "car": "Automobilis",
+          "motorcycle": "Motociklas",
+          "bicycle": "Dviratis",
+          "boat": "Valtis",
+          "rv_camper": "Kemperis / Karavan",
+          "windows_house": "Namo langai",
+          "solar_panels": "Saulės kolektoriai",
+          "patio_deck": "Terasa / Deka",
+          "garden_irrigation": "Sodo drėkinimas",
+          "laundry": "Skalbiniai",
+          "custom": "Pasirinktinė"
+        }
+      },
+      "measured_rain_mm": {
+        "name": "Išmatuoti krituliai"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Lietaus matuoklio ribinė vertė"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "Pažymėti kaip išplautą"
+      },
+      "mark_irrigated": {
+        "name": "Pažymėti kaip laistytą"
+      }
+    }
+  }
+}

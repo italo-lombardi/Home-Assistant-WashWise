@@ -1,0 +1,404 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "Iestatiet mazgāšanas padomdevēju, kas, pamatojoties uz laika prognozes datiem, lemj, vai var mazgāt virsmu.",
+        "data": {
+          "weather_entities": "Laika avoti",
+          "name": "Nosaukums",
+          "category": "Kategorija",
+          "customize_thresholds": "Pielāgot sliekšņus"
+        },
+        "data_description": {
+          "weather_entities": "Izvēlieties vienu vai vairākus HA laika objektus. Tiek izmantots pirmais pieejamais avots no šī sakārtotā saraksta; nākamais tiek mēģināts tikai tad, ja iepriekšējais nav pieejams.",
+          "name": "Draudzīgs nosaukums šim WashWise gadījumam. Tiek izmantots kā prefikss katram šī ieraksta izveidotajam objektam.",
+          "category": "Ko jūs mazgājat. Katrai kategorijai ir saprātīgi noklusētie sliekšņi un noklusētā ikona. Izvēlieties Pielāgotu, lai sāktu no neitrāliem noklusējumiem.",
+          "customize_thresholds": "Ieslēdziet, lai nākamajā ekrānā ignorētu kategorijas noklusējumus. Atstājiet izslēgtu, lai izmantotu izvēlētās kategorijas iepriekš iestatītās vērtības."
+        }
+      },
+      "thresholds": {
+        "title": "Pielāgoti sliekšņi",
+        "description": "Ignorējiet noklusējumus, kas piegādāti ar izvēlēto kategoriju. Šīs vērtības nosaka, kuri prognozes periodi bloķē mazgāšanu un kā tiek aprēķināts punktu skaits.",
+        "data": {
+          "days": "Prognozes apvārsnis (slots)",
+          "precip_threshold_mm": "Nokrišņu slieksnis (mm)",
+          "freeze_check": "Bloķēt sasalšanas temperatūrās",
+          "forecast_type": "Prognozes veids",
+          "bad_conditions": "Mazgāšanu bloķējoši laika apstākļi",
+          "precip_weight": "Nokrišņu punktu svars",
+          "freeze_weight": "Sasalšanas punktu svars",
+          "condition_weight": "Laika apstākļu punktu svars"
+        },
+        "data_description": {
+          "days": "Analizējamo prognozes slotu skaits. Ar dienas prognozi katrs slots = 1 diena; ar stundas prognozi katrs slots = 1 stunda. Lielākas vērtības uztver vairāk laika, bet sniedz konservatīvākus secinājumus.",
+          "precip_threshold_mm": "Kopējie nokrišņi dienā virs šīs vērtības bloķē mazgāšanu. Zemākas vērtības (0,1) ir stingrākas, augstākas vērtības (1,0) pieļauj vieglu lietutiņu.",
+          "freeze_check": "Ja ieslēgts, prognozes diena, kurā temperatūra nokrīt zem 0 °C, bloķē mazgāšanu, lai izvairītos no mazgāšanas ūdens sasalšanas uz virsmas.",
+          "forecast_type": "Dienas prognoze izmanto vienu ierakstu dienā; stundas prognoze izmanto vienu ierakstu stundā. Stundas prognoze ir precīzāka, bet prasa, lai avots sniegtu stundas datus.",
+          "bad_conditions": "Laika apstākļu kodi, kas bloķē mazgāšanu, ja tie parādās prognozē vai kā pašreizējais stāvoklis.",
+          "precip_weight": "Cik daudz lietus prognozē atņem no 0–100 punktu skaita. Augstāka vērtība agresīvāk soda lietainas dienas.",
+          "freeze_weight": "Cik daudz sasalšanas diena atņem no 0–100 punktu skaita. Iestatiet uz 0, lai ignorētu sasalšanu punktu skaitā, saglabājot verdikta bloķēšanu.",
+          "condition_weight": "Cik daudz slikti laika apstākļi (vētras, krusa, sniegs) atņem no 0–100 punktu skaita. Smagums ir atkarīgs no katra apstākļa."
+        }
+      },
+      "irrigation": {
+        "title": "Apūdeņošanas iestatījumi",
+        "description": "Konfigurējiet lietus mērītāju un apūdeņošanas programmas slēdzi Dārza apūdeņošanas padomdevējam.",
+        "data": {
+          "rain_gauge_entity": "Lietus mērītāja sensors",
+          "rain_gauge_threshold_mm": "Lietus slieksnis (mm)",
+          "irrigation_switch_entity": "Apūdeņošanas programmas slēdzis"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Sensora objekts, kas ziņo par izmērīto nokrišņu daudzumu mm (piemēram, no meteoroloģiskās stacijas pluviometra). Atstājiet tukšu, lai izmantotu tikai prognozes bāzētu apturēšanu.",
+          "rain_gauge_threshold_mm": "Kad lietus mērītājs uzrāda šo vai augstāku vērtību, apūdeņošanas programma tiek automātiski apturēta.",
+          "irrigation_switch_entity": "Slēdzis, ievades būla vērtība vai automatizācija, kas startē jūsu apūdeņošanas programmu. WashWise to izslēgs, kad lietus aptur apūdeņošanu, un atkal ieslēgs, kad apstākļi uzlabosies."
+        }
+      },
+      "reconfigure": {
+        "title": "Pārkonfigurēt WashWise",
+        "description": "Mainiet laika avotus, nosaukumu, kategoriju vai slieksņu pielāgošanu šim gadījumam.",
+        "data": {
+          "weather_entities": "Laika avoti",
+          "name": "Nosaukums",
+          "category": "Kategorija",
+          "customize_thresholds": "Pielāgot sliekšņus"
+        },
+        "data_description": {
+          "weather_entities": "Izvēlieties vienu vai vairākus HA laika objektus. Tiek izmantots pirmais pieejamais avots no šī sakārtotā saraksta; nākamais tiek mēģināts tikai tad, ja iepriekšējais nav pieejams.",
+          "name": "Draudzīgs nosaukums šim WashWise gadījumam. Tiek izmantots kā prefikss katram šī ieraksta izveidotajam objektam.",
+          "category": "Ko jūs mazgājat. Katrai kategorijai ir saprātīgi noklusētie sliekšņi un noklusētā ikona. Izvēlieties Pielāgotu, lai sāktu no neitrāliem noklusējumiem.",
+          "customize_thresholds": "Ieslēdziet, lai nākamajā ekrānā ignorētu kategorijas noklusējumus. Atstājiet izslēgtu, lai izmantotu izvēlētās kategorijas iepriekš iestatītās vērtības."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "Izvēlieties vismaz vienu laika avotu.",
+      "weather_unavailable": "Visi izvēlētie laika avoti pašlaik nav pieejami.",
+      "duplicate_name": "WashWise gadījums ar šādu nosaukumu jau pastāv.",
+      "invalid_category": "Izvēlētā kategorija nav derīga."
+    },
+    "abort": {
+      "already_configured": "Šī kombinācija jau ir konfigurēta.",
+      "reconfigure_successful": "Konfigurācija veiksmīgi atjaunināta."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WashWise opcijas",
+        "description": "Izvēlieties sadaļu, kuru rediģēt.",
+        "menu_options": {
+          "providers": "Laika avoti",
+          "thresholds": "Sliekšņi",
+          "scoring": "Punktu svari",
+          "conditions": "Bloķējoši apstākļi",
+          "advanced": "Papildu",
+          "irrigation": "Apūdeņošanas iestatījumi"
+        }
+      },
+      "providers": {
+        "title": "Laika avoti",
+        "description": "Pievienojiet, noņemiet vai pārkārtojiet laika objektus, ko izmanto kā prognozes avotus.",
+        "data": {
+          "weather_entities": "Laika avoti"
+        },
+        "data_description": {
+          "weather_entities": "Secībai ir nozīme. Tiek izmantots pirmais pieejamais objekts šajā sarakstā; nākamais tiek mēģināts tikai tad, ja iepriekšējais nav pieejams."
+        }
+      },
+      "thresholds": {
+        "title": "Sliekšņi",
+        "description": "Ignorējiet noklusējumus, kas piegādāti ar izvēlēto kategoriju.",
+        "data": {
+          "days": "Prognozes apvārsnis (slots)",
+          "precip_threshold_mm": "Nokrišņu slieksnis (mm)",
+          "freeze_check": "Bloķēt sasalšanas temperatūrās",
+          "forecast_type": "Prognozes veids"
+        },
+        "data_description": {
+          "days": "Analizējamo prognozes slotu skaits. Ar dienas prognozi katrs slots = 1 diena; ar stundas prognozi katrs slots = 1 stunda.",
+          "precip_threshold_mm": "Kopējie nokrišņi dienā virs šīs vērtības bloķē mazgāšanu.",
+          "freeze_check": "Ja ieslēgts, prognozes diena, kurā temperatūra nokrīt zem 0 °C, bloķē mazgāšanu.",
+          "forecast_type": "Dienas prognoze izmanto vienu ierakstu dienā; stundas prognoze izmanto vienu ierakstu stundā. Stundas prognoze ir precīzāka, bet prasa, lai avots sniegtu stundas datus."
+        }
+      },
+      "scoring": {
+        "title": "Punktu svari",
+        "description": "Precizējiet, kā tiek aprēķināts 0–100 punktu skaits. Svariem nav jāsummējas līdz 100 — tie tiek piemēroti neatkarīgi katrai dienai.",
+        "data": {
+          "precip_weight": "Nokrišņu punktu svars",
+          "freeze_weight": "Sasalšanas punktu svars",
+          "condition_weight": "Laika apstākļu punktu svars"
+        },
+        "data_description": {
+          "precip_weight": "Cik daudz lietus prognozē atņem no punktu skaita.",
+          "freeze_weight": "Cik daudz sasalšanas diena atņem no punktu skaita.",
+          "condition_weight": "Cik daudz slikti laika apstākļi atņem no punktu skaita."
+        }
+      },
+      "conditions": {
+        "title": "Bloķējoši apstākļi",
+        "description": "Izvēlieties, kuri HA laika apstākļu kodi bloķēs mazgāšanu.",
+        "data": {
+          "bad_conditions": "Mazgāšanu bloķējoši laika apstākļi"
+        },
+        "data_description": {
+          "bad_conditions": "Ja kāds no šiem apstākļiem parādās kā pašreizējais stāvoklis vai prognozes dienā, verdikts tiek bloķēts."
+        }
+      },
+      "advanced": {
+        "title": "Papildu",
+        "description": "Retāk izmantotie iestatījumi.",
+        "data": {
+          "snooze_default_hours": "Noklusētais atlikšanas ilgums (stundas)",
+          "temperature_unit": "Temperatūras vienība"
+        },
+        "data_description": {
+          "snooze_default_hours": "Noklusētais ilgums, kas tiek piemērots, kad atlikšanas pakalpojums tiek izsaukts bez norādīta ilguma.",
+          "temperature_unit": "Ignorē vienību, ko izmanto prognozes temperatūru interpretācijai. Automātiskais režīms to nolasa no avota laika objekta (ieteicams). Izvēlieties Celsiju / Fārenheitu / Kelvinu tikai tad, ja pakalpojumu sniedzēja metadati ir nepareizi vai trūkst."
+        }
+      },
+      "irrigation": {
+        "title": "Apūdeņošanas iestatījumi",
+        "description": "Konfigurējiet lietus mērītāja sensoru un apūdeņošanas programmas slēdzi.",
+        "data": {
+          "rain_gauge_entity": "Lietus mērītāja sensors",
+          "rain_gauge_threshold_mm": "Lietus slieksnis (mm)",
+          "irrigation_switch_entity": "Apūdeņošanas programmas slēdzis"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Sensora objekts, kas ziņo par izmērīto nokrišņu daudzumu mm. Atstājiet tukšu, lai paļautos tikai uz prognozi.",
+          "rain_gauge_threshold_mm": "Izmērīts lietus šajā vai augstākā vērtībā automātiski aptur apūdeņošanu.",
+          "irrigation_switch_entity": "Slēdzis vai automatizācija, kas startē jūsu apūdeņošanas programmu. WashWise to izslēdz, kad apturēts, un atkal ieslēdz, kad apstākļi uzlabosies."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "Atzīmēt kā mazgātu",
+      "description": "Pievienot mazgāšanas ierakstu mazgāšanas žurnālam izvēlētajam WashWise gadījumam.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurācija",
+          "description": "WashWise konfigurācijas ieraksts, uz kuru vērst darbību."
+        },
+        "timestamp": {
+          "name": "Laika zīmogs",
+          "description": "Kad notika mazgāšana. Noklusējums — tagad."
+        }
+      }
+    },
+    "snooze": {
+      "name": "Atlikt",
+      "description": "Apturēt WashWise verdiktus uz noteiktu stundu skaitu. Noklusējums — 24 stundas, ja nav norādīts.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurācija",
+          "description": "WashWise konfigurācijas ieraksts, uz kuru vērst darbību."
+        },
+        "hours": {
+          "name": "Stundas",
+          "description": "Uz cik stundām atlikt (minimums 1). Noklusējums — 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Atcelt atlikšanu",
+      "description": "Atcelt aktīvo atlikšanu.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurācija",
+          "description": "WashWise konfigurācijas ieraksts, uz kuru vērst darbību."
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "Iestatīt apūdeņošanas slēdzi",
+      "description": "Manuāli ignorēt apūdeņošanas programmas slēdža stāvokli.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurācija",
+          "description": "WashWise garden_irrigation konfigurācijas ieraksts, uz kuru vērst darbību."
+        },
+        "state": {
+          "name": "Stāvoklis",
+          "description": "Ieslēgt vai izslēgt apūdeņošanas slēdzi."
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "Automašīna",
+        "motorcycle": "Motocikls",
+        "bicycle": "Velosipēds",
+        "boat": "Laivu",
+        "rv_camper": "Kemperis / Kempinga auto",
+        "windows_house": "Mājas logi",
+        "laundry": "Veļas mazgāšana",
+        "patio_deck": "Terase / Klājs",
+        "solar_panels": "Saules paneļi",
+        "garden_irrigation": "Dārza apūdeņošana",
+        "custom": "Pielāgots"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "Dienas",
+        "hourly": "Stundas"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "Pērkona negaiss ar lietu",
+        "rainy": "Lietus",
+        "pouring": "Stiprs lietus",
+        "snowy": "Sniegots",
+        "snowy-rainy": "Sniegs un lietus",
+        "hail": "Krusa",
+        "exceptional": "Ārkārtējs"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "Automātiski (izmantot avota objektu)",
+        "celsius": "Celsijs (°C)",
+        "fahrenheit": "Fārenheits (°F)",
+        "kelvin": "Kelvins (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "Var mazgāt"
+      },
+      "day_ok": {
+        "name": "Diena {day} — labi"
+      },
+      "freeze_risk": {
+        "name": "Sasalšanas risks prognozē"
+      },
+      "irrigation_suppressed": {
+        "name": "Apūdeņošana apturēta"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Prognoze bloķē apūdeņošanu"
+      },
+      "irrigation_switch_state": {
+        "name": "Apūdeņošanas slēdža stāvoklis"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "Mazgāšanas punktu skaits"
+      },
+      "reason": {
+        "name": "Iemesls",
+        "state": {
+          "clear": "Skaidrs",
+          "rain": "Lietus",
+          "freeze": "Sasalšana",
+          "snow": "Sniegs",
+          "bad_condition": "Slikti laika apstākļi",
+          "bad_current_condition": "Slikti pašreizējie laika apstākļi",
+          "dirty_now": "Virsma netīra — mazgājiet tagad",
+          "snoozed": "Atlikts",
+          "unavailable": "Nav pieejams"
+        }
+      },
+      "wash_status": {
+        "name": "Mazgāšanas statuss",
+        "state": {
+          "ok_clear": "Jā — Skaidrs",
+          "ok_dirty_now": "Jā — Virsma netīra — mazgājiet tagad",
+          "unknown_clear": "Nezināms",
+          "no_rain": "Nē — Lietus",
+          "no_freeze": "Nē — Sasalšana",
+          "no_snow": "Nē — Sniegs",
+          "no_bad_condition": "Nē — Slikti laika apstākļi",
+          "no_bad_current_condition": "Nē — Slikti pašreizējie laika apstākļi",
+          "snoozed": "Atlikts"
+        }
+      },
+      "days_until_wash": {
+        "name": "Dienas līdz iespējamai mazgāšanai"
+      },
+      "days_since_wash": {
+        "name": "Dienas kopš pēdējās mazgāšanas"
+      },
+      "last_washed": {
+        "name": "Pēdējo reizi mazgāts"
+      },
+      "wash_count_30d": {
+        "name": "Mazgāšanas reižu skaits (30 dienas)"
+      },
+      "active_provider": {
+        "name": "Aktīvais avots"
+      },
+      "last_update": {
+        "name": "Pēdējais atjauninājums"
+      },
+      "days_analyzed": {
+        "name": "Analizētās dienas"
+      },
+      "hours_analyzed": {
+        "name": "Analizētās stundas"
+      },
+      "precip_total_mm": {
+        "name": "Kopējie prognozētie nokrišņi"
+      },
+      "worst_condition": {
+        "name": "Vissmagākie prognozētie laika apstākļi"
+      },
+      "min_temp": {
+        "name": "Minimālā prognozētā temperatūra"
+      },
+      "max_temp": {
+        "name": "Maksimālā prognozētā temperatūra"
+      },
+      "primary_provider_uptime": {
+        "name": "Primārā avota darbspēja"
+      },
+      "snooze_remaining": {
+        "name": "Atlikšanas atlikušais laiks"
+      },
+      "day_score": {
+        "name": "Dienas {day} punktu skaits"
+      },
+      "category": {
+        "name": "Kategorija",
+        "state": {
+          "car": "Automašīna",
+          "motorcycle": "Motocikls",
+          "bicycle": "Velosipēds",
+          "boat": "Laivu",
+          "rv_camper": "Kemperis / Kempinga auto",
+          "windows_house": "Mājas logi",
+          "solar_panels": "Saules paneļi",
+          "patio_deck": "Terase / Klājs",
+          "garden_irrigation": "Dārza apūdeņošana",
+          "laundry": "Veļas mazgāšana",
+          "custom": "Pielāgots"
+        }
+      },
+      "measured_rain_mm": {
+        "name": "Izmērītie nokrišņi"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Lietus mērītāja slieksnis"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "Atzīmēt kā mazgātu"
+      },
+      "mark_irrigated": {
+        "name": "Atzīmēt kā apūdeņotu"
+      }
+    }
+  }
+}

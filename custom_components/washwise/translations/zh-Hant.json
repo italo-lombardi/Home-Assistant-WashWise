@@ -1,0 +1,404 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "設定一個清洗建議助手，根據天氣預報資料判斷是否適合清洗某個表面。",
+        "data": {
+          "weather_entities": "天氣來源",
+          "name": "名稱",
+          "category": "類別",
+          "customize_thresholds": "自訂臨界值"
+        },
+        "data_description": {
+          "weather_entities": "選擇一個或多個 HA 天氣實體。此有序清單中第一個可用的來源將被使用；只有在前一個無法使用時才會嘗試下一個。",
+          "name": "此 WashWise 實例的友善名稱，用於為此項目建立的每個實體加上前綴。",
+          "category": "您要清洗的對象。每個類別都附帶合理的預設臨界值與預設圖示。選擇「自訂」可從中立的預設值開始。",
+          "customize_thresholds": "開啟後可在下一個畫面覆蓋類別預設值。關閉則使用所選類別的預設值。"
+        }
+      },
+      "thresholds": {
+        "title": "自訂臨界值",
+        "description": "覆蓋所選類別的預設值。這些數值控制哪些預報日會封鎖清洗，以及分數的計算方式。",
+        "data": {
+          "days": "預報範圍（時段數）",
+          "precip_threshold_mm": "降水臨界值（毫米）",
+          "freeze_check": "在結凍溫度時封鎖",
+          "forecast_type": "預報類型",
+          "bad_conditions": "封鎖清洗的天氣狀況",
+          "precip_weight": "降水分數權重",
+          "freeze_weight": "結凍分數權重",
+          "condition_weight": "天氣狀況分數權重"
+        },
+        "data_description": {
+          "days": "要分析的預報時段數。使用每日預報時，每個時段 = 1 天；使用每小時預報時，每個時段 = 1 小時。數值越大涵蓋的天氣越多，但判斷結果會較為保守。",
+          "precip_threshold_mm": "每天總降水量超過此值將封鎖清洗。數值越低（0.1）越嚴格，數值越高（1.0）可容忍小雨。",
+          "freeze_check": "開啟後，預報溫度低於 0 °C 的日子將封鎖清洗，以避免清洗用水在表面結凍。",
+          "forecast_type": "每日預報每天一筆資料；每小時預報每小時一筆資料。每小時預報較為精確，但需要來源支援每小時資料。",
+          "bad_conditions": "當這些天氣狀況代碼出現在預報或當前天氣時，將封鎖清洗。",
+          "precip_weight": "預報中的降雨量從 0–100 分中扣除的程度。數值越高，對多雨日的扣分越重。",
+          "freeze_weight": "結凍日從 0–100 分中扣除的程度。設為 0 可在計分時忽略結凍，同時仍封鎖判斷結果。",
+          "condition_weight": "惡劣天氣狀況（暴風雨、冰雹、降雪）從 0–100 分中扣除的程度。嚴重程度依天氣狀況而定。"
+        }
+      },
+      "irrigation": {
+        "title": "灌溉設定",
+        "description": "為「庭園灌溉」建議助手設定雨量計與灌溉程式開關。",
+        "data": {
+          "rain_gauge_entity": "雨量計感測器",
+          "rain_gauge_threshold_mm": "降雨臨界值（毫米）",
+          "irrigation_switch_entity": "灌溉程式開關"
+        },
+        "data_description": {
+          "rain_gauge_entity": "回報實測降雨量（毫米）的感測器實體（例如來自氣象站雨量計）。留空則僅使用預報抑制。",
+          "rain_gauge_threshold_mm": "當雨量計讀數達到或超過此值時，灌溉程式將自動暫停。",
+          "irrigation_switch_entity": "啟動灌溉程式的開關、input_boolean 或自動化。當降雨抑制灌溉時，WashWise 會將其關閉；當條件恢復正常時再重新開啟。"
+        }
+      },
+      "reconfigure": {
+        "title": "重新設定 WashWise",
+        "description": "變更此實例的天氣來源、名稱、類別或臨界值自訂設定。",
+        "data": {
+          "weather_entities": "天氣來源",
+          "name": "名稱",
+          "category": "類別",
+          "customize_thresholds": "自訂臨界值"
+        },
+        "data_description": {
+          "weather_entities": "選擇一個或多個 HA 天氣實體。此有序清單中第一個可用的來源將被使用；只有在前一個無法使用時才會嘗試下一個。",
+          "name": "此 WashWise 實例的友善名稱，用於為此項目建立的每個實體加上前綴。",
+          "category": "您要清洗的對象。每個類別都附帶合理的預設臨界值與預設圖示。選擇「自訂」可從中立的預設值開始。",
+          "customize_thresholds": "開啟後可在下一個畫面覆蓋類別預設值。關閉則使用所選類別的預設值。"
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "請至少選擇一個天氣來源。",
+      "weather_unavailable": "所有已選天氣來源目前均無法使用。",
+      "duplicate_name": "已存在同名的 WashWise 實例。",
+      "invalid_category": "所選類別無效。"
+    },
+    "abort": {
+      "already_configured": "此組合已設定完成。",
+      "reconfigure_successful": "設定已成功更新。"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WashWise 選項",
+        "description": "選擇要編輯的區段。",
+        "menu_options": {
+          "providers": "天氣來源",
+          "thresholds": "臨界值",
+          "scoring": "計分權重",
+          "conditions": "封鎖條件",
+          "advanced": "進階設定",
+          "irrigation": "灌溉設定"
+        }
+      },
+      "providers": {
+        "title": "天氣來源",
+        "description": "新增、移除或重新排序用作預報來源的天氣實體。",
+        "data": {
+          "weather_entities": "天氣來源"
+        },
+        "data_description": {
+          "weather_entities": "順序很重要。清單中第一個可用的實體將被使用；只有在前一個無法使用時才會嘗試下一個。"
+        }
+      },
+      "thresholds": {
+        "title": "臨界值",
+        "description": "覆蓋所選類別的預設值。",
+        "data": {
+          "days": "預報範圍（時段數）",
+          "precip_threshold_mm": "降水臨界值（毫米）",
+          "freeze_check": "在結凍溫度時封鎖",
+          "forecast_type": "預報類型"
+        },
+        "data_description": {
+          "days": "要分析的預報時段數。使用每日預報時，每個時段 = 1 天；使用每小時預報時，每個時段 = 1 小時。",
+          "precip_threshold_mm": "每天總降水量超過此值將封鎖清洗。",
+          "freeze_check": "開啟後，預報溫度低於 0 °C 的日子將封鎖清洗。",
+          "forecast_type": "每日預報每天一筆資料；每小時預報每小時一筆資料。每小時預報較為精確，但需要來源支援每小時資料。"
+        }
+      },
+      "scoring": {
+        "title": "計分權重",
+        "description": "調整 0–100 分的計算方式。各權重不需加總為 100，它們會對每天獨立套用。",
+        "data": {
+          "precip_weight": "降水分數權重",
+          "freeze_weight": "結凍分數權重",
+          "condition_weight": "天氣狀況分數權重"
+        },
+        "data_description": {
+          "precip_weight": "預報中的降雨量從分數中扣除的程度。",
+          "freeze_weight": "結凍日從分數中扣除的程度。",
+          "condition_weight": "惡劣天氣狀況從分數中扣除的程度。"
+        }
+      },
+      "conditions": {
+        "title": "封鎖條件",
+        "description": "選擇哪些 HA 天氣狀況代碼應封鎖清洗。",
+        "data": {
+          "bad_conditions": "封鎖清洗的天氣狀況"
+        },
+        "data_description": {
+          "bad_conditions": "當這些狀況中的任何一個出現為當前天氣或預報日天氣時，判斷結果將被封鎖。"
+        }
+      },
+      "advanced": {
+        "title": "進階設定",
+        "description": "較不常用的設定。",
+        "data": {
+          "snooze_default_hours": "預設暫停時間（小時）",
+          "temperature_unit": "溫度單位"
+        },
+        "data_description": {
+          "snooze_default_hours": "在未指定明確時間的情況下呼叫暫停服務時所套用的預設持續時間。",
+          "temperature_unit": "覆蓋用於解析預報溫度的單位。「自動」從來源天氣實體讀取（建議使用）。僅在提供者的中繼資料有誤或缺失時才選擇攝氏、華氏或克氏。"
+        }
+      },
+      "irrigation": {
+        "title": "灌溉設定",
+        "description": "設定雨量計感測器與灌溉程式開關。",
+        "data": {
+          "rain_gauge_entity": "雨量計感測器",
+          "rain_gauge_threshold_mm": "降雨臨界值（毫米）",
+          "irrigation_switch_entity": "灌溉程式開關"
+        },
+        "data_description": {
+          "rain_gauge_entity": "回報實測降雨量（毫米）的感測器實體。留空則僅依賴預報。",
+          "rain_gauge_threshold_mm": "實測降雨量達到或超過此值時，將自動暫停灌溉。",
+          "irrigation_switch_entity": "啟動灌溉程式的開關或自動化。被抑制時 WashWise 將其關閉，條件恢復正常後再重新開啟。"
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "標記為已清洗",
+      "description": "將清洗記錄附加至所選 WashWise 實例的清洗日誌。",
+      "fields": {
+        "entry_id": {
+          "name": "設定",
+          "description": "要操作的 WashWise 設定項目。"
+        },
+        "timestamp": {
+          "name": "時間戳記",
+          "description": "清洗發生的時間，預設為現在。"
+        }
+      }
+    },
+    "snooze": {
+      "name": "暫停",
+      "description": "暫停 WashWise 判斷結果數小時。若未指定則預設為 24 小時。",
+      "fields": {
+        "entry_id": {
+          "name": "設定",
+          "description": "要操作的 WashWise 設定項目。"
+        },
+        "hours": {
+          "name": "小時數",
+          "description": "要暫停的小時數（最少 1 小時），預設為 24。"
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "取消暫停",
+      "description": "取消目前進行中的暫停。",
+      "fields": {
+        "entry_id": {
+          "name": "設定",
+          "description": "要操作的 WashWise 設定項目。"
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "設定灌溉開關",
+      "description": "手動覆蓋灌溉程式開關的狀態。",
+      "fields": {
+        "entry_id": {
+          "name": "設定",
+          "description": "要操作的 WashWise garden_irrigation 設定項目。"
+        },
+        "state": {
+          "name": "狀態",
+          "description": "開啟或關閉灌溉開關。"
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "汽車",
+        "motorcycle": "機車",
+        "bicycle": "自行車",
+        "boat": "船隻",
+        "rv_camper": "露營車／拖車",
+        "windows_house": "房屋窗戶",
+        "laundry": "衣物洗滌",
+        "patio_deck": "露台／甲板",
+        "solar_panels": "太陽能板",
+        "garden_irrigation": "庭園灌溉",
+        "custom": "自訂"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "每日",
+        "hourly": "每小時"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "雷雨",
+        "rainy": "有雨",
+        "pouring": "大雨",
+        "snowy": "下雪",
+        "snowy-rainy": "雨夾雪",
+        "hail": "冰雹",
+        "exceptional": "異常天氣"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "自動（使用來源實體）",
+        "celsius": "攝氏（°C）",
+        "fahrenheit": "華氏（°F）",
+        "kelvin": "克氏（K）"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "可以清洗"
+      },
+      "day_ok": {
+        "name": "第 {day} 天正常"
+      },
+      "freeze_risk": {
+        "name": "預報結凍風險"
+      },
+      "irrigation_suppressed": {
+        "name": "灌溉已暫停"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "預報封鎖灌溉"
+      },
+      "irrigation_switch_state": {
+        "name": "灌溉開關狀態"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "清洗分數"
+      },
+      "reason": {
+        "name": "原因",
+        "state": {
+          "clear": "晴朗",
+          "rain": "降雨",
+          "freeze": "結凍",
+          "snow": "降雪",
+          "bad_condition": "惡劣天氣",
+          "bad_current_condition": "目前天氣惡劣",
+          "dirty_now": "表面已髒——立即清洗",
+          "snoozed": "已暫停",
+          "unavailable": "無法使用"
+        }
+      },
+      "wash_status": {
+        "name": "清洗狀態",
+        "state": {
+          "ok_clear": "是——晴朗",
+          "ok_dirty_now": "是——表面已髒——立即清洗",
+          "unknown_clear": "未知",
+          "no_rain": "否——降雨",
+          "no_freeze": "否——結凍",
+          "no_snow": "否——降雪",
+          "no_bad_condition": "否——惡劣天氣",
+          "no_bad_current_condition": "否——目前天氣惡劣",
+          "snoozed": "已暫停"
+        }
+      },
+      "days_until_wash": {
+        "name": "距可清洗天數"
+      },
+      "days_since_wash": {
+        "name": "距上次清洗天數"
+      },
+      "last_washed": {
+        "name": "上次清洗時間"
+      },
+      "wash_count_30d": {
+        "name": "清洗次數（30 天）"
+      },
+      "active_provider": {
+        "name": "目前使用來源"
+      },
+      "last_update": {
+        "name": "上次更新"
+      },
+      "days_analyzed": {
+        "name": "已分析天數"
+      },
+      "hours_analyzed": {
+        "name": "已分析小時數"
+      },
+      "precip_total_mm": {
+        "name": "預報總降雨量"
+      },
+      "worst_condition": {
+        "name": "最嚴重預報天氣狀況"
+      },
+      "min_temp": {
+        "name": "預報最低溫度"
+      },
+      "max_temp": {
+        "name": "預報最高溫度"
+      },
+      "primary_provider_uptime": {
+        "name": "主要來源正常運行時間"
+      },
+      "snooze_remaining": {
+        "name": "剩餘暫停時間"
+      },
+      "day_score": {
+        "name": "第 {day} 天分數"
+      },
+      "category": {
+        "name": "類別",
+        "state": {
+          "car": "汽車",
+          "motorcycle": "機車",
+          "bicycle": "自行車",
+          "boat": "船隻",
+          "rv_camper": "露營車／拖車",
+          "windows_house": "房屋窗戶",
+          "solar_panels": "太陽能板",
+          "patio_deck": "露台／甲板",
+          "garden_irrigation": "庭園灌溉",
+          "laundry": "衣物洗滌",
+          "custom": "自訂"
+        }
+      },
+      "measured_rain_mm": {
+        "name": "實測降雨量"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "雨量計臨界值"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "標記已清洗"
+      },
+      "mark_irrigated": {
+        "name": "標記已灌溉"
+      }
+    }
+  }
+}

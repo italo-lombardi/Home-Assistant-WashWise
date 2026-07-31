@@ -1,0 +1,404 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "Configura un assessor de rentat que decideix si pots rentar una superfície en funció de les dades de la previsió meteorològica.",
+        "data": {
+          "weather_entities": "Fonts meteorològiques",
+          "name": "Nom",
+          "category": "Categoria",
+          "customize_thresholds": "Personalitza els llindars"
+        },
+        "data_description": {
+          "weather_entities": "Tria una o més entitats meteorològiques de l'HA. S'utilitza la primera font disponible d'aquesta llista ordenada; la següent només es prova si l'anterior no està disponible.",
+          "name": "Nom descriptiu per a aquesta instància de WashWise. S'utilitza com a prefix de totes les entitats creades per aquesta entrada.",
+          "category": "Allò que vols rentar. Cada categoria inclou llindars predeterminats raonables i una icona per defecte. Tria Personalitzat per començar amb valors neutres.",
+          "customize_thresholds": "Activa-ho per substituir els valors predeterminats de la categoria a la pantalla següent. Deixa-ho desactivat per usar els valors predefinits de la categoria triada."
+        }
+      },
+      "thresholds": {
+        "title": "Llindars personalitzats",
+        "description": "Substitueix els valors predeterminats que vénen amb la categoria triada. Aquests valors controlen quins dies de la previsió bloquegen un rentat i com es calcula la puntuació.",
+        "data": {
+          "days": "Horitzó de previsió (intervals)",
+          "precip_threshold_mm": "Llindar de precipitació (mm)",
+          "freeze_check": "Bloqueja amb temperatures de gelada",
+          "forecast_type": "Tipus de previsió",
+          "bad_conditions": "Condicions meteorològiques que bloquegen",
+          "precip_weight": "Pes de la puntuació de precipitació",
+          "freeze_weight": "Pes de la puntuació de gelada",
+          "condition_weight": "Pes de la puntuació de condicions"
+        },
+        "data_description": {
+          "days": "Nombre d'intervals de previsió a analitzar. Amb previsió diària cada interval equival a 1 dia; amb previsió horària, a 1 hora. Valors més grans capten més fenòmens meteorològics però produeixen veredictes més conservadors.",
+          "precip_threshold_mm": "La precipitació total diària per sobre d'aquest valor bloqueja el rentat. Valors més baixos (0,1) són més estrictes; valors més alts (1,0) toleren pluja lleugera.",
+          "freeze_check": "Quan està activat, un dia de previsió on la temperatura creui els 0 °C bloqueja el rentat per evitar que l'aigua es geli sobre la superfície.",
+          "forecast_type": "Diària usa una entrada per dia; Horària usa una entrada per hora. Horària és més precisa però requereix que la font exposi dades horàries.",
+          "bad_conditions": "Codis de condició meteorològica que bloquegen el rentat quan apareixen a la previsió o com a condició actual.",
+          "precip_weight": "Quant resta a la puntuació de 0–100 la pluja a la previsió. Un valor més alt penalitza els dies plujosos de forma més agressiva.",
+          "freeze_weight": "Quant resta a la puntuació de 0–100 un dia de gelada. Posa'l a 0 per ignorar les gelades en la puntuació tot mantenint el bloqueig del veredicte.",
+          "condition_weight": "Quant resten a la puntuació de 0–100 les condicions meteorològiques adverses (tempestes, calamarsa, neu). La gravetat és per condició."
+        }
+      },
+      "irrigation": {
+        "title": "Configuració del reg",
+        "description": "Configura el pluviòmetre i l'interruptor del programa de reg per a l'assessor de Reg del jardí.",
+        "data": {
+          "rain_gauge_entity": "Sensor del pluviòmetre",
+          "rain_gauge_threshold_mm": "Llindar de pluja (mm)",
+          "irrigation_switch_entity": "Interruptor del programa de reg"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Una entitat sensor que informa la pluja mesurada en mm (p. ex., el pluviòmetre d'una estació meteorològica). Deixa-ho buit per usar només la supressió basada en previsió.",
+          "rain_gauge_threshold_mm": "Quan el pluviòmetre assoleix o supera aquest valor, el programa de reg se suprimeix automàticament.",
+          "irrigation_switch_entity": "L'interruptor, input_boolean o automatització que inicia el programa de reg. WashWise l'apagarà quan la pluja suprimeixi el reg i el tornarà a encendre quan les condicions millorin."
+        }
+      },
+      "reconfigure": {
+        "title": "Reconfigura WashWise",
+        "description": "Canvia les fonts meteorològiques, el nom, la categoria o la personalització de llindars per a aquesta instància.",
+        "data": {
+          "weather_entities": "Fonts meteorològiques",
+          "name": "Nom",
+          "category": "Categoria",
+          "customize_thresholds": "Personalitza els llindars"
+        },
+        "data_description": {
+          "weather_entities": "Tria una o més entitats meteorològiques de l'HA. S'utilitza la primera font disponible d'aquesta llista ordenada; la següent només es prova si l'anterior no està disponible.",
+          "name": "Nom descriptiu per a aquesta instància de WashWise. S'utilitza com a prefix de totes les entitats creades per aquesta entrada.",
+          "category": "Allò que vols rentar. Cada categoria inclou llindars predeterminats raonables i una icona per defecte. Tria Personalitzat per començar amb valors neutres.",
+          "customize_thresholds": "Activa-ho per substituir els valors predeterminats de la categoria a la pantalla següent. Deixa-ho desactivat per usar els valors predefinits de la categoria triada."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "Selecciona almenys una font meteorològica.",
+      "weather_unavailable": "Totes les fonts meteorològiques seleccionades no estan disponibles actualment.",
+      "duplicate_name": "Ja existeix una instància de WashWise amb aquest nom.",
+      "invalid_category": "La categoria seleccionada no és vàlida."
+    },
+    "abort": {
+      "already_configured": "Aquesta combinació ja està configurada.",
+      "reconfigure_successful": "Configuració actualitzada correctament."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opcions de WashWise",
+        "description": "Tria una secció per editar.",
+        "menu_options": {
+          "providers": "Fonts meteorològiques",
+          "thresholds": "Llindars",
+          "scoring": "Pesos de puntuació",
+          "conditions": "Condicions que bloquegen",
+          "advanced": "Avançat",
+          "irrigation": "Configuració del reg"
+        }
+      },
+      "providers": {
+        "title": "Fonts meteorològiques",
+        "description": "Afegeix, elimina o reordena les entitats meteorològiques usades com a fonts de previsió.",
+        "data": {
+          "weather_entities": "Fonts meteorològiques"
+        },
+        "data_description": {
+          "weather_entities": "L'ordre importa. S'utilitza la primera entitat disponible d'aquesta llista; la següent només es prova si l'anterior no està disponible."
+        }
+      },
+      "thresholds": {
+        "title": "Llindars",
+        "description": "Substitueix els valors predeterminats que vénen amb la categoria triada.",
+        "data": {
+          "days": "Horitzó de previsió (intervals)",
+          "precip_threshold_mm": "Llindar de precipitació (mm)",
+          "freeze_check": "Bloqueja amb temperatures de gelada",
+          "forecast_type": "Tipus de previsió"
+        },
+        "data_description": {
+          "days": "Nombre d'intervals de previsió a analitzar. Amb previsió diària cada interval equival a 1 dia; amb previsió horària, a 1 hora.",
+          "precip_threshold_mm": "La precipitació total diària per sobre d'aquest valor bloqueja el rentat.",
+          "freeze_check": "Quan està activat, un dia de previsió on la temperatura creui els 0 °C bloqueja el rentat.",
+          "forecast_type": "Diària usa una entrada per dia; Horària usa una entrada per hora. Horària és més precisa però requereix que la font exposi dades horàries."
+        }
+      },
+      "scoring": {
+        "title": "Pesos de puntuació",
+        "description": "Ajusta com es calcula la puntuació de 0–100. Els pesos no han de sumar 100 — s'apliquen de forma independent per dia.",
+        "data": {
+          "precip_weight": "Pes de la puntuació de precipitació",
+          "freeze_weight": "Pes de la puntuació de gelada",
+          "condition_weight": "Pes de la puntuació de condicions"
+        },
+        "data_description": {
+          "precip_weight": "Quant resta a la puntuació la pluja a la previsió.",
+          "freeze_weight": "Quant resta a la puntuació un dia de gelada.",
+          "condition_weight": "Quant resten a la puntuació les condicions meteorològiques adverses."
+        }
+      },
+      "conditions": {
+        "title": "Condicions que bloquegen",
+        "description": "Tria quins codis de condició meteorològica de l'HA han de bloquejar un rentat.",
+        "data": {
+          "bad_conditions": "Condicions meteorològiques que bloquegen"
+        },
+        "data_description": {
+          "bad_conditions": "Quan qualsevol d'aquestes condicions apareix com a condició actual o en un dia de la previsió, el veredicte es bloqueja."
+        }
+      },
+      "advanced": {
+        "title": "Avançat",
+        "description": "Configuracions menys habituals.",
+        "data": {
+          "snooze_default_hours": "Durada predeterminada de l'ajornament (hores)",
+          "temperature_unit": "Unitat de temperatura"
+        },
+        "data_description": {
+          "snooze_default_hours": "Durada predeterminada que s'aplica quan es crida el servei d'ajornament sense una durada explícita.",
+          "temperature_unit": "Substitueix la unitat usada per interpretar les temperatures de la previsió. Auto la llegeix des de l'entitat meteorològica d'origen (recomanat). Tria Celsius / Fahrenheit / Kelvin només quan les metadades del proveïdor siguin incorrectes o manquin."
+        }
+      },
+      "irrigation": {
+        "title": "Configuració del reg",
+        "description": "Configura el sensor del pluviòmetre i l'interruptor del programa de reg.",
+        "data": {
+          "rain_gauge_entity": "Sensor del pluviòmetre",
+          "rain_gauge_threshold_mm": "Llindar de pluja (mm)",
+          "irrigation_switch_entity": "Interruptor del programa de reg"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Entitat sensor que informa la pluja mesurada en mm. Deixa-ho buit per usar només la previsió.",
+          "rain_gauge_threshold_mm": "Quan la pluja mesurada assoleix o supera aquest valor, el reg se suprimeix automàticament.",
+          "irrigation_switch_entity": "L'interruptor o automatització que inicia el programa de reg. WashWise l'apagarà quan se suprimeixi i el tornarà a encendre quan les condicions millorin."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "Marca com a rentat",
+      "description": "Afegeix una entrada al registre de rentats de la instància WashWise seleccionada.",
+      "fields": {
+        "entry_id": {
+          "name": "Configuració",
+          "description": "Entrada de configuració de WashWise a la qual apuntar."
+        },
+        "timestamp": {
+          "name": "Marca de temps",
+          "description": "Quan va tenir lloc el rentat. Per defecte: ara."
+        }
+      }
+    },
+    "snooze": {
+      "name": "Ajorna",
+      "description": "Posa en pausa els veredictes de WashWise durant un nombre d'hores. Per defecte: 24 hores si no s'especifica.",
+      "fields": {
+        "entry_id": {
+          "name": "Configuració",
+          "description": "Entrada de configuració de WashWise a la qual apuntar."
+        },
+        "hours": {
+          "name": "Hores",
+          "description": "Quantes hores ajornar (mínim 1). Per defecte: 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Cancel·la l'ajornament",
+      "description": "Cancel·la l'ajornament actiu.",
+      "fields": {
+        "entry_id": {
+          "name": "Configuració",
+          "description": "Entrada de configuració de WashWise a la qual apuntar."
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "Estableix l'interruptor de reg",
+      "description": "Substitueix manualment l'estat de l'interruptor del programa de reg.",
+      "fields": {
+        "entry_id": {
+          "name": "Configuració",
+          "description": "Entrada de configuració de WashWise de garden_irrigation a la qual apuntar."
+        },
+        "state": {
+          "name": "Estat",
+          "description": "Encén o apaga l'interruptor de reg."
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "Cotxe",
+        "motorcycle": "Motocicleta",
+        "bicycle": "Bicicleta",
+        "boat": "Vaixell",
+        "rv_camper": "Autocaravana / caravana",
+        "windows_house": "Finestres de la casa",
+        "laundry": "Roba",
+        "patio_deck": "Pati / terrassa",
+        "solar_panels": "Panells solars",
+        "garden_irrigation": "Reg del jardí",
+        "custom": "Personalitzat"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "Diària",
+        "hourly": "Horària"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "Tempesta amb pluja",
+        "rainy": "Plujós",
+        "pouring": "Pluja intensa",
+        "snowy": "Nevat",
+        "snowy-rainy": "Aiguaneu",
+        "hail": "Calamarsa",
+        "exceptional": "Excepcional"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "Auto (usa l'entitat d'origen)",
+        "celsius": "Celsius (°C)",
+        "fahrenheit": "Fahrenheit (°F)",
+        "kelvin": "Kelvin (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "Es pot rentar"
+      },
+      "day_ok": {
+        "name": "Dia {day} apte"
+      },
+      "freeze_risk": {
+        "name": "Risc de gelada a la previsió"
+      },
+      "irrigation_suppressed": {
+        "name": "Reg suprimit"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "La previsió bloqueja el reg"
+      },
+      "irrigation_switch_state": {
+        "name": "Estat de l'interruptor de reg"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "Puntuació de rentat"
+      },
+      "reason": {
+        "name": "Motiu",
+        "state": {
+          "clear": "Sense incidències",
+          "rain": "Pluja",
+          "freeze": "Gelada",
+          "snow": "Neu",
+          "bad_condition": "Mal temps",
+          "bad_current_condition": "Mal temps actual",
+          "dirty_now": "Superfície bruta — renta ara",
+          "snoozed": "Ajornat",
+          "unavailable": "No disponible"
+        }
+      },
+      "wash_status": {
+        "name": "Estat del rentat",
+        "state": {
+          "ok_clear": "Sí — Sense incidències",
+          "ok_dirty_now": "Sí — Superfície bruta — renta ara",
+          "unknown_clear": "Desconegut",
+          "no_rain": "No — Pluja",
+          "no_freeze": "No — Gelada",
+          "no_snow": "No — Neu",
+          "no_bad_condition": "No — Mal temps",
+          "no_bad_current_condition": "No — Mal temps actual",
+          "snoozed": "Ajornat"
+        }
+      },
+      "days_until_wash": {
+        "name": "Dies fins al proper rentat possible"
+      },
+      "days_since_wash": {
+        "name": "Dies des de l'últim rentat"
+      },
+      "last_washed": {
+        "name": "Últim rentat"
+      },
+      "wash_count_30d": {
+        "name": "Rentats (30 dies)"
+      },
+      "active_provider": {
+        "name": "Proveïdor actiu"
+      },
+      "last_update": {
+        "name": "Última actualització"
+      },
+      "days_analyzed": {
+        "name": "Dies analitzats"
+      },
+      "hours_analyzed": {
+        "name": "Hores analitzades"
+      },
+      "precip_total_mm": {
+        "name": "Total de precipitació prevista"
+      },
+      "worst_condition": {
+        "name": "Condició prevista més severa"
+      },
+      "min_temp": {
+        "name": "Temperatura mínima prevista"
+      },
+      "max_temp": {
+        "name": "Temperatura màxima prevista"
+      },
+      "primary_provider_uptime": {
+        "name": "Disponibilitat del proveïdor principal"
+      },
+      "snooze_remaining": {
+        "name": "Temps restant d'ajornament"
+      },
+      "day_score": {
+        "name": "Puntuació del dia {day}"
+      },
+      "category": {
+        "name": "Categoria",
+        "state": {
+          "car": "Cotxe",
+          "motorcycle": "Motocicleta",
+          "bicycle": "Bicicleta",
+          "boat": "Vaixell",
+          "rv_camper": "Autocaravana",
+          "windows_house": "Finestres de la casa",
+          "laundry": "Roba",
+          "solar_panels": "Panells solars",
+          "patio_deck": "Terrassa",
+          "garden_irrigation": "Reg del jardí",
+          "custom": "Personalitzat"
+        }
+      },
+      "measured_rain_mm": {
+        "name": "Pluja mesurada"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Llindar del pluviòmetre"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "Marca com a rentat"
+      },
+      "mark_irrigated": {
+        "name": "Marca com a regat"
+      }
+    }
+  }
+}

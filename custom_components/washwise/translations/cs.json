@@ -1,0 +1,404 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "Nastavte poradce pro mytí, který na základě předpovědi počasí rozhoduje, zda je vhodné umýt povrch.",
+        "data": {
+          "weather_entities": "Zdroje počasí",
+          "name": "Název",
+          "category": "Kategorie",
+          "customize_thresholds": "Přizpůsobit prahové hodnoty"
+        },
+        "data_description": {
+          "weather_entities": "Vyberte jednu nebo více HA entit počasí. Použije se první dostupný zdroj v tomto seřazeném seznamu; další se vyzkouší pouze v případě, že předchozí není k dispozici.",
+          "name": "Zobrazovaný název této instance WashWise. Slouží jako předpona každé entity vytvořené tímto záznamem.",
+          "category": "Co myjete. Každá kategorie přichází s rozumnými výchozími prahovými hodnotami a výchozí ikonou. Zvolte Vlastní pro zahájení s neutrálními výchozími hodnotami.",
+          "customize_thresholds": "Zapněte, chcete-li na další obrazovce přepsat výchozí hodnoty kategorie. Vypněte, chcete-li použít přednastavené hodnoty pro zvolenou kategorii."
+        }
+      },
+      "thresholds": {
+        "title": "Vlastní prahové hodnoty",
+        "description": "Přepište výchozí hodnoty dodávané se zvolenou kategorií. Tyto hodnoty určují, které dny předpovědi blokují mytí a jak se vypočítává skóre.",
+        "data": {
+          "days": "Horizont předpovědi (úseky)",
+          "precip_threshold_mm": "Prahová hodnota srážek (mm)",
+          "freeze_check": "Blokovat při mrazivých teplotách",
+          "forecast_type": "Typ předpovědi",
+          "bad_conditions": "Blokující povětrnostní podmínky",
+          "precip_weight": "Váha skóre srážek",
+          "freeze_weight": "Váha skóre mrazu",
+          "condition_weight": "Váha skóre podmínek"
+        },
+        "data_description": {
+          "days": "Počet úseků předpovědi k analýze. U denní předpovědi každý úsek = 1 den; u hodinové každý úsek = 1 hodina. Větší hodnoty zachytí více počasí, ale dávají konzervativnější výsledky.",
+          "precip_threshold_mm": "Celkové srážky za den přesahující tuto hodnotu blokují mytí. Nižší hodnoty (0,1) jsou přísnější, vyšší hodnoty (1,0) tolerují lehké mrholení.",
+          "freeze_check": "Je-li zapnuto, den předpovědi, jehož teplota klesne pod 0 °C, blokuje mytí, aby se zabránilo zmrznutí mycí vody na povrchu.",
+          "forecast_type": "Denní používá jeden záznam na den; hodinová používá jeden záznam na hodinu. Hodinová je přesnější, ale vyžaduje, aby zdroj poskytoval hodinová data.",
+          "bad_conditions": "Kódy povětrnostních podmínek, které blokují mytí, pokud se vyskytnou v předpovědi nebo jako aktuální podmínka.",
+          "precip_weight": "O kolik déšť v předpovědi snižuje skóre 0–100. Vyšší hodnota přísněji penalizuje deštivé dny.",
+          "freeze_weight": "O kolik mrazivý den snižuje skóre 0–100. Nastavte na 0, chcete-li mráz ignorovat při výpočtu skóre, ale přesto blokovat výsledek.",
+          "condition_weight": "O kolik špatné povětrnostní podmínky (bouřky, krupobití, sníh) snižují skóre 0–100. Závažnost je určena pro každou podmínku zvlášť."
+        }
+      },
+      "irrigation": {
+        "title": "Nastavení závlahy",
+        "description": "Nakonfigurujte srážkoměr a spínač závlahového programu pro poradce Zahradní závlaha.",
+        "data": {
+          "rain_gauge_entity": "Senzor srážkoměru",
+          "rain_gauge_threshold_mm": "Prahová hodnota deště (mm)",
+          "irrigation_switch_entity": "Spínač závlahového programu"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Entita senzoru, která hlásí naměřené srážky v mm (např. z pluviometru meteorologické stanice). Ponechte prázdné pro použití potlačení pouze na základě předpovědi.",
+          "rain_gauge_threshold_mm": "Pokud srážkoměr naměří hodnotu rovnou nebo vyšší než tato, závlahový program se automaticky potlačí.",
+          "irrigation_switch_entity": "Spínač, input_boolean nebo automatizace, která spouští váš závlahový program. WashWise jej vypne, když srážky potlačí závlahu, a znovu zapne, jakmile se podmínky zlepší."
+        }
+      },
+      "reconfigure": {
+        "title": "Překonfigurovat WashWise",
+        "description": "Změňte zdroje počasí, název, kategorii nebo přizpůsobení prahových hodnot pro tuto instanci.",
+        "data": {
+          "weather_entities": "Zdroje počasí",
+          "name": "Název",
+          "category": "Kategorie",
+          "customize_thresholds": "Přizpůsobit prahové hodnoty"
+        },
+        "data_description": {
+          "weather_entities": "Vyberte jednu nebo více HA entit počasí. Použije se první dostupný zdroj v tomto seřazeném seznamu; další se vyzkouší pouze v případě, že předchozí není k dispozici.",
+          "name": "Zobrazovaný název této instance WashWise. Slouží jako předpona každé entity vytvořené tímto záznamem.",
+          "category": "Co myjete. Každá kategorie přichází s rozumnými výchozími prahovými hodnotami a výchozí ikonou. Zvolte Vlastní pro zahájení s neutrálními výchozími hodnotami.",
+          "customize_thresholds": "Zapněte, chcete-li na další obrazovce přepsat výchozí hodnoty kategorie. Vypněte, chcete-li použít přednastavené hodnoty pro zvolenou kategorii."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "Vyberte alespoň jeden zdroj počasí.",
+      "weather_unavailable": "Všechny vybrané zdroje počasí jsou momentálně nedostupné.",
+      "duplicate_name": "Instance WashWise s tímto názvem již existuje.",
+      "invalid_category": "Vybraná kategorie není platná."
+    },
+    "abort": {
+      "already_configured": "Tato kombinace je již nakonfigurována.",
+      "reconfigure_successful": "Konfigurace byla úspěšně aktualizována."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Možnosti WashWise",
+        "description": "Vyberte sekci k úpravě.",
+        "menu_options": {
+          "providers": "Zdroje počasí",
+          "thresholds": "Prahové hodnoty",
+          "scoring": "Váhy skóre",
+          "conditions": "Blokující podmínky",
+          "advanced": "Pokročilé",
+          "irrigation": "Nastavení závlahy"
+        }
+      },
+      "providers": {
+        "title": "Zdroje počasí",
+        "description": "Přidejte, odeberte nebo seřaďte entity počasí používané jako zdroje předpovědi.",
+        "data": {
+          "weather_entities": "Zdroje počasí"
+        },
+        "data_description": {
+          "weather_entities": "Pořadí je důležité. Použije se první dostupná entita v tomto seznamu; další se vyzkouší pouze v případě, že předchozí není k dispozici."
+        }
+      },
+      "thresholds": {
+        "title": "Prahové hodnoty",
+        "description": "Přepište výchozí hodnoty dodávané se zvolenou kategorií.",
+        "data": {
+          "days": "Horizont předpovědi (úseky)",
+          "precip_threshold_mm": "Prahová hodnota srážek (mm)",
+          "freeze_check": "Blokovat při mrazivých teplotách",
+          "forecast_type": "Typ předpovědi"
+        },
+        "data_description": {
+          "days": "Počet úseků předpovědi k analýze. U denní předpovědi každý úsek = 1 den; u hodinové každý úsek = 1 hodina.",
+          "precip_threshold_mm": "Celkové srážky za den přesahující tuto hodnotu blokují mytí.",
+          "freeze_check": "Je-li zapnuto, den předpovědi, jehož teplota klesne pod 0 °C, blokuje mytí.",
+          "forecast_type": "Denní používá jeden záznam na den; hodinová používá jeden záznam na hodinu. Hodinová je přesnější, ale vyžaduje, aby zdroj poskytoval hodinová data."
+        }
+      },
+      "scoring": {
+        "title": "Váhy skóre",
+        "description": "Upravte výpočet skóre 0–100. Váhy nemusí dávat součet 100 — jsou aplikovány nezávisle pro každý den.",
+        "data": {
+          "precip_weight": "Váha skóre srážek",
+          "freeze_weight": "Váha skóre mrazu",
+          "condition_weight": "Váha skóre podmínek"
+        },
+        "data_description": {
+          "precip_weight": "O kolik déšť v předpovědi snižuje skóre.",
+          "freeze_weight": "O kolik mrazivý den snižuje skóre.",
+          "condition_weight": "O kolik špatné povětrnostní podmínky snižují skóre."
+        }
+      },
+      "conditions": {
+        "title": "Blokující podmínky",
+        "description": "Zvolte, které kódy povětrnostních podmínek HA mají blokovat mytí.",
+        "data": {
+          "bad_conditions": "Blokující povětrnostní podmínky"
+        },
+        "data_description": {
+          "bad_conditions": "Pokud se některá z těchto podmínek vyskytne jako aktuální podmínka nebo v den předpovědi, výsledek je blokován."
+        }
+      },
+      "advanced": {
+        "title": "Pokročilé",
+        "description": "Méně časté nastavení.",
+        "data": {
+          "snooze_default_hours": "Výchozí doba odložení (hodiny)",
+          "temperature_unit": "Jednotka teploty"
+        },
+        "data_description": {
+          "snooze_default_hours": "Výchozí doba použitá při volání služby odložení bez explicitní délky.",
+          "temperature_unit": "Přepište jednotku pro interpretaci teplot z předpovědi. Automaticky ji načte ze zdrojové entity počasí (doporučeno). Zvolte Celsius / Fahrenheit / Kelvin pouze tehdy, když jsou metadata poskytovatele chybná nebo chybějí."
+        }
+      },
+      "irrigation": {
+        "title": "Nastavení závlahy",
+        "description": "Nakonfigurujte senzor srážkoměru a spínač závlahového programu.",
+        "data": {
+          "rain_gauge_entity": "Senzor srážkoměru",
+          "rain_gauge_threshold_mm": "Prahová hodnota deště (mm)",
+          "irrigation_switch_entity": "Spínač závlahového programu"
+        },
+        "data_description": {
+          "rain_gauge_entity": "Entita senzoru hlásící naměřené srážky v mm. Ponechte prázdné pro použití pouze předpovědi.",
+          "rain_gauge_threshold_mm": "Naměřené srážky rovné nebo vyšší než tato hodnota automaticky potlačí závlahu.",
+          "irrigation_switch_entity": "Spínač nebo automatizace, která spouští váš závlahový program. WashWise jej vypne při potlačení a znovu zapne, jakmile se podmínky zlepší."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "Označit jako umyté",
+      "description": "Přidá záznam o mytí do protokolu mytí vybrané instance WashWise.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurace",
+          "description": "Cílový konfigurační záznam WashWise."
+        },
+        "timestamp": {
+          "name": "Časové razítko",
+          "description": "Kdy k mytí došlo. Výchozí hodnota je aktuální čas."
+        }
+      }
+    },
+    "snooze": {
+      "name": "Odložit",
+      "description": "Pozastaví výsledky WashWise na určitý počet hodin. Výchozí hodnota je 24 hodin, pokud není zadáno jinak.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurace",
+          "description": "Cílový konfigurační záznam WashWise."
+        },
+        "hours": {
+          "name": "Hodiny",
+          "description": "Počet hodin odložení (minimum 1). Výchozí hodnota je 24."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "Zrušit odložení",
+      "description": "Zruší aktivní odložení.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurace",
+          "description": "Cílový konfigurační záznam WashWise."
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "Nastavit spínač závlahy",
+      "description": "Ručně přepsat stav spínače závlahového programu.",
+      "fields": {
+        "entry_id": {
+          "name": "Konfigurace",
+          "description": "Cílový konfigurační záznam WashWise pro kategorii garden_irrigation."
+        },
+        "state": {
+          "name": "Stav",
+          "description": "Zapnout nebo vypnout spínač závlahy."
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "Auto",
+        "motorcycle": "Motocykl",
+        "bicycle": "Kolo",
+        "boat": "Loď",
+        "rv_camper": "Karavan / Obytné auto",
+        "windows_house": "Okna domu",
+        "laundry": "Prádlo",
+        "patio_deck": "Terasa / Veranda",
+        "solar_panels": "Solární panely",
+        "garden_irrigation": "Zahradní závlaha",
+        "custom": "Vlastní"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "Denní",
+        "hourly": "Hodinová"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "Bouřka s deštěm",
+        "rainy": "Deštivo",
+        "pouring": "Liják",
+        "snowy": "Sněžení",
+        "snowy-rainy": "Sníh a déšť",
+        "hail": "Krupobití",
+        "exceptional": "Výjimečné"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "Automaticky (ze zdrojové entity)",
+        "celsius": "Celsius (°C)",
+        "fahrenheit": "Fahrenheit (°F)",
+        "kelvin": "Kelvin (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "Lze mýt"
+      },
+      "day_ok": {
+        "name": "Den {day} v pořádku"
+      },
+      "freeze_risk": {
+        "name": "Riziko mrazu v předpovědi"
+      },
+      "irrigation_suppressed": {
+        "name": "Závlaha potlačena"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Předpověď blokuje závlahu"
+      },
+      "irrigation_switch_state": {
+        "name": "Stav spínače závlahy"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "Skóre mytí"
+      },
+      "reason": {
+        "name": "Důvod",
+        "state": {
+          "clear": "Jasno",
+          "rain": "Déšť",
+          "freeze": "Mráz",
+          "snow": "Sníh",
+          "bad_condition": "Špatné počasí",
+          "bad_current_condition": "Špatné aktuální počasí",
+          "dirty_now": "Povrch špinavý — myjte nyní",
+          "snoozed": "Odloženo",
+          "unavailable": "Nedostupné"
+        }
+      },
+      "wash_status": {
+        "name": "Stav mytí",
+        "state": {
+          "ok_clear": "Ano — Jasno",
+          "ok_dirty_now": "Ano — Povrch špinavý — myjte nyní",
+          "unknown_clear": "Neznámý",
+          "no_rain": "Ne — Déšť",
+          "no_freeze": "Ne — Mráz",
+          "no_snow": "Ne — Sníh",
+          "no_bad_condition": "Ne — Špatné počasí",
+          "no_bad_current_condition": "Ne — Špatné aktuální počasí",
+          "snoozed": "Odloženo"
+        }
+      },
+      "days_until_wash": {
+        "name": "Dní do možného mytí"
+      },
+      "days_since_wash": {
+        "name": "Dní od posledního mytí"
+      },
+      "last_washed": {
+        "name": "Naposledy umyto"
+      },
+      "wash_count_30d": {
+        "name": "Počet mytí (30 dní)"
+      },
+      "active_provider": {
+        "name": "Aktivní zdroj"
+      },
+      "last_update": {
+        "name": "Poslední aktualizace"
+      },
+      "days_analyzed": {
+        "name": "Analyzované dny"
+      },
+      "hours_analyzed": {
+        "name": "Analyzované hodiny"
+      },
+      "precip_total_mm": {
+        "name": "Celkové předpovězené srážky"
+      },
+      "worst_condition": {
+        "name": "Nejhorší předpovězená podmínka"
+      },
+      "min_temp": {
+        "name": "Minimální předpovězená teplota"
+      },
+      "max_temp": {
+        "name": "Maximální předpovězená teplota"
+      },
+      "primary_provider_uptime": {
+        "name": "Dostupnost primárního zdroje"
+      },
+      "snooze_remaining": {
+        "name": "Zbývající čas odložení"
+      },
+      "day_score": {
+        "name": "Skóre dne {day}"
+      },
+      "category": {
+        "name": "Kategorie",
+        "state": {
+          "car": "Auto",
+          "motorcycle": "Motocykl",
+          "bicycle": "Kolo",
+          "boat": "Loď",
+          "rv_camper": "Karavan / Obytné auto",
+          "windows_house": "Okna domu",
+          "solar_panels": "Solární panely",
+          "patio_deck": "Terasa / Veranda",
+          "garden_irrigation": "Zahradní závlaha",
+          "laundry": "Prádlo",
+          "custom": "Vlastní"
+        }
+      },
+      "measured_rain_mm": {
+        "name": "Naměřené srážky"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Práh srážkoměru"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "Označit jako umyté"
+      },
+      "mark_irrigated": {
+        "name": "Označit jako zavlaženo"
+      }
+    }
+  }
+}

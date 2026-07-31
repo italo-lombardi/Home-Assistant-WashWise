@@ -1,0 +1,404 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "天気予報データをもとに、対象物を洗えるかどうかを判断する洗浄アドバイザーを設定します。",
+        "data": {
+          "weather_entities": "天気ソース",
+          "name": "名前",
+          "category": "カテゴリー",
+          "customize_thresholds": "しきい値をカスタマイズ"
+        },
+        "data_description": {
+          "weather_entities": "1つ以上のHA天気エンティティを選択してください。この順序リストの最初に利用可能なソースが使用されます。前のソースが利用できない場合のみ次のソースが試されます。",
+          "name": "このWashWiseインスタンスの表示名。このエントリで作成されるすべてのエンティティの接頭辞として使用されます。",
+          "category": "洗浄対象の種類。カテゴリーごとに適切なデフォルトのしきい値とアイコンが設定されています。ニュートラルなデフォルト値から始めるには「カスタム」を選択してください。",
+          "customize_thresholds": "オンにすると、次の画面でカテゴリーのデフォルト値を上書きできます。オフのままにすると、選択したカテゴリーのプリセット値が使用されます。"
+        }
+      },
+      "thresholds": {
+        "title": "カスタムしきい値",
+        "description": "選択したカテゴリーに付属のデフォルト値を上書きします。これらの値は、どの予報日が洗浄をブロックするか、およびスコアの計算方法を制御します。",
+        "data": {
+          "days": "予報期間（スロット数）",
+          "precip_threshold_mm": "降水量しきい値（mm）",
+          "freeze_check": "氷点下の気温でブロック",
+          "forecast_type": "予報タイプ",
+          "bad_conditions": "洗浄をブロックする気象状況",
+          "precip_weight": "降水量スコアの重み",
+          "freeze_weight": "凍結スコアの重み",
+          "condition_weight": "気象状況スコアの重み"
+        },
+        "data_description": {
+          "days": "分析する予報スロット数。日次予報では1スロット＝1日、時間次予報では1スロット＝1時間です。大きな値ほど多くの気象をキャッチできますが、より保守的な判定になります。",
+          "precip_threshold_mm": "この値を超える1日あたりの総降水量があると洗浄がブロックされます。低い値（0.1）はより厳格で、高い値（1.0）は小雨を許容します。",
+          "freeze_check": "オンにすると、気温が0°Cを下回る予報日は、洗浄水が表面で凍結するのを防ぐために洗浄がブロックされます。",
+          "forecast_type": "日次は1日1エントリ、時間次は1時間1エントリを使用します。時間次はより正確ですが、ソースが時間次データを提供している必要があります。",
+          "bad_conditions": "予報または現在の状況に現れた場合に洗浄をブロックする気象状況コード。",
+          "precip_weight": "予報の雨量が0〜100スコアからどれだけ減点されるか。値が高いほど雨の日をより積極的に減点します。",
+          "freeze_weight": "氷点下の日が0〜100スコアからどれだけ減点されるか。判定をブロックしたまま凍結をスコアリングから除外するには0を設定してください。",
+          "condition_weight": "悪天候（嵐、ひょう、雪）が0〜100スコアからどれだけ減点されるか。重大度は状況ごとに異なります。"
+        }
+      },
+      "irrigation": {
+        "title": "灌漑設定",
+        "description": "庭の灌漑アドバイザー用に雨量計と灌漑プログラムスイッチを設定します。",
+        "data": {
+          "rain_gauge_entity": "雨量計センサー",
+          "rain_gauge_threshold_mm": "雨量しきい値（mm）",
+          "irrigation_switch_entity": "灌漑プログラムスイッチ"
+        },
+        "data_description": {
+          "rain_gauge_entity": "mm単位で実測降水量を報告するセンサーエンティティ（例：気象ステーションの雨量計）。予報のみによる抑制を使用する場合は空のままにしてください。",
+          "rain_gauge_threshold_mm": "雨量計がこの値以上を示すと、灌漑プログラムが自動的に抑制されます。",
+          "irrigation_switch_entity": "灌漑プログラムを起動するスイッチ、input_boolean、またはオートメーション。WashWiseは雨によって灌漑が抑制されるとオフにし、状況が改善されるとオンに戻します。"
+        }
+      },
+      "reconfigure": {
+        "title": "WashWiseの再設定",
+        "description": "このインスタンスの天気ソース、名前、カテゴリー、またはしきい値のカスタマイズを変更します。",
+        "data": {
+          "weather_entities": "天気ソース",
+          "name": "名前",
+          "category": "カテゴリー",
+          "customize_thresholds": "しきい値をカスタマイズ"
+        },
+        "data_description": {
+          "weather_entities": "1つ以上のHA天気エンティティを選択してください。この順序リストの最初に利用可能なソースが使用されます。前のソースが利用できない場合のみ次のソースが試されます。",
+          "name": "このWashWiseインスタンスの表示名。このエントリで作成されるすべてのエンティティの接頭辞として使用されます。",
+          "category": "洗浄対象の種類。カテゴリーごとに適切なデフォルトのしきい値とアイコンが設定されています。ニュートラルなデフォルト値から始めるには「カスタム」を選択してください。",
+          "customize_thresholds": "オンにすると、次の画面でカテゴリーのデフォルト値を上書きできます。オフのままにすると、選択したカテゴリーのプリセット値が使用されます。"
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "天気ソースを少なくとも1つ選択してください。",
+      "weather_unavailable": "選択した天気ソースがすべて現在利用できません。",
+      "duplicate_name": "この名前のWashWiseインスタンスはすでに存在します。",
+      "invalid_category": "選択したカテゴリーは無効です。"
+    },
+    "abort": {
+      "already_configured": "この組み合わせはすでに設定されています。",
+      "reconfigure_successful": "設定が正常に更新されました。"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WashWiseオプション",
+        "description": "編集するセクションを選択してください。",
+        "menu_options": {
+          "providers": "天気ソース",
+          "thresholds": "しきい値",
+          "scoring": "スコアの重み",
+          "conditions": "ブロック条件",
+          "advanced": "詳細設定",
+          "irrigation": "灌漑設定"
+        }
+      },
+      "providers": {
+        "title": "天気ソース",
+        "description": "予報ソースとして使用する天気エンティティを追加、削除、または並べ替えます。",
+        "data": {
+          "weather_entities": "天気ソース"
+        },
+        "data_description": {
+          "weather_entities": "順序が重要です。このリストの最初に利用可能なエンティティが使用されます。前のエンティティが利用できない場合のみ次のエンティティが試されます。"
+        }
+      },
+      "thresholds": {
+        "title": "しきい値",
+        "description": "選択したカテゴリーに付属のデフォルト値を上書きします。",
+        "data": {
+          "days": "予報期間（スロット数）",
+          "precip_threshold_mm": "降水量しきい値（mm）",
+          "freeze_check": "氷点下の気温でブロック",
+          "forecast_type": "予報タイプ"
+        },
+        "data_description": {
+          "days": "分析する予報スロット数。日次予報では1スロット＝1日、時間次予報では1スロット＝1時間です。",
+          "precip_threshold_mm": "この値を超える1日あたりの総降水量があると洗浄がブロックされます。",
+          "freeze_check": "オンにすると、気温が0°Cを下回る予報日は洗浄がブロックされます。",
+          "forecast_type": "日次は1日1エントリ、時間次は1時間1エントリを使用します。時間次はより正確ですが、ソースが時間次データを提供している必要があります。"
+        }
+      },
+      "scoring": {
+        "title": "スコアの重み",
+        "description": "0〜100スコアの計算方法を調整します。重みの合計が100になる必要はありません。各日に独立して適用されます。",
+        "data": {
+          "precip_weight": "降水量スコアの重み",
+          "freeze_weight": "凍結スコアの重み",
+          "condition_weight": "気象状況スコアの重み"
+        },
+        "data_description": {
+          "precip_weight": "予報の雨量がスコアからどれだけ減点されるか。",
+          "freeze_weight": "氷点下の日がスコアからどれだけ減点されるか。",
+          "condition_weight": "悪天候がスコアからどれだけ減点されるか。"
+        }
+      },
+      "conditions": {
+        "title": "ブロック条件",
+        "description": "洗浄をブロックするHAの気象状況コードを選択します。",
+        "data": {
+          "bad_conditions": "洗浄をブロックする気象状況"
+        },
+        "data_description": {
+          "bad_conditions": "これらの状況のいずれかが現在の状況または予報日に現れると、判定がブロックされます。"
+        }
+      },
+      "advanced": {
+        "title": "詳細設定",
+        "description": "あまり使用しない設定。",
+        "data": {
+          "snooze_default_hours": "デフォルトのスヌーズ時間（時間）",
+          "temperature_unit": "温度単位"
+        },
+        "data_description": {
+          "snooze_default_hours": "明示的な時間を指定せずにスヌーズサービスが呼び出された場合に適用されるデフォルトの時間。",
+          "temperature_unit": "予報気温の解釈に使用する単位を上書きします。「自動」はソースの天気エンティティから読み取ります（推奨）。プロバイダーのメタデータが誤っている場合や欠落している場合のみ、摂氏・華氏・ケルビンを選択してください。"
+        }
+      },
+      "irrigation": {
+        "title": "灌漑設定",
+        "description": "雨量計センサーと灌漑プログラムスイッチを設定します。",
+        "data": {
+          "rain_gauge_entity": "雨量計センサー",
+          "rain_gauge_threshold_mm": "雨量しきい値（mm）",
+          "irrigation_switch_entity": "灌漑プログラムスイッチ"
+        },
+        "data_description": {
+          "rain_gauge_entity": "mm単位で実測降水量を報告するセンサーエンティティ。予報のみに頼る場合は空のままにしてください。",
+          "rain_gauge_threshold_mm": "測定雨量がこの値以上になると灌漑が自動的に抑制されます。",
+          "irrigation_switch_entity": "灌漑プログラムを起動するスイッチまたはオートメーション。WashWiseは抑制時にオフにし、状況が改善されるとオンに戻します。"
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "洗浄済みとしてマーク",
+      "description": "選択したWashWiseインスタンスの洗浄ログに洗浄記録を追加します。",
+      "fields": {
+        "entry_id": {
+          "name": "設定",
+          "description": "対象のWashWise設定エントリ。"
+        },
+        "timestamp": {
+          "name": "タイムスタンプ",
+          "description": "洗浄が行われた日時。デフォルトは現在時刻です。"
+        }
+      }
+    },
+    "snooze": {
+      "name": "スヌーズ",
+      "description": "WashWiseの判定を指定した時間数だけ一時停止します。指定しない場合はデフォルトで24時間です。",
+      "fields": {
+        "entry_id": {
+          "name": "設定",
+          "description": "対象のWashWise設定エントリ。"
+        },
+        "hours": {
+          "name": "時間数",
+          "description": "スヌーズする時間数（最小1）。デフォルトは24です。"
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "スヌーズを解除",
+      "description": "有効なスヌーズをキャンセルします。",
+      "fields": {
+        "entry_id": {
+          "name": "設定",
+          "description": "対象のWashWise設定エントリ。"
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "灌漑スイッチを設定",
+      "description": "灌漑プログラムスイッチの状態を手動で上書きします。",
+      "fields": {
+        "entry_id": {
+          "name": "設定",
+          "description": "対象のWashWise garden_irrigation設定エントリ。"
+        },
+        "state": {
+          "name": "状態",
+          "description": "灌漑スイッチをオンまたはオフにします。"
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "自動車",
+        "motorcycle": "オートバイ",
+        "bicycle": "自転車",
+        "boat": "ボート",
+        "rv_camper": "RV・キャンピングカー",
+        "windows_house": "住宅の窓",
+        "laundry": "洗濯物",
+        "patio_deck": "パティオ・デッキ",
+        "solar_panels": "ソーラーパネル",
+        "garden_irrigation": "庭の灌漑",
+        "custom": "カスタム"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "日次",
+        "hourly": "時間次"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "雷雨",
+        "rainy": "雨",
+        "pouring": "大雨",
+        "snowy": "雪",
+        "snowy-rainy": "みぞれ",
+        "hail": "ひょう",
+        "exceptional": "異常気象"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "自動（ソースエンティティを使用）",
+        "celsius": "摂氏（°C）",
+        "fahrenheit": "華氏（°F）",
+        "kelvin": "ケルビン（K）"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "洗浄可能"
+      },
+      "day_ok": {
+        "name": "{day}日目 OK"
+      },
+      "freeze_risk": {
+        "name": "予報内の凍結リスク"
+      },
+      "irrigation_suppressed": {
+        "name": "灌漑抑制中"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "予報が灌漑をブロック"
+      },
+      "irrigation_switch_state": {
+        "name": "灌漑スイッチの状態"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "洗浄スコア"
+      },
+      "reason": {
+        "name": "理由",
+        "state": {
+          "clear": "晴れ",
+          "rain": "雨",
+          "freeze": "凍結",
+          "snow": "雪",
+          "bad_condition": "悪天候",
+          "bad_current_condition": "現在の悪天候",
+          "dirty_now": "表面が汚れています — 今すぐ洗浄",
+          "snoozed": "スヌーズ中",
+          "unavailable": "利用不可"
+        }
+      },
+      "wash_status": {
+        "name": "洗浄ステータス",
+        "state": {
+          "ok_clear": "可 — 晴れ",
+          "ok_dirty_now": "可 — 表面が汚れています — 今すぐ洗浄",
+          "unknown_clear": "不明",
+          "no_rain": "不可 — 雨",
+          "no_freeze": "不可 — 凍結",
+          "no_snow": "不可 — 雪",
+          "no_bad_condition": "不可 — 悪天候",
+          "no_bad_current_condition": "不可 — 現在の悪天候",
+          "snoozed": "スヌーズ中"
+        }
+      },
+      "days_until_wash": {
+        "name": "洗浄可能日まであと何日"
+      },
+      "days_since_wash": {
+        "name": "最後の洗浄からの日数"
+      },
+      "last_washed": {
+        "name": "最終洗浄日時"
+      },
+      "wash_count_30d": {
+        "name": "洗浄回数（30日間）"
+      },
+      "active_provider": {
+        "name": "アクティブなプロバイダー"
+      },
+      "last_update": {
+        "name": "最終更新"
+      },
+      "days_analyzed": {
+        "name": "分析日数"
+      },
+      "hours_analyzed": {
+        "name": "分析時間数"
+      },
+      "precip_total_mm": {
+        "name": "予報降水量合計"
+      },
+      "worst_condition": {
+        "name": "最も深刻な予報状況"
+      },
+      "min_temp": {
+        "name": "予報最低気温"
+      },
+      "max_temp": {
+        "name": "予報最高気温"
+      },
+      "primary_provider_uptime": {
+        "name": "主要プロバイダーの稼働時間"
+      },
+      "snooze_remaining": {
+        "name": "スヌーズ残り時間"
+      },
+      "day_score": {
+        "name": "{day}日目のスコア"
+      },
+      "category": {
+        "name": "カテゴリー",
+        "state": {
+          "car": "自動車",
+          "motorcycle": "オートバイ",
+          "bicycle": "自転車",
+          "boat": "ボート",
+          "rv_camper": "RV・キャンピングカー",
+          "windows_house": "住宅の窓",
+          "solar_panels": "ソーラーパネル",
+          "patio_deck": "パティオ・デッキ",
+          "garden_irrigation": "庭の灌漑",
+          "laundry": "洗濯物",
+          "custom": "カスタム"
+        }
+      },
+      "measured_rain_mm": {
+        "name": "実測降水量"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "雨量計しきい値"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "洗浄済みとしてマーク"
+      },
+      "mark_irrigated": {
+        "name": "灌漑済みとしてマーク"
+      }
+    }
+  }
+}

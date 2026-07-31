@@ -1,0 +1,404 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WashWise",
+        "description": "날씨 예보 데이터를 기반으로 표면을 세척할 수 있는지 판단하는 세척 도우미를 설정합니다.",
+        "data": {
+          "weather_entities": "날씨 소스",
+          "name": "이름",
+          "category": "카테고리",
+          "customize_thresholds": "임계값 사용자 지정"
+        },
+        "data_description": {
+          "weather_entities": "하나 이상의 HA 날씨 엔티티를 선택하세요. 이 순서 목록에서 첫 번째로 사용 가능한 소스가 사용되며, 이전 소스를 사용할 수 없는 경우에만 다음 소스를 시도합니다.",
+          "name": "이 WashWise 인스턴스의 표시 이름입니다. 이 항목에서 생성되는 모든 엔티티의 접두사로 사용됩니다.",
+          "category": "세척할 대상입니다. 각 카테고리에는 적절한 기본 임계값과 기본 아이콘이 제공됩니다. 중립적인 기본값으로 시작하려면 사용자 지정을 선택하세요.",
+          "customize_thresholds": "켜면 다음 화면에서 카테고리 기본값을 재정의할 수 있습니다. 선택한 카테고리의 사전 설정 값을 사용하려면 끄세요."
+        }
+      },
+      "thresholds": {
+        "title": "사용자 지정 임계값",
+        "description": "선택한 카테고리에 기본 제공되는 기본값을 재정의합니다. 이 값은 어떤 예보 일자가 세척을 차단하는지와 점수 계산 방식을 제어합니다.",
+        "data": {
+          "days": "예보 범위 (슬롯)",
+          "precip_threshold_mm": "강수 임계값 (mm)",
+          "freeze_check": "영하 온도 시 차단",
+          "forecast_type": "예보 유형",
+          "bad_conditions": "차단 날씨 조건",
+          "precip_weight": "강수 점수 가중치",
+          "freeze_weight": "동결 점수 가중치",
+          "condition_weight": "날씨 조건 점수 가중치"
+        },
+        "data_description": {
+          "days": "분석할 예보 슬롯 수입니다. 일별 예보에서는 슬롯 1개 = 1일, 시간별에서는 슬롯 1개 = 1시간입니다. 값이 클수록 더 많은 날씨를 포착하지만 더 보수적인 판정을 냅니다.",
+          "precip_threshold_mm": "이 값을 초과하는 일일 총 강수량은 세척을 차단합니다. 낮은 값(0.1)은 더 엄격하고, 높은 값(1.0)은 가벼운 이슬비를 허용합니다.",
+          "freeze_check": "켜면 온도가 0°C 미만인 예보 일자는 표면의 세척수가 얼 수 있으므로 세척을 차단합니다.",
+          "forecast_type": "일별은 하루 1개 항목을 사용하고, 시간별은 시간당 1개 항목을 사용합니다. 시간별이 더 정확하지만 소스가 시간별 데이터를 제공해야 합니다.",
+          "bad_conditions": "예보나 현재 날씨 조건에 나타날 때 세척을 차단하는 날씨 조건 코드입니다.",
+          "precip_weight": "예보의 강수량이 0–100 점수에서 얼마나 감점되는지를 나타냅니다. 값이 높을수록 비 오는 날의 감점이 커집니다.",
+          "freeze_weight": "영하의 날이 0–100 점수에서 얼마나 감점되는지를 나타냅니다. 판정은 차단하되 점수에서 동결을 무시하려면 0으로 설정하세요.",
+          "condition_weight": "나쁜 날씨 조건(폭풍, 우박, 눈)이 0–100 점수에서 얼마나 감점되는지를 나타냅니다. 심각도는 조건별로 다릅니다."
+        }
+      },
+      "irrigation": {
+        "title": "관개 설정",
+        "description": "정원 관개 도우미의 우량계와 관개 프로그램 스위치를 설정합니다.",
+        "data": {
+          "rain_gauge_entity": "우량계 센서",
+          "rain_gauge_threshold_mm": "강수 임계값 (mm)",
+          "irrigation_switch_entity": "관개 프로그램 스위치"
+        },
+        "data_description": {
+          "rain_gauge_entity": "mm 단위로 실측 강수량을 보고하는 센서 엔티티입니다(예: 기상 관측소 우량계). 예보만으로 억제하려면 비워두세요.",
+          "rain_gauge_threshold_mm": "우량계 측정값이 이 값 이상이면 관개 프로그램이 자동으로 억제됩니다.",
+          "irrigation_switch_entity": "관개 프로그램을 시작하는 스위치, input_boolean 또는 자동화입니다. WashWise는 강수로 관개가 억제되면 끄고, 조건이 맑아지면 다시 켭니다."
+        }
+      },
+      "reconfigure": {
+        "title": "WashWise 재설정",
+        "description": "이 인스턴스의 날씨 소스, 이름, 카테고리 또는 임계값 사용자 지정을 변경합니다.",
+        "data": {
+          "weather_entities": "날씨 소스",
+          "name": "이름",
+          "category": "카테고리",
+          "customize_thresholds": "임계값 사용자 지정"
+        },
+        "data_description": {
+          "weather_entities": "하나 이상의 HA 날씨 엔티티를 선택하세요. 이 순서 목록에서 첫 번째로 사용 가능한 소스가 사용되며, 이전 소스를 사용할 수 없는 경우에만 다음 소스를 시도합니다.",
+          "name": "이 WashWise 인스턴스의 표시 이름입니다. 이 항목에서 생성되는 모든 엔티티의 접두사로 사용됩니다.",
+          "category": "세척할 대상입니다. 각 카테고리에는 적절한 기본 임계값과 기본 아이콘이 제공됩니다. 중립적인 기본값으로 시작하려면 사용자 지정을 선택하세요.",
+          "customize_thresholds": "켜면 다음 화면에서 카테고리 기본값을 재정의할 수 있습니다. 선택한 카테고리의 사전 설정 값을 사용하려면 끄세요."
+        }
+      }
+    },
+    "error": {
+      "no_weather_entity": "날씨 소스를 하나 이상 선택하세요.",
+      "weather_unavailable": "선택한 날씨 소스를 현재 모두 사용할 수 없습니다.",
+      "duplicate_name": "이 이름의 WashWise 인스턴스가 이미 존재합니다.",
+      "invalid_category": "선택한 카테고리가 유효하지 않습니다."
+    },
+    "abort": {
+      "already_configured": "이 조합은 이미 설정되어 있습니다.",
+      "reconfigure_successful": "설정이 성공적으로 업데이트되었습니다."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WashWise 옵션",
+        "description": "편집할 섹션을 선택하세요.",
+        "menu_options": {
+          "providers": "날씨 소스",
+          "thresholds": "임계값",
+          "scoring": "점수 가중치",
+          "conditions": "차단 조건",
+          "advanced": "고급",
+          "irrigation": "관개 설정"
+        }
+      },
+      "providers": {
+        "title": "날씨 소스",
+        "description": "예보 소스로 사용되는 날씨 엔티티를 추가, 제거 또는 순서를 변경합니다.",
+        "data": {
+          "weather_entities": "날씨 소스"
+        },
+        "data_description": {
+          "weather_entities": "순서가 중요합니다. 목록에서 첫 번째로 사용 가능한 엔티티가 사용되며, 이전 것을 사용할 수 없는 경우에만 다음 것을 시도합니다."
+        }
+      },
+      "thresholds": {
+        "title": "임계값",
+        "description": "선택한 카테고리에 기본 제공되는 기본값을 재정의합니다.",
+        "data": {
+          "days": "예보 범위 (슬롯)",
+          "precip_threshold_mm": "강수 임계값 (mm)",
+          "freeze_check": "영하 온도 시 차단",
+          "forecast_type": "예보 유형"
+        },
+        "data_description": {
+          "days": "분석할 예보 슬롯 수입니다. 일별 예보에서는 슬롯 1개 = 1일, 시간별에서는 슬롯 1개 = 1시간입니다.",
+          "precip_threshold_mm": "이 값을 초과하는 일일 총 강수량은 세척을 차단합니다.",
+          "freeze_check": "켜면 온도가 0°C 미만인 예보 일자는 세척을 차단합니다.",
+          "forecast_type": "일별은 하루 1개 항목을 사용하고, 시간별은 시간당 1개 항목을 사용합니다. 시간별이 더 정확하지만 소스가 시간별 데이터를 제공해야 합니다."
+        }
+      },
+      "scoring": {
+        "title": "점수 가중치",
+        "description": "0–100 점수 계산 방식을 조정합니다. 가중치의 합이 100일 필요는 없으며, 각 날짜에 독립적으로 적용됩니다.",
+        "data": {
+          "precip_weight": "강수 점수 가중치",
+          "freeze_weight": "동결 점수 가중치",
+          "condition_weight": "날씨 조건 점수 가중치"
+        },
+        "data_description": {
+          "precip_weight": "예보의 강수량이 점수에서 얼마나 감점되는지를 나타냅니다.",
+          "freeze_weight": "영하의 날이 점수에서 얼마나 감점되는지를 나타냅니다.",
+          "condition_weight": "나쁜 날씨 조건이 점수에서 얼마나 감점되는지를 나타냅니다."
+        }
+      },
+      "conditions": {
+        "title": "차단 조건",
+        "description": "세척을 차단해야 하는 HA 날씨 조건 코드를 선택합니다.",
+        "data": {
+          "bad_conditions": "차단 날씨 조건"
+        },
+        "data_description": {
+          "bad_conditions": "이 조건 중 하나라도 현재 날씨 조건 또는 예보 일자에 나타나면 판정이 차단됩니다."
+        }
+      },
+      "advanced": {
+        "title": "고급",
+        "description": "덜 자주 사용하는 설정입니다.",
+        "data": {
+          "snooze_default_hours": "기본 일시 중지 시간 (시간)",
+          "temperature_unit": "온도 단위"
+        },
+        "data_description": {
+          "snooze_default_hours": "명시적인 시간 없이 일시 중지 서비스가 호출될 때 적용되는 기본 시간입니다.",
+          "temperature_unit": "예보 온도 해석에 사용되는 단위를 재정의합니다. 자동은 소스 날씨 엔티티에서 읽어옵니다(권장). 공급자의 메타데이터가 잘못되었거나 없는 경우에만 섭씨 / 화씨 / 켈빈을 선택하세요."
+        }
+      },
+      "irrigation": {
+        "title": "관개 설정",
+        "description": "우량계 센서와 관개 프로그램 스위치를 설정합니다.",
+        "data": {
+          "rain_gauge_entity": "우량계 센서",
+          "rain_gauge_threshold_mm": "강수 임계값 (mm)",
+          "irrigation_switch_entity": "관개 프로그램 스위치"
+        },
+        "data_description": {
+          "rain_gauge_entity": "mm 단위로 실측 강수량을 보고하는 센서 엔티티입니다. 예보만 사용하려면 비워두세요.",
+          "rain_gauge_threshold_mm": "실측 강수량이 이 값 이상이면 관개가 자동으로 억제됩니다.",
+          "irrigation_switch_entity": "관개 프로그램을 시작하는 스위치 또는 자동화입니다. WashWise는 억제 시 끄고, 조건이 맑아지면 다시 켭니다."
+        }
+      }
+    }
+  },
+  "services": {
+    "mark_washed": {
+      "name": "세척 완료 표시",
+      "description": "선택한 WashWise 인스턴스의 세척 로그에 세척 항목을 추가합니다.",
+      "fields": {
+        "entry_id": {
+          "name": "설정",
+          "description": "대상 WashWise 설정 항목입니다."
+        },
+        "timestamp": {
+          "name": "타임스탬프",
+          "description": "세척이 발생한 시간입니다. 기본값은 현재 시간입니다."
+        }
+      }
+    },
+    "snooze": {
+      "name": "일시 중지",
+      "description": "WashWise 판정을 지정한 시간 동안 일시 중지합니다. 지정하지 않으면 기본값은 24시간입니다.",
+      "fields": {
+        "entry_id": {
+          "name": "설정",
+          "description": "대상 WashWise 설정 항목입니다."
+        },
+        "hours": {
+          "name": "시간",
+          "description": "일시 중지할 시간 수(최소 1). 기본값은 24입니다."
+        }
+      }
+    },
+    "clear_snooze": {
+      "name": "일시 중지 해제",
+      "description": "활성화된 일시 중지를 취소합니다.",
+      "fields": {
+        "entry_id": {
+          "name": "설정",
+          "description": "대상 WashWise 설정 항목입니다."
+        }
+      }
+    },
+    "set_irrigation_switch": {
+      "name": "관개 스위치 설정",
+      "description": "관개 프로그램 스위치 상태를 수동으로 재정의합니다.",
+      "fields": {
+        "entry_id": {
+          "name": "설정",
+          "description": "대상 WashWise garden_irrigation 설정 항목입니다."
+        },
+        "state": {
+          "name": "상태",
+          "description": "관개 스위치를 켜거나 끕니다."
+        }
+      }
+    }
+  },
+  "selector": {
+    "category": {
+      "options": {
+        "car": "자동차",
+        "motorcycle": "오토바이",
+        "bicycle": "자전거",
+        "boat": "보트",
+        "rv_camper": "RV / 캠퍼",
+        "windows_house": "집 창문",
+        "laundry": "세탁",
+        "patio_deck": "파티오 / 데크",
+        "solar_panels": "태양광 패널",
+        "garden_irrigation": "정원 관개",
+        "custom": "사용자 지정"
+      }
+    },
+    "forecast_type": {
+      "options": {
+        "daily": "일별",
+        "hourly": "시간별"
+      }
+    },
+    "bad_condition": {
+      "options": {
+        "lightning-rainy": "뇌우를 동반한 비",
+        "rainy": "비",
+        "pouring": "폭우",
+        "snowy": "눈",
+        "snowy-rainy": "눈과 비",
+        "hail": "우박",
+        "exceptional": "이상 기상"
+      }
+    },
+    "temperature_unit": {
+      "options": {
+        "auto": "자동 (소스 엔티티 사용)",
+        "celsius": "섭씨 (°C)",
+        "fahrenheit": "화씨 (°F)",
+        "kelvin": "켈빈 (K)"
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "can_wash": {
+        "name": "세척 가능"
+      },
+      "day_ok": {
+        "name": "{day}일차 적합"
+      },
+      "freeze_risk": {
+        "name": "예보 내 동결 위험"
+      },
+      "irrigation_suppressed": {
+        "name": "관개 억제됨"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "예보가 관개를 차단함"
+      },
+      "irrigation_switch_state": {
+        "name": "관개 스위치 상태"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "세척 점수"
+      },
+      "reason": {
+        "name": "이유",
+        "state": {
+          "clear": "맑음",
+          "rain": "비",
+          "freeze": "동결",
+          "snow": "눈",
+          "bad_condition": "나쁜 날씨",
+          "bad_current_condition": "현재 날씨 불량",
+          "dirty_now": "표면 오염 — 지금 세척하세요",
+          "snoozed": "일시 중지됨",
+          "unavailable": "사용 불가"
+        }
+      },
+      "wash_status": {
+        "name": "세척 상태",
+        "state": {
+          "ok_clear": "가능 — 맑음",
+          "ok_dirty_now": "가능 — 표면 오염 — 지금 세척하세요",
+          "unknown_clear": "알 수 없음",
+          "no_rain": "불가 — 비",
+          "no_freeze": "불가 — 동결",
+          "no_snow": "불가 — 눈",
+          "no_bad_condition": "불가 — 나쁜 날씨",
+          "no_bad_current_condition": "불가 — 현재 날씨 불량",
+          "snoozed": "일시 중지됨"
+        }
+      },
+      "days_until_wash": {
+        "name": "세척 가능까지 남은 일수"
+      },
+      "days_since_wash": {
+        "name": "마지막 세척 후 경과 일수"
+      },
+      "last_washed": {
+        "name": "마지막 세척 일시"
+      },
+      "wash_count_30d": {
+        "name": "세척 횟수 (30일)"
+      },
+      "active_provider": {
+        "name": "활성 공급자"
+      },
+      "last_update": {
+        "name": "마지막 업데이트"
+      },
+      "days_analyzed": {
+        "name": "분석된 일수"
+      },
+      "hours_analyzed": {
+        "name": "분석된 시간 수"
+      },
+      "precip_total_mm": {
+        "name": "예보 총 강수량"
+      },
+      "worst_condition": {
+        "name": "예보 내 최악의 날씨 조건"
+      },
+      "min_temp": {
+        "name": "예보 최저 기온"
+      },
+      "max_temp": {
+        "name": "예보 최고 기온"
+      },
+      "primary_provider_uptime": {
+        "name": "주 공급자 가동 시간"
+      },
+      "snooze_remaining": {
+        "name": "일시 중지 잔여 시간"
+      },
+      "day_score": {
+        "name": "{day}일차 점수"
+      },
+      "category": {
+        "name": "카테고리",
+        "state": {
+          "car": "자동차",
+          "motorcycle": "오토바이",
+          "bicycle": "자전거",
+          "boat": "보트",
+          "rv_camper": "RV / 캠퍼",
+          "windows_house": "집 창문",
+          "solar_panels": "태양광 패널",
+          "patio_deck": "파티오 / 데크",
+          "garden_irrigation": "정원 관개",
+          "laundry": "세탁",
+          "custom": "사용자 지정"
+        }
+      },
+      "measured_rain_mm": {
+        "name": "실측 강수량"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "우량계 임계값"
+      }
+    },
+    "button": {
+      "mark_washed": {
+        "name": "세척 완료 표시"
+      },
+      "mark_irrigated": {
+        "name": "관개 완료 표시"
+      }
+    }
+  }
+}
