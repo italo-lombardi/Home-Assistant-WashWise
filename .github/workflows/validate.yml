@@ -37,7 +37,7 @@ jobs:
           python-version: "3.14"
       - name: Ruff check
         run: |
-          pip install ruff
+          pip install ruff==0.16.1
           ruff check
           ruff format --check
 
