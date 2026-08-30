@@ -324,6 +324,7 @@ Other Home Assistant integrations by the same author:
 | [Entity Availability](https://github.com/italo-lombardi/Home-Assistant-EntityAvailability) | Monitor entity availability by group — tracks offline entities, availability history, and degraded states with a custom dashboard card |
 | [Entity Guard](https://github.com/italo-lombardi/Home-Assistant-EntityGuard) | Enforce entity state via declarative rules — replaces hand-written auto-off / auto-lock / kill-switch automations |
 | [Entity Distance](https://github.com/italo-lombardi/Home-Assistant-EntityDistance) | Tracks distance between 2–5 HA entities (persons, devices, zones) — direction, closing speed, ETA, proximity, group sensors |
+| [Entity State Tracker](https://github.com/italo-lombardi/Home-Assistant-EntityStateTracker) | Tracks time-in-state and transitions across time frames — per-state breakdowns and compliance scoring, with a custom card |
 | [Fuel Compare](https://github.com/italo-lombardi/Home-Assistant-FuelCompare) | Live fuel prices from 36 providers across 30 countries |
 | [DashSnap](https://github.com/italo-lombardi/DashSnap) | Record or screenshot any web page via headless Chromium — HA dashboards, Grafana, public pages; HA Add-on or Docker |
 | [DashSnap Integration](https://github.com/italo-lombardi/DashSnap-Integration) | Trigger DashSnap recordings and screenshots from HA automations and scripts |
