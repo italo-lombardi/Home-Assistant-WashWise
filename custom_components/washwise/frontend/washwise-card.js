@@ -359,6 +359,7 @@ const DEFAULT_CONFIG = {
   diagnostics_open: false,
   compact_mode: false,
   show_actions: false,
+  show_last_washed: false,
   mode: "wash",
 };
 
@@ -406,6 +407,34 @@ function shortDay(iso) {
 function prettyReason(key) {
   if (!key) return "—";
   return REASON_MAP[key] ?? key;
+}
+
+// Humanise a HA weather condition key (e.g. "lightning-rainy" → "Lightning rainy").
+function prettyCondition(key) {
+  if (!key) return "—";
+  return String(key)
+    .replace(/[-_]+/g, " ")
+    .replace(/^\w/, (c) => c.toUpperCase());
+}
+
+// Humanise a past ISO timestamp into a coarse "… ago" string (or "just now").
+// Returns null for a missing/unparseable/future value so the caller can hide
+// the row. Buckets mirror the snooze formatter: weeks, days, hours, minutes.
+function timeAgo(iso) {
+  if (!iso) return null;
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return null;
+  const secs = (Date.now() - then) / 1000;
+  if (secs < 0) return null;
+  if (secs < 60) return "just now";
+  const mins = Math.floor(secs / 60);
+  if (mins < 60) return `${mins} minute${mins === 1 ? "" : "s"} ago`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} day${days === 1 ? "" : "s"} ago`;
+  const weeks = Math.floor(days / 7);
+  return `${weeks} week${weeks === 1 ? "" : "s"} ago`;
 }
 
 function _stripEntitySuffix(name) {
@@ -500,6 +529,7 @@ class WashWiseCard extends LitElement {
     if (cfg.show_forecast_strip) size += 2;
     if (cfg.show_diagnostics) size += 1;
     if (cfg.show_actions) size += 1;
+    if (cfg.show_last_washed) size += 1;
     return size;
   }
 
@@ -510,10 +540,11 @@ class WashWiseCard extends LitElement {
     if (!oldHass) return true;
     const id = this._config.entity;
     if (oldHass.states?.[id] !== this.hass.states?.[id]) return true;
-    const snoozeSensorId = id
-      .replace("binary_sensor.", "sensor.")
-      .replace(/_can_wash$/, "_snooze_remaining");
-    return oldHass.states?.[snoozeSensorId] !== this.hass.states?.[snoozeSensorId];
+    const base = id.replace("binary_sensor.", "sensor.").replace(/_can_wash$/, "");
+    const snoozeSensorId = `${base}_snooze_remaining`;
+    if (oldHass.states?.[snoozeSensorId] !== this.hass.states?.[snoozeSensorId]) return true;
+    const lastWashedId = `${base}_last_washed`;
+    return oldHass.states?.[lastWashedId] !== this.hass.states?.[lastWashedId];
   }
 
   render() {
@@ -559,6 +590,7 @@ class WashWiseCard extends LitElement {
             : nothing}
           ${cfg.show_diagnostics && !snoozed ? this._renderDiagnostics(stateObj, cfg.diagnostics_open) : nothing}
           ${cfg.show_actions ? this._renderActions(stateObj, snoozed, isIrrigation) : nothing}
+          ${cfg.show_last_washed ? this._renderLastWashed() : nothing}
         </div>
       </ha-card>
     `;
@@ -636,6 +668,28 @@ class WashWiseCard extends LitElement {
       <div class="ww-row">
         <span>Reason:</span>
         <strong>${reasonLabel}</strong>
+      </div>
+    `;
+  }
+
+  // Last-washed footer. Reads the integration's own last_washed timestamp
+  // sensor (derived from the can_wash entity id, same trick as snooze), shows a
+  // coarse "… ago" with the absolute time as a tooltip. Hidden when there is no
+  // wash recorded yet (sensor unknown/unavailable or no parseable timestamp).
+  _renderLastWashed() {
+    const id = this._config?.entity;
+    if (!id) return nothing;
+    const sensorId = id
+      .replace("binary_sensor.", "sensor.")
+      .replace(/_can_wash$/, "_last_washed");
+    const iso = this.hass?.states?.[sensorId]?.state;
+    const rel = timeAgo(iso);
+    if (!rel) return nothing;
+    const exact = new Date(iso).toLocaleString();
+    return html`
+      <div class="ww-row ww-last-washed" title=${exact}>
+        <span>🧼 Last washed:</span>
+        <strong>${rel}</strong>
       </div>
     `;
   }
@@ -725,14 +779,27 @@ class WashWiseCard extends LitElement {
 
   _renderDiagnostics(stateObj, open) {
     const a = stateObj.attributes;
+    const details = a.decision_details ?? {};
+    const daysUntil = a.days_until_wash ?? details.days_until_wash;
+    const blockingCount = Array.isArray(details.blocking_days)
+      ? details.blocking_days.length
+      : null;
     const rows = [
-      ["Active provider", a.active_provider],
+      ["Verdict reason", a.reason ? prettyReason(a.reason) : null],
+      ["Score", typeof a.score === "number" ? `${a.score}/100` : null],
+      [
+        "Days until wash",
+        daysUntil === 0 ? "Today" : typeof daysUntil === "number" ? `${daysUntil}` : null,
+      ],
       ["Days analyzed", a.days_analyzed],
+      ["Blocking days", typeof blockingCount === "number" ? `${blockingCount}` : null],
       ["Total precip", typeof a.precip_total_mm === "number" ? `${a.precip_total_mm} mm` : null],
+      ["Max wind", typeof a.max_wind_kmh === "number" ? `${a.max_wind_kmh} km/h` : null],
       ["Freeze risk", typeof a.freeze_risk === "boolean" ? (a.freeze_risk ? "Yes" : "No") : null],
-      ["Worst condition", a.worst_condition],
+      ["Worst condition", a.worst_condition ? prettyCondition(a.worst_condition) : null],
       ["Min temp", typeof a.min_temp === "number" ? `${a.min_temp} °C` : null],
       ["Max temp", typeof a.max_temp === "number" ? `${a.max_temp} °C` : null],
+      ["Weather source", a.active_weather_entity],
     ];
     const populated = rows.filter(([, v]) => v !== undefined && v !== null && v !== "");
     return html`
@@ -1171,6 +1238,8 @@ class WashWiseCardEditor extends LitElement {
           "Tighten paddings and typography to fit denser dashboards.", false)}
         ${this._renderToggle("show_actions", "Show action buttons",
           "Append tappable Mark washed / Snooze / Clear snooze buttons wired to the WashWise services.", false)}
+        ${this._renderToggle("show_last_washed", "Show last washed",
+          "Append a footer showing how long ago the surface was last marked washed (e.g. \"3 days ago\"). Hidden until the first wash is recorded.", false)}
       </div>
     `;
   }

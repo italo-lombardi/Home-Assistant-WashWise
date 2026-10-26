@@ -252,10 +252,15 @@ show_reason: true
 show_forecast_strip: true
 show_diagnostics: true
 diagnostics_open: false       # start diagnostics section expanded
+show_actions: false           # tappable Mark washed / Snooze / Clear snooze row
+show_last_washed: false       # footer: "Last washed: 3 days ago"
 compact_mode: false
 ```
 
-All options are configurable via the visual card editor.
+All options are configurable via the visual card editor. The diagnostics panel
+surfaces the verdict reason, score, days-until-wash, days-analysed, blocking-day
+count, total precipitation, peak wind, freeze risk, worst condition, min/max
+temperature, and the active weather source (whichever values are available).
 
 ---
 

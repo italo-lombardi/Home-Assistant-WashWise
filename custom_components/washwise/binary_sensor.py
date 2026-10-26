@@ -33,6 +33,7 @@ from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
+    BAD_CONDITION_SEVERITY,
     CATEGORY_PRESETS,
     CONF_BAD_CONDITIONS,
     CONF_CATEGORY,
@@ -52,6 +53,50 @@ from .const import (
 )
 from .coordinator import WashWiseCoordinator
 from .device import device_info
+
+
+def _forecast_aggregates(summary: list[dict[str, Any]]) -> dict[str, Any]:
+    """Derive aggregate diagnostics from the per-day forecast summary.
+
+    Returns totals/extremes over the analysed horizon for dashboards:
+    ``precip_total_mm`` (sum), ``min_temp`` / ``max_temp`` (°C extremes),
+    ``max_wind_kmh`` (peak), ``worst_condition`` (highest-severity bad
+    condition seen, by :data:`BAD_CONDITION_SEVERITY`), and ``freeze_risk``
+    (any day freeze-blocked). Keys whose value cannot be computed (all days
+    missing that field) are omitted so the card's ``None``/absent filter hides
+    them rather than showing a blank row. An empty summary returns ``{}``.
+    """
+    if not summary:
+        return {}
+
+    out: dict[str, Any] = {}
+
+    precips = [
+        d["precipitation"] for d in summary if isinstance(d.get("precipitation"), (int, float))
+    ]
+    if precips:
+        out["precip_total_mm"] = round(sum(precips), 1)
+
+    mins = [d["temp_min"] for d in summary if isinstance(d.get("temp_min"), (int, float))]
+    if mins:
+        out["min_temp"] = round(min(mins), 1)
+
+    maxes = [d["temp_max"] for d in summary if isinstance(d.get("temp_max"), (int, float))]
+    if maxes:
+        out["max_temp"] = round(max(maxes), 1)
+
+    winds = [d["wind_speed"] for d in summary if isinstance(d.get("wind_speed"), (int, float))]
+    if winds:
+        out["max_wind_kmh"] = round(max(winds), 1)
+
+    # Worst condition = the bad condition with the highest severity seen.
+    bad = [d.get("condition") for d in summary if d.get("condition") in BAD_CONDITION_SEVERITY]
+    if bad:
+        out["worst_condition"] = max(bad, key=lambda c: BAD_CONDITION_SEVERITY[c])
+
+    out["freeze_risk"] = any("freeze" in (d.get("blockers") or []) for d in summary)
+
+    return out
 
 
 def _resolve_thresholds(entry: ConfigEntry) -> dict[str, Any]:
@@ -175,8 +220,9 @@ class WashWiseCanWashBinarySensor(_WashWiseBinarySensorBase):
         decision = self.coordinator.data
         if decision is None:
             return {}
+        summary = list(decision.forecast_summary or [])
         return {
-            "forecast_summary": list(decision.forecast_summary or []),
+            "forecast_summary": summary,
             "decision_details": {
                 "can_wash": bool(decision.can_wash),
                 "score": int(decision.score),
@@ -188,9 +234,15 @@ class WashWiseCanWashBinarySensor(_WashWiseBinarySensorBase):
                 ],
             },
             "days_analyzed": int(decision.days_analyzed),
+            "days_until_wash": decision.days_until_wash,
             "score": int(decision.score),
             "reason": decision.reason,
             "active_weather_entity": self.coordinator.active_weather_entity,
+            # Aggregate diagnostics derived from the per-day forecast summary so
+            # dashboards (and the card's diagnostics block) can show totals and
+            # extremes without re-walking the forecast. All ``None`` when the
+            # forecast is empty (no-data verdict) — callers omit absent values.
+            **_forecast_aggregates(summary),
         }
 
 
