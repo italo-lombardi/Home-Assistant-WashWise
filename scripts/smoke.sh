@@ -265,6 +265,32 @@ code=$(curl -s -o /dev/null -w '%{http_code}' "${AUTH[@]}" "${JSON[@]}" \
   -d "{\"entity_id\":\"$CAN_WASH\",\"entry_id\":\"x\"}" "$HA/api/services/washwise/snooze")
 [ "$code" = "400" ] && pass "entry_id+entity_id together → 400 (vol.Exclusive)" || fail "both targets → $code (want 400)"
 
+# --- 9. Download diagnostics endpoint ----------------------------------------
+# HA serves config-entry diagnostics at /api/diagnostics/config_entry/<entry_id>.
+# Assert 200 + a JSON body carrying the expected top-level keys for Smoke Car.
+if [ -n "$ENTRY_ID" ]; then
+  diag=$(api "$HA/api/diagnostics/config_entry/$ENTRY_ID")
+  echo "$diag" | python3 -c "
+import json, sys
+try:
+    d = json.load(sys.stdin)
+except Exception:
+    print('  ✗ diagnostics: non-JSON response'); sys.exit(1)
+# HA wraps the payload under data.data; unwrap if present.
+p = d.get('data', {}).get('data', d.get('data', d))
+need = ['meta', 'config', 'decision', 'coordinator', 'providers', 'wash_state', 'store']
+missing = [k for k in need if k not in p]
+if missing:
+    print(f'  ✗ diagnostics: missing top-level keys {missing}'); sys.exit(1)
+provs = [x.get('entity_id') for x in p.get('providers', [])]
+ok = p['meta'].get('category') and isinstance(p.get('providers'), list) and provs
+print(f'  {\"✓\" if ok else \"✗\"} diagnostics endpoint: category={p[\"meta\"].get(\"category\")}, providers={provs}')
+sys.exit(0 if ok else 1)
+" || FAILS=$((FAILS + 1))
+else
+  fail "diagnostics: no entry_id to query"
+fi
+
 # --- cleanup ------------------------------------------------------------------
 for eid in "${CREATED_ENTRY_IDS[@]}"; do
   curl -s -o /dev/null "${AUTH[@]}" -X DELETE "$HA/api/config/config_entries/entry/$eid"

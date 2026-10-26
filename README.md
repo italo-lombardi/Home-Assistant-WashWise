@@ -276,6 +276,22 @@ If the provider uses a precipitation or temperature key not in the built-in fall
 
 ---
 
+## Troubleshooting
+
+If a verdict looks wrong or an entity is misbehaving, use **Download diagnostics**:
+**Settings → Devices & Services → WashWise → the entry's ⋮ menu → Download diagnostics**.
+The JSON contains everything needed to debug (and to attach to a bug report):
+
+- the fully-resolved config (thresholds, weights, wind cutoff, bad conditions — as the decision actually uses them, plus the raw data/options),
+- the live decision with its full per-day forecast and the aggregates (precip total, min/max temp, max wind, worst condition, freeze risk),
+- coordinator state (enabled, active provider, last update, update count/interval; irrigation sub-state for garden-irrigation entries),
+- a snapshot of **every configured weather provider's current state** (condition, temperature, wind + unit, availability) — the quickest way to spot a wrong, stale, or unavailable provider or a wind-unit mismatch,
+- per-provider health + failover history, and the wash-log / snooze state.
+
+Nothing is redacted — WashWise stores no secrets, tokens, or coordinates.
+
+---
+
 ## FAQ
 
 **Q: All sensors show `unavailable` right after install.**
