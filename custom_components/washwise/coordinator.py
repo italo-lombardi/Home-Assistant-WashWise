@@ -67,6 +67,22 @@ from .storage import WashWiseStore
 _LOGGER = logging.getLogger(__name__)
 
 
+def _verdict_fingerprint(decision: Decision) -> tuple[Any, ...]:
+    """The user-visible subset of a Decision used to detect a verdict flip.
+
+    Deliberately NOT the full dataclass ``__eq__``: ``forecast_summary`` /
+    ``blocking_days`` churn on every poll as dates roll forward, which would
+    fire ``washwise_verdict_changed`` constantly. Only these four fields are
+    surfaced to users (card + sensors), so only they define a "change".
+    """
+    return (
+        decision.can_wash,
+        decision.reason,
+        decision.score,
+        decision.days_until_wash,
+    )
+
+
 class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
     """Coordinator that runs the WashWise decision pipeline."""
 
@@ -388,8 +404,11 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
             )
 
             self._active_weather_entity = eid
-            self._set_decision(decision)
+            # Settle the irrigation switch BEFORE firing the verdict-changed
+            # event, so an automation reacting to the event sees the updated
+            # switch state rather than the previous tick's.
             await self._async_handle_irrigation(decision)
+            self._set_decision(decision)
             self._update_count += 1
             if self._update_count % 50 == 0:
                 await self._store.gc_stale_health()
@@ -417,18 +436,20 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         Called from every path that produces a verdict (snooze short-circuit
         and the normal provider walk). Fires ``washwise_verdict_changed`` on
         the HA bus only when the user-visible outcome actually changes —
-        ``can_wash``, ``reason``, ``score``, or ``days_until_wash`` — so that
-        entering/leaving snooze or a no-data state counts as a real change but
-        an idle re-poll with an identical verdict does not. The first decision
-        of the integration's life also fires (there is no prior verdict).
+        ``can_wash``, ``reason``, ``score``, or ``days_until_wash``. Entering/
+        leaving snooze or a no-data state is a real change and fires; an idle
+        re-poll with an identical verdict does not.
+
+        The FIRST decision after construction (``prev is None``) never fires:
+        there is no prior verdict to have "changed" from, and ``_last_decision``
+        is not restored across restarts, so firing on first-load would make
+        every HA restart/reload re-fire the event (and double-trigger any
+        listening automation) even when the verdict is unchanged.
         """
         prev = self._last_decision
         self._last_decision = decision
-        changed = prev is None or (
-            prev.can_wash != decision.can_wash
-            or prev.reason != decision.reason
-            or prev.score != decision.score
-            or prev.days_until_wash != decision.days_until_wash
+        changed = prev is not None and _verdict_fingerprint(prev) != _verdict_fingerprint(
+            decision
         )
         if changed:
             self.hass.bus.async_fire(

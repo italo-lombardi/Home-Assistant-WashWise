@@ -135,6 +135,7 @@ _RECONFIGURE_STRIPPED_OPTION_KEYS: tuple[str, ...] = (
     CONF_PRECIP_WEIGHT,
     CONF_FREEZE_WEIGHT,
     CONF_CONDITION_WEIGHT,
+    CONF_WIND_THRESHOLD,
     CONF_RAIN_GAUGE_ENTITY,
     CONF_RAIN_GAUGE_THRESHOLD_MM,
     CONF_IRRIGATION_SWITCH_ENTITY,
@@ -249,6 +250,11 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             self._data.update(user_input)
+            # Blank wind field means "disabled": voluptuous omits the key, so
+            # a stale value already in _data (reconfigure of an entry that had
+            # wind set) would otherwise survive. Drop it explicitly.
+            if CONF_WIND_THRESHOLD not in user_input:
+                self._data.pop(CONF_WIND_THRESHOLD, None)
             if category == "garden_irrigation":
                 return await self.async_step_irrigation()
             title = (self._data.get(CONF_NAME) or "").strip() or _category_label(category)
@@ -292,7 +298,12 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                 vol.Required(
                     CONF_FREEZE_CHECK, default=preset["freeze_check"]
                 ): selector.BooleanSelector(),
-                vol.Optional(CONF_WIND_THRESHOLD): selector.NumberSelector(
+                # suggested_value preserves a previously-set wind threshold on
+                # reconfigure while still letting the user clear it to disable.
+                vol.Optional(
+                    CONF_WIND_THRESHOLD,
+                    description={"suggested_value": self._data.get(CONF_WIND_THRESHOLD)},
+                ): selector.NumberSelector(
                     selector.NumberSelectorConfig(
                         min=0,
                         max=200,

@@ -575,9 +575,51 @@ def test_wind_missing_value_never_blocks() -> None:
     assert result.score == 100
 
 
-# ---------------------------------------------------------------------------
-# Threshold parametrize: precip flips verdict
-# ---------------------------------------------------------------------------
+def test_wind_only_block_reports_wind_not_rain() -> None:
+    """A wind-only blocked day must report wind, not be masked as rain.
+
+    Guards the _reason_from_blockers ordering: wind outranks the
+    condition-string rain fallthrough.
+    """
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    windy = ForecastDay(
+        date=date.fromordinal(TODAY.toordinal() + 1),
+        condition="cloudy",  # not a bad condition -> only wind blocks
+        precipitation_mm=0.0,
+        temp_min_c=12.0,
+        temp_max_c=22.0,
+        wind_speed_kmh=80.0,
+    )
+
+    result = compute(
+        cur,
+        [_windy_day(0, 5.0), windy],
+        _thresholds(wind_threshold_kmh=40.0),
+        invert=False,
+        now=NOW,
+    )
+
+    assert result.reason == REASON_WIND
+
+
+def test_condition_rain_without_precip_blocker_reports_rain() -> None:
+    """A day blocked by a 'rainy' condition with sub-threshold precip still
+    reports rain via the condition fallthrough (wind reorder didn't break it)."""
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [
+        ForecastDay(
+            date=date.fromordinal(TODAY.toordinal()),
+            condition="rainy",
+            precipitation_mm=0.0,  # under threshold -> no precip blocker
+            temp_min_c=12.0,
+            temp_max_c=22.0,
+        )
+    ]
+
+    result = compute(cur, forecast, _thresholds(), invert=False, now=NOW)
+
+    assert result.can_wash is False
+    assert result.reason == REASON_RAIN
 
 
 @pytest.mark.parametrize(

@@ -489,10 +489,14 @@ def _reason_from_blockers(blockers: list[str], condition: str | None) -> str:
         return REASON_FREEZE
     if condition is not None and condition in _SNOW_CONDITIONS:
         return REASON_SNOW
-    if "precip" in blockers or condition == "rainy" or condition == "pouring":
+    if "precip" in blockers:
         return REASON_RAIN
+    # Wind outranks the condition-string rain fallthrough: a day blocked only
+    # by wind should report "wind", not be masked as "rain" by its condition.
     if "wind" in blockers:
         return REASON_WIND
+    if condition == "rainy" or condition == "pouring":
+        return REASON_RAIN
     return REASON_BAD_CONDITION
 
 

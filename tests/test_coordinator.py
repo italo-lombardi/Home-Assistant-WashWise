@@ -1048,31 +1048,31 @@ async def test_set_decision_fires_event_on_flip(hass: HomeAssistant) -> None:
     events: list[Any] = []
     hass.bus.async_listen(EVENT_VERDICT_CHANGED, events.append)
 
-    # First decision always fires (no prior verdict).
+    # First decision does NOT fire: no prior verdict to have changed from, and
+    # _last_decision is not restored across restarts, so first-fire would make
+    # every HA restart re-fire even on an unchanged verdict.
     coord._set_decision(_decision(True, "clear", 100))
     await hass.async_block_till_done()
-    assert len(events) == 1
-    assert events[0].data["can_wash"] is True
-    assert events[0].data["previous_can_wash"] is None
-    assert events[0].data["entry_id"] == entry.entry_id
+    assert len(events) == 0
 
-    # Identical verdict -> no event.
+    # Identical verdict -> still no event.
     coord._set_decision(_decision(True, "clear", 100))
     await hass.async_block_till_done()
-    assert len(events) == 1
+    assert len(events) == 0
 
     # Flip to can_wash=False -> fires with previous_can_wash=True.
     coord._set_decision(_decision(False, "rain", 20))
     await hass.async_block_till_done()
-    assert len(events) == 2
-    assert events[1].data["can_wash"] is False
-    assert events[1].data["previous_can_wash"] is True
-    assert events[1].data["reason"] == "rain"
+    assert len(events) == 1
+    assert events[0].data["can_wash"] is False
+    assert events[0].data["previous_can_wash"] is True
+    assert events[0].data["reason"] == "rain"
+    assert events[0].data["entry_id"] == entry.entry_id
 
     # Same verdict, score-only change -> still fires (score is user-visible).
     coord._set_decision(_decision(False, "rain", 35))
     await hass.async_block_till_done()
-    assert len(events) == 3
+    assert len(events) == 2
 
 
 # ---------------------------------------------------------------------------

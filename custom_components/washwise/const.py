@@ -129,10 +129,6 @@ DEFAULT_FREEZE_TEMP_C = 0.0
 DEFAULT_PRECIP_WEIGHT = 40
 DEFAULT_FREEZE_WEIGHT = 30
 DEFAULT_CONDITION_WEIGHT = 30
-# Wind is an opt-in blocker: it carries its own penalty weight but is only
-# active when a wind threshold is configured (no preset sets one by default,
-# so existing entries are unaffected).
-DEFAULT_WIND_WEIGHT = 30
 
 # Storage.
 STORAGE_VERSION = 1
@@ -161,7 +157,6 @@ CONF_CONDITION_WEIGHT = "condition_weight"
 # presets). When set, a forecast day whose wind speed (km/h) exceeds this is a
 # blocker, mirroring the precip threshold.
 CONF_WIND_THRESHOLD = "wind_threshold_kmh"
-CONF_WIND_WEIGHT = "wind_weight"
 CONF_EXTRA_ENTITIES = "extra_entities"
 CONF_SCAN_INTERVAL_MINUTES = "scan_interval_minutes"
 CONF_RAIN_GAUGE_ENTITY = "rain_gauge_entity"
