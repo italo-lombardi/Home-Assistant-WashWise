@@ -21,7 +21,7 @@ from __future__ import annotations
 import contextlib
 from datetime import UTC, datetime, timedelta
 from typing import Any
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from freezegun import freeze_time
@@ -710,9 +710,82 @@ async def test_async_clear_snooze_clears_snooze(hass: HomeAssistant) -> None:
     assert stub.data.snooze_until is None
 
 
-# ---------------------------------------------------------------------------
-# Property accessors
-# ---------------------------------------------------------------------------
+@freeze_time(FROZEN_NOW)
+async def test_mark_washed_pushes_current_data_without_fetch(hass: HomeAssistant) -> None:
+    """mark_washed pushes the current decision synchronously (no forecast fetch).
+
+    The fast path avoids ``async_request_refresh`` (which re-fetches weather and
+    adds seconds of lag) when a decision is already cached — it calls
+    ``async_set_updated_data`` with the existing data instead.
+    """
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+    current = _decision(True, "clear", 90)
+    coord.data = current
+    coord.async_set_updated_data = MagicMock()  # type: ignore[assignment]
+
+    await coord.async_mark_washed()
+
+    coord.async_set_updated_data.assert_called_once_with(current)
+    coord.async_request_refresh.assert_not_awaited()  # type: ignore[attr-defined]
+
+
+@freeze_time(FROZEN_NOW)
+async def test_mark_washed_falls_back_to_refresh_when_no_data(hass: HomeAssistant) -> None:
+    """With no cached decision yet, mark_washed must fall back to a full refresh."""
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+    coord.data = None
+    coord.async_set_updated_data = MagicMock()  # type: ignore[assignment]
+
+    await coord.async_mark_washed()
+
+    coord.async_set_updated_data.assert_not_called()
+    coord.async_request_refresh.assert_awaited()  # type: ignore[attr-defined]
+
+
+@freeze_time(FROZEN_NOW)
+async def test_snooze_pushes_snoozed_decision_without_fetch(hass: HomeAssistant) -> None:
+    """snooze builds and pushes the snoozed verdict synchronously."""
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+    pushed: list = []
+    coord.async_set_updated_data = MagicMock(side_effect=lambda d: pushed.append(d))  # type: ignore[assignment]
+
+    await coord.async_snooze(timedelta(hours=2))
+
+    assert len(pushed) == 1
+    assert pushed[0].reason == "snoozed"
+    assert pushed[0].can_wash is False
+
+
+@freeze_time(FROZEN_NOW)
+async def test_clear_snooze_restores_cached_real_decision(hass: HomeAssistant) -> None:
+    """clear_snooze pushes the last real decision instantly, then refreshes."""
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, stub = _build_coordinator(hass, entry)
+    real = _decision(True, "clear", 88)
+    coord._last_real_decision = real
+    stub.data = StoredData(
+        wash_log=[],
+        snooze_until=(FROZEN_NOW + timedelta(hours=1)).isoformat(),
+        last_failover_ts=None,
+        last_failover_from=None,
+        last_failover_to=None,
+        provider_health={},
+    )
+    pushed: list = []
+    coord.async_set_updated_data = MagicMock(side_effect=lambda d: pushed.append(d))  # type: ignore[assignment]
+
+    await coord.async_clear_snooze()
+
+    assert stub.data.snooze_until is None
+    assert pushed == [real], "cached real verdict pushed instantly"
+    coord.async_request_refresh.assert_awaited()  # type: ignore[attr-defined] # background correct
 
 
 async def test_enabled_property_returns_internal_flag(hass: HomeAssistant) -> None:
