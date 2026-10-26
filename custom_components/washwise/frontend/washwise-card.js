@@ -480,6 +480,16 @@ function prettyCondition(key) {
     .replace(/^\w/, (c) => c.toUpperCase());
 }
 
+// Severe weather conditions (backend BAD_CONDITION_SEVERITY ≥ 0.9) → red tone
+// in diagnostics; milder bad conditions stay amber. Kept as a small local set
+// to avoid coupling the no-build card to the Python const.
+const SEVERE_CONDITIONS = new Set(["pouring", "hail", "lightning-rainy", "exceptional"]);
+
+// Diagnostics tone for a worst-condition value: red when severe, else amber.
+function conditionTone(key) {
+  return SEVERE_CONDITIONS.has(key) ? "bad" : "warn";
+}
+
 // Humanise a past ISO timestamp into a coarse "… ago" string (or "just now").
 // Returns null for a missing/unparseable/future value so the caller can hide
 // the row. Buckets mirror the snooze formatter: weeks, days, hours, minutes.
@@ -883,12 +893,19 @@ class WashWiseCard extends LitElement {
         typeof a.freeze_risk === "boolean" ? (a.freeze_risk ? "Yes" : "No") : null,
         a.freeze_risk === true ? "bad" : a.freeze_risk === false ? "muted" : "",
       ],
-      ["🌩️", "Worst condition", a.worst_condition ? prettyCondition(a.worst_condition) : null, "warn"],
+      [
+        "🌩️",
+        "Worst condition",
+        a.worst_condition ? prettyCondition(a.worst_condition) : null,
+        a.worst_condition ? conditionTone(a.worst_condition) : "",
+      ],
       ["🌡️", "Temperature", temp, ""],
     ];
 
     // Drop a leading/trailing/duplicate divider once empty rows are filtered.
-    const kept = rows.filter((r) => r === null || r[2] !== undefined && r[2] !== null && r[2] !== "");
+    const kept = rows.filter(
+      (r) => r === null || (r[2] !== undefined && r[2] !== null && r[2] !== "")
+    );
     const cleaned = [];
     for (const r of kept) {
       if (r === null && (cleaned.length === 0 || cleaned[cleaned.length - 1] === null)) continue;

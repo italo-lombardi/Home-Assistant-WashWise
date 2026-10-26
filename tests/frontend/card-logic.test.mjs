@@ -662,6 +662,7 @@ test("_renderDiagnostics: renders enriched rows from the real attribute names", 
   assert.match(html, row("Freeze risk", "No"));
   assert.match(html, /ww-diag-value muted[^>]*>No</, "freeze_risk false → muted tone");
   assert.match(html, row("Worst condition", "Lightning rainy"));
+  assert.match(html, /ww-diag-value bad[^>]*>Lightning rainy</, "severe condition → bad tone");
   // Temperature is merged into a single min–max range row.
   assert.match(html, row("Temperature", "12 – 24 °C"));
   assert.doesNotMatch(html, /Min temp|Max temp/, "min/max merged, not separate rows");
@@ -680,6 +681,19 @@ test("_renderDiagnostics: score tones (ok ≥67, warn ≥34, bad <34)", () => {
   assert.match(h(80), /ww-diag-value ok[^>]*>80 \/ 100</);
   assert.match(h(50), /ww-diag-value warn[^>]*>50 \/ 100</);
   assert.match(h(10), /ww-diag-value bad[^>]*>10 \/ 100</);
+});
+
+test("_renderDiagnostics: worst-condition tone — severe→bad, mild→warn", () => {
+  const h = (cond) =>
+    Card.prototype._renderDiagnostics.call(
+      { hass: { states: {} } }, { attributes: { worst_condition: cond } }, false
+    ).__html;
+  // Severe (BAD_CONDITION_SEVERITY ≥ 0.9): pouring / hail / lightning-rainy / exceptional.
+  assert.match(h("pouring"), /ww-diag-value bad[^>]*>Pouring</);
+  assert.match(h("hail"), /ww-diag-value bad[^>]*>Hail</);
+  // Milder bad condition stays amber.
+  assert.match(h("rainy"), /ww-diag-value warn[^>]*>Rainy</);
+  assert.match(h("snowy"), /ww-diag-value warn[^>]*>Snowy</);
 });
 
 test("_renderDiagnostics: weather source falls back to entity id when no friendly name", () => {
