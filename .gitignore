@@ -47,3 +47,6 @@ coverage.xml
 
 # Local HA Docker test fixtures (see docs/TESTING_DOCKER.md)
 tests/ha_config/
+
+# Local feature brainstorming — not shipped
+docs/FEATURE_IDEAS.md
