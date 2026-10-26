@@ -122,7 +122,6 @@ test("setConfig: non-binary_sensor entity warns but does not throw", () => {
 // ── shouldUpdate (watched entities) ───────────────────────────────────────────
 
 test("shouldUpdate: true when _config changed", () => {
-  const changed = new Map();
   const result = Card.prototype.shouldUpdate.call({}, { has: () => true, get: () => undefined });
   assert.equal(result, true);
 });
@@ -269,20 +268,30 @@ test("_renderForecastStrip: known condition → emoji, precip formatted, blocked
       },
     }
   ).__html;
-  assert.match(frag, /🌧️/, "rainy → rain emoji");
-  assert.match(frag, /☀️/, "sunny → sun emoji");
+  // Bind class to the right day: within one day block, class precedes its emoji.
+  assert.match(frag, /ww-day bad[\s\S]*?🌧️/, "blocked:true (rainy) → bad class on that day");
+  assert.match(frag, /ww-day ok[\s\S]*?☀️/, "blocked:false (sunny) → ok class on that day");
+  assert.doesNotMatch(frag, /ww-day ok[\s\S]*?🌧️/, "rainy day must not be ok");
   assert.match(frag, /4\.3mm/, "precip rounded to one decimal");
   assert.match(frag, /0\.0mm/);
-  assert.match(frag, /ww-day bad/, "blocked:true → bad class");
-  assert.match(frag, /ww-day ok/, "blocked:false → ok class");
 });
 
-test("_renderForecastStrip: unknown condition falls back to first 2 chars", () => {
+test("_renderForecastStrip: blocked null/absent → no ok|bad class (default blank)", () => {
+  const frag = Card.prototype._renderForecastStrip.call(
+    {},
+    { attributes: { forecast_summary: [{ date: "2026-01-15", condition: "cloudy" }] } }
+  ).__html;
+  // blocked unset → cls "" → class attr is exactly "ww-day " with no ok/bad.
+  assert.doesNotMatch(frag, /ww-day (ok|bad)/, "no verdict class when blocked is absent");
+});
+
+test("_renderForecastStrip: unknown condition falls back to exactly first 2 chars", () => {
   const frag = Card.prototype._renderForecastStrip.call(
     {},
     { attributes: { forecast_summary: [{ date: "2026-01-15", condition: "zzzzz" }] } }
   ).__html;
-  assert.match(frag, /zz/, "unknown condition → condition.slice(0,2)");
+  // Icon cell must be exactly "zz" (slice(0,2)) — anchored so slice(0,3) would fail.
+  assert.match(frag, /class="icon">zz<\/span>/, "unknown condition → exactly condition.slice(0,2)");
   assert.match(frag, /—/, "missing precip → em-dash");
 });
 
@@ -316,4 +325,29 @@ test("_washWiseInstances: picks can_wash sensors with washwise attrs, sorted by 
 
 test("_washWiseInstances: empty when hass has no states", () => {
   assert.deepEqual(Editor.prototype._washWiseInstances.call({ hass: undefined }), []);
+});
+
+// ── _renderGauge (score→pct clamp, null label, bad class) ─────────────────────
+
+test("_renderGauge: score renders as rounded percent, fill width = clamped pct", () => {
+  const frag = Card.prototype._renderGauge.call({}, 72.6, "ok").__html;
+  assert.match(frag, /width: 72\.6%/, "fill width is the clamped score");
+  assert.match(frag, />73%</, "label is Math.round(score)%");
+  assert.doesNotMatch(frag, /ww-gauge-bar-fill bad/, "ok verdict → no bad class");
+});
+
+test("_renderGauge: out-of-range score clamps to 0..100", () => {
+  assert.match(Card.prototype._renderGauge.call({}, 140, "ok").__html, /width: 100%/);
+  assert.match(Card.prototype._renderGauge.call({}, -20, "ok").__html, /width: 0%/);
+});
+
+test("_renderGauge: null score → em-dash label, width falls back to 0", () => {
+  const frag = Card.prototype._renderGauge.call({}, null, "bad").__html;
+  assert.match(frag, />—</, "null score → em-dash, not '0%'");
+  assert.match(frag, /width: 0%/, "null score ?? 0 → 0 width");
+});
+
+test("_renderGauge: bad verdict adds the bad fill class", () => {
+  const frag = Card.prototype._renderGauge.call({}, 30, "bad").__html;
+  assert.match(frag, /ww-gauge-bar-fill bad/, "bad verdict → bad class on fill");
 });

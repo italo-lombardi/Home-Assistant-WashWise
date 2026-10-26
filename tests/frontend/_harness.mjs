@@ -13,9 +13,12 @@
 // file).
 //
 // The html stub joins the template's `${}` interpolations with String.raw so a
-// rendered fragment's text is assertable. css is a no-op; nothing is a unique
-// sentinel so tests can assert "render was hidden". window.customCards is
-// stubbed because the card push()es its registration there at import.
+// rendered fragment's text is assertable. nothing is a unique sentinel so tests
+// can assert "render was hidden". window.customCards is stubbed because the card
+// push()es its registration there at import. We deliberately do NOT stub `css`:
+// leaving LitElement.prototype.css undefined makes the card fall into its own
+// CSSResult fallback (washwise-card.js:31-53), so that shipped branch runs — and
+// is exercised — under the harness rather than being short-circuited away.
 
 export const NOTHING = "__NOTHING__";
 
@@ -39,15 +42,12 @@ function flatten(v) {
 // Lit members. class Sub extends Base ⇒ Object.getPrototypeOf(Sub) === Base.
 class LitBase {}
 LitBase.prototype.html = htmlTag;
-LitBase.prototype.css = (strings, ...values) =>
-  String.raw({ raw: strings }, ...values);
 LitBase.prototype.nothing = NOTHING;
 class HaMainStub extends LitBase {}
 
 const defined = {};
 globalThis.window = globalThis.window || {};
 globalThis.window.customCards = globalThis.window.customCards || [];
-globalThis.CSSStyleSheet = globalThis.CSSStyleSheet || undefined;
 globalThis.customElements = {
   get: () => HaMainStub,
   define: (name, cls) => {

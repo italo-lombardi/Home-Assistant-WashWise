@@ -66,4 +66,6 @@ jobs:
         with:
           node-version: "24"
       - name: Run card tests
-        run: node --test 'tests/frontend/*.test.mjs'
+        run: |
+          ls tests/frontend/*.test.mjs  # fail loudly if the glob matches nothing
+          node --test 'tests/frontend/*.test.mjs'
