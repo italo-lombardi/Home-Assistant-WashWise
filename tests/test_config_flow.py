@@ -19,6 +19,7 @@ from custom_components.washwise.const import (
     CONF_NAME,
     CONF_PRECIP_THRESHOLD,
     CONF_WEATHER_ENTITIES,
+    CONF_WIND_THRESHOLD,
     DEFAULT_CATEGORY,
     DEFAULT_FORECAST_TYPE,
     DOMAIN,
@@ -159,6 +160,7 @@ async def test_user_step_customize_on_completes_via_thresholds(
                 CONF_PRECIP_THRESHOLD: 0.5,
                 CONF_FREEZE_CHECK: True,
                 CONF_FORECAST_TYPE: DEFAULT_FORECAST_TYPE,
+                CONF_WIND_THRESHOLD: 50,
                 "bad_conditions": ["rainy", "pouring"],
                 "precip_weight": 50,
                 "freeze_weight": 25,
@@ -169,6 +171,7 @@ async def test_user_step_customize_on_completes_via_thresholds(
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"][CONF_DAYS] == 4
     assert result["data"][CONF_PRECIP_THRESHOLD] == 0.5
+    assert result["data"][CONF_WIND_THRESHOLD] == 50
 
 
 async def test_user_step_empty_weather_entities_error(hass: HomeAssistant) -> None:
@@ -610,6 +613,56 @@ async def test_reconfigure_with_customize_thresholds_routes_to_thresholds_step(
 
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
+
+
+async def test_reconfigure_blank_wind_clears_stale_threshold(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """Reconfiguring with a blank wind field drops a previously-set threshold.
+
+    Regression guard: a blank optional field is omitted from user_input, so
+    without an explicit pop the stale wind_threshold_kmh survives in data.
+    """
+    mock_config_entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(
+        mock_config_entry,
+        data={**mock_config_entry.data, CONF_CUSTOMIZE_THRESHOLDS: True, CONF_WIND_THRESHOLD: 45},
+    )
+
+    with (
+        patch("custom_components.washwise.async_setup_entry", return_value=True),
+        patch("custom_components.washwise.async_unload_entry", return_value=True),
+    ):
+        result = await mock_config_entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.home"],
+                CONF_NAME: "Test Wash",
+                CONF_CATEGORY: "car",
+                CONF_CUSTOMIZE_THRESHOLDS: True,
+            },
+        )
+        assert result["step_id"] == "thresholds"
+        # Submit the thresholds step WITHOUT a wind value -> cleared.
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_DAYS: 3,
+                CONF_PRECIP_THRESHOLD: 0.5,
+                CONF_FREEZE_CHECK: True,
+                CONF_FORECAST_TYPE: DEFAULT_FORECAST_TYPE,
+                "bad_conditions": ["rainy", "pouring"],
+                "precip_weight": 50,
+                "freeze_weight": 25,
+                "condition_weight": 25,
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] == FlowResultType.ABORT
+    assert CONF_WIND_THRESHOLD not in mock_config_entry.data
 
 
 async def test_reconfigure_untick_customize_strips_stale_threshold_keys(

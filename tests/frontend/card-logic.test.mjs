@@ -50,13 +50,21 @@ test("_score: missing / non-finite → null", () => {
 
 // ── getCardSize (sums enabled sections) ───────────────────────────────────────
 
-test("getCardSize: all defaults on sums to 7", () => {
-  // base 2 + gauge 1 + reason 1 + forecast 2 + diagnostics 1 = 7
+test("getCardSize: all defaults on sums to 7 (actions off by default)", () => {
+  // base 2 + gauge 1 + reason 1 + forecast 2 + diagnostics 1 = 7; show_actions defaults off
   const size = Card.prototype.getCardSize.call({
     _config: { entity: "binary_sensor.x_can_wash" },
     _mergedConfig: Card.prototype._mergedConfig,
   });
   assert.equal(size, 7);
+});
+
+test("getCardSize: enabling actions adds 1", () => {
+  const size = Card.prototype.getCardSize.call({
+    _config: { entity: "binary_sensor.x_can_wash", show_actions: true },
+    _mergedConfig: Card.prototype._mergedConfig,
+  });
+  assert.equal(size, 8);
 });
 
 test("getCardSize: disabling forecast + diagnostics drops 3", () => {
@@ -80,6 +88,7 @@ test("_mergedConfig: user config overrides defaults, defaults fill gaps", () => 
   assert.equal(merged.theme, "dark", "user override wins");
   assert.equal(merged.mode, "wash", "default filled");
   assert.equal(merged.show_score_gauge, true, "default filled");
+  assert.equal(merged.show_actions, false, "action row off by default");
 });
 
 // ── setConfig (validation) ────────────────────────────────────────────────────
@@ -236,6 +245,47 @@ test("_renderReason: unknown reason key passes through verbatim", () => {
   assert.match(frag.__html, /custom_key/);
 });
 
+test("_renderReason: wind + no_data backend reasons have friendly labels (both modes)", () => {
+  // Backend added REASON_WIND="wind" and REASON_NO_DATA="no_data"; the card must
+  // not fall through to the raw key (regression the no-data honesty fix targets).
+  const wash = (reason) =>
+    Card.prototype._renderReason.call({}, { attributes: { reason } }, false).__html;
+  assert.match(wash("wind"), /High wind/);
+  assert.match(wash("no_data"), /No forecast data/);
+  assert.doesNotMatch(wash("wind"), />wind</, "raw key not shown");
+  assert.doesNotMatch(wash("no_data"), />no_data</, "raw key not shown");
+
+  const irr = (reason) =>
+    Card.prototype._renderReason.call(
+      { _irrigationReason: Card.prototype._irrigationReason },
+      { attributes: { reason } },
+      true
+    ).__html;
+  assert.match(irr("wind"), /High wind — skip/);
+  assert.match(irr("no_data"), /No forecast data/);
+});
+
+test("_renderReason: every backend reason key maps to a non-raw label (both modes)", () => {
+  // The full REASON_* enum from decision.py. If the backend adds a reason and
+  // the card map isn't updated, prettyReason falls through to `?? key` and the
+  // dashboard shows a raw token — exactly the honesty bug this guards against.
+  // Keep in sync with decision.py REASON_* values.
+  const BACKEND_REASONS = [
+    "clear", "rain", "freeze", "snow", "bad_condition",
+    "bad_current_condition", "dirty_now", "no_data", "wind",
+  ];
+  for (const reason of BACKEND_REASONS) {
+    const wash = Card.prototype._renderReason.call({}, { attributes: { reason } }, false).__html;
+    assert.doesNotMatch(wash, new RegExp(`>${reason}<`), `wash mode shows raw key for ${reason}`);
+    const irr = Card.prototype._renderReason.call(
+      { _irrigationReason: Card.prototype._irrigationReason },
+      { attributes: { reason } },
+      true
+    ).__html;
+    assert.doesNotMatch(irr, new RegExp(`>${reason}<`), `irrigation mode shows raw key for ${reason}`);
+  }
+});
+
 test("_renderReason: no reason attribute is hidden", () => {
   assert.equal(
     Card.prototype._renderReason.call({}, { attributes: {} }, false),
@@ -350,4 +400,183 @@ test("_renderGauge: null score → em-dash label, width falls back to 0", () => 
 test("_renderGauge: bad verdict adds the bad fill class", () => {
   const frag = Card.prototype._renderGauge.call({}, 30, "bad").__html;
   assert.match(frag, /ww-gauge-bar-fill bad/, "bad verdict → bad class on fill");
+});
+
+// ── Actions: entry_id resolution ──────────────────────────────────────────────
+
+test("_entryId: resolves config_entry_id from hass entity registry", () => {
+  const self = {
+    _config: { entity: "binary_sensor.x_can_wash" },
+    hass: { entities: { "binary_sensor.x_can_wash": { config_entry_id: "abc123" } } },
+  };
+  assert.equal(Card.prototype._entryId.call(self), "abc123");
+});
+
+test("_entryId: null when entity, registry entry, or hass missing", () => {
+  assert.equal(Card.prototype._entryId.call({ _config: {} }), null);
+  assert.equal(
+    Card.prototype._entryId.call({ _config: { entity: "binary_sensor.x_can_wash" }, hass: {} }),
+    null,
+    "no entities map"
+  );
+  assert.equal(
+    Card.prototype._entryId.call({
+      _config: { entity: "binary_sensor.x_can_wash" },
+      hass: { entities: {} },
+    }),
+    null,
+    "entity not in registry"
+  );
+});
+
+// ── Actions: render (context-aware, hide without entry_id) ────────────────────
+
+function actionsSelf(entryId) {
+  return {
+    _config: { entity: "binary_sensor.x_can_wash" },
+    hass: entryId
+      ? { entities: { "binary_sensor.x_can_wash": { config_entry_id: entryId } } }
+      : {},
+    _entryId: Card.prototype._entryId,
+  };
+}
+
+test("_renderActions: hidden when entry_id cannot be resolved", () => {
+  const frag = Card.prototype._renderActions.call(actionsSelf(null), { state: "on" }, false);
+  assert.equal(frag, NOTHING);
+});
+
+test("_renderActions: hidden entirely in irrigation mode (wrong semantics)", () => {
+  const frag = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "off" }, false, true);
+  assert.equal(frag, NOTHING, "mark_washed/snooze are meaningless for irrigation");
+});
+
+test("_renderActions: not snoozed → Mark washed + Snooze (no Clear)", () => {
+  const frag = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "on" }, false).__html;
+  assert.match(frag, /Mark washed/);
+  assert.match(frag, /Snooze/);
+  assert.doesNotMatch(frag, /Clear snooze/, "no Clear button when not snoozed");
+});
+
+test("_renderActions: snoozed → Mark washed + Clear snooze (no plain Snooze)", () => {
+  const frag = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "off" }, true).__html;
+  assert.match(frag, /Mark washed/);
+  assert.match(frag, /Clear snooze/);
+  // "Snooze" also appears inside "Clear snooze"; assert the standalone label is gone.
+  assert.doesNotMatch(frag, />⏸️<span>Snooze<\/span>/, "no standalone Snooze when snoozed");
+});
+
+test("_renderActions: every button disabled when state unavailable/unknown", () => {
+  // The html stub renders Lit's ?disabled boolean binding literally as
+  // "?disabled=<bool>" (it does not model attribute removal), so assert on the
+  // bound value rather than the attribute's presence.
+  const u = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "unavailable" }, false).__html;
+  assert.doesNotMatch(u, /\?disabled=false/, "unavailable → no button left enabled");
+  assert.match(u, /\?disabled=true/, "unavailable → disabled bound true");
+  const us = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "unknown" }, true /*snoozed*/).__html;
+  assert.doesNotMatch(us, /\?disabled=false/, "snoozed+unknown → Clear also disabled");
+  const ok = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "on" }, false).__html;
+  assert.doesNotMatch(ok, /\?disabled=true/, "available → nothing disabled");
+});
+
+// ── Actions: handlers (confirm gate + service call shape) ─────────────────────
+
+function captureCall(fn) {
+  const calls = [];
+  const self = {
+    _confirm: () => true,
+    _callService: (service, data) => calls.push({ service, data }),
+  };
+  fn(self);
+  return calls;
+}
+
+test("_onMarkWashed: confirmed → calls mark_washed with entry_id", () => {
+  const calls = captureCall((self) => Card.prototype._onMarkWashed.call(self, "e9"));
+  assert.deepEqual(calls, [{ service: "mark_washed", data: { entry_id: "e9" } }]);
+});
+
+test("_onMarkWashed: declined confirm → no service call", () => {
+  const calls = [];
+  const self = {
+    _confirm: () => false,
+    _callService: (service, data) => calls.push({ service, data }),
+  };
+  Card.prototype._onMarkWashed.call(self, "e9");
+  assert.deepEqual(calls, [], "confirm returning false aborts the call");
+});
+
+test("_onSnooze: fires snooze with entry_id only (no hours → backend default)", () => {
+  const calls = captureCall((self) => Card.prototype._onSnooze.call(self, "e9"));
+  assert.deepEqual(calls, [{ service: "snooze", data: { entry_id: "e9" } }]);
+});
+
+test("_onClearSnooze: fires clear_snooze with entry_id", () => {
+  const calls = captureCall((self) => Card.prototype._onClearSnooze.call(self, "e9"));
+  assert.deepEqual(calls, [{ service: "clear_snooze", data: { entry_id: "e9" } }]);
+});
+
+test("_callService: forwards to hass.callService under the washwise domain", () => {
+  const calls = [];
+  const self = { hass: { callService: (...a) => calls.push(a) } };
+  Card.prototype._callService.call(self, "snooze", { entry_id: "e1" });
+  assert.deepEqual(calls, [["washwise", "snooze", { entry_id: "e1" }]]);
+});
+
+test("_callService: no-op when hass has no callService", () => {
+  assert.doesNotThrow(() => Card.prototype._callService.call({ hass: {} }, "snooze", {}));
+});
+
+test("_callService: swallows a rejected service call (no unhandled rejection)", async () => {
+  const origErr = console.error;
+  let logged = false;
+  console.error = () => {
+    logged = true;
+  };
+  try {
+    const self = {
+      hass: { callService: () => Promise.reject(new Error("stale entry_id")) },
+    };
+    const p = Card.prototype._callService.call(self, "mark_washed", { entry_id: "x" });
+    await p.catch(() => {}); // settle without surfacing to the test runner
+    // give the attached .catch() a tick to run
+    await Promise.resolve();
+  } finally {
+    console.error = origErr;
+  }
+  assert.ok(logged, "rejection is caught and logged, not left unhandled");
+});
+
+// ── _confirm fail-safe (destructive action must not fire without a prompt) ────
+
+test("_confirm: returns false when window.confirm is unavailable", () => {
+  const origWindow = globalThis.window;
+  try {
+    globalThis.window = {}; // no confirm
+    assert.equal(Card.prototype._confirm.call({}, "x"), false);
+    globalThis.window = { confirm: () => true };
+    assert.equal(Card.prototype._confirm.call({}, "x"), true, "present confirm passes through");
+    globalThis.window = { confirm: () => false };
+    assert.equal(Card.prototype._confirm.call({}, "x"), false, "declined confirm → false");
+  } finally {
+    globalThis.window = origWindow;
+  }
+});
+
+// ── shouldUpdate: entity-registry hydration (entry_id arrives late) ────────────
+
+test("shouldUpdate: true when config_entry_id hydrates in a later hass update", () => {
+  const id = "binary_sensor.x_can_wash";
+  const sameState = { state: "on" };
+  const oldHass = { states: { [id]: sameState }, entities: {} };
+  const self = {
+    hass: { states: { [id]: sameState }, entities: { [id]: { config_entry_id: "abc" } } },
+    _config: { entity: id },
+  };
+  const changed = { has: () => false, get: () => oldHass };
+  assert.equal(
+    Card.prototype.shouldUpdate.call(self, changed),
+    true,
+    "registry arriving must trigger a render so the hidden action row appears"
+  );
 });

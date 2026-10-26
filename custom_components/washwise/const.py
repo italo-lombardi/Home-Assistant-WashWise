@@ -5,6 +5,9 @@ from datetime import timedelta
 DOMAIN = "washwise"
 PLATFORMS = ["binary_sensor", "sensor", "button"]
 
+# Event fired on the HA bus when a verdict flips (see coordinator).
+EVENT_VERDICT_CHANGED = f"{DOMAIN}_verdict_changed"
+
 # Minimum supported Home Assistant version.
 MIN_HA_VERSION = "2024.10.0"
 
@@ -35,6 +38,7 @@ PRECIP_KEYS = ("precipitation", "precipitation_amount", "precip_mm", "rain")
 TMIN_KEYS = ("templow", "temp_min", "temperature_min", "temp_low")
 TMAX_KEYS = ("temperature", "temp", "temperature_max", "temp_high")
 TIME_KEYS = ("datetime", "time", "timestamp")
+WIND_KEYS = ("wind_speed", "native_wind_speed", "windspeed", "wind")
 
 # Categories — preset thresholds + default icon.
 CATEGORY_PRESETS = {
@@ -149,6 +153,10 @@ CONF_BAD_CONDITIONS = "bad_conditions"
 CONF_PRECIP_WEIGHT = "precip_weight"
 CONF_FREEZE_WEIGHT = "freeze_weight"
 CONF_CONDITION_WEIGHT = "condition_weight"
+# Optional wind blocker/penalty. ``None``/absent = disabled (default for all
+# presets). When set, a forecast day whose wind speed (km/h) exceeds this is a
+# blocker, mirroring the precip threshold.
+CONF_WIND_THRESHOLD = "wind_threshold_kmh"
 CONF_EXTRA_ENTITIES = "extra_entities"
 CONF_SCAN_INTERVAL_MINUTES = "scan_interval_minutes"
 CONF_RAIN_GAUGE_ENTITY = "rain_gauge_entity"

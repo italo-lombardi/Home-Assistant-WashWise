@@ -28,7 +28,8 @@
           "bad_conditions": "Blokujące warunki pogodowe",
           "precip_weight": "Waga wyniku opadów",
           "freeze_weight": "Waga wyniku mrozu",
-          "condition_weight": "Waga wyniku warunków pogodowych"
+          "condition_weight": "Waga wyniku warunków pogodowych",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Ile dni prognozy uwzględnić, włącznie z dzisiaj. Większe horyzonty wychwytują więcej zjawisk pogodowych, ale dają bardziej zachowawcze werdykty.",
@@ -38,7 +39,8 @@
           "bad_conditions": "Kody warunków pogodowych, które blokują mycie, gdy pojawią się w prognozie lub jako warunek bieżący.",
           "precip_weight": "O ile deszcz w prognozie obniża wynik w skali 0–100. Wyższa wartość bardziej karze deszczowe dni.",
           "freeze_weight": "O ile mroźny dzień obniża wynik w skali 0–100. Ustaw 0, aby ignorować mróz w punktacji, ale nadal blokować werdykt.",
-          "condition_weight": "O ile złe warunki pogodowe (burze, grad, śnieg) obniżają wynik w skali 0–100. Dotkliwość jest indywidualna dla każdego warunku."
+          "condition_weight": "O ile złe warunki pogodowe (burze, grad, śnieg) obniżają wynik w skali 0–100. Dotkliwość jest indywidualna dla każdego warunku.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -114,13 +116,15 @@
           "days": "Horyzont prognozy (dni)",
           "precip_threshold_mm": "Próg opadów (mm)",
           "freeze_check": "Blokuj przy ujemnych temperaturach",
-          "forecast_type": "Typ prognozy"
+          "forecast_type": "Typ prognozy",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Ile dni prognozy uwzględnić, włącznie z dzisiaj.",
           "precip_threshold_mm": "Łączne dzienne opady przekraczające tę wartość blokują mycie.",
           "freeze_check": "Gdy włączone, dzień prognozy, w którym temperatura przekracza próg 0 °C, blokuje mycie.",
-          "forecast_type": "Tryb dzienny używa jednego wpisu na dobę; tryb godzinowy agreguje wpisy godzinowe, jeśli są obsługiwane."
+          "forecast_type": "Tryb dzienny używa jednego wpisu na dobę; tryb godzinowy agreguje wpisy godzinowe, jeśli są obsługiwane.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "scoring": {
@@ -303,9 +307,11 @@
           "rain": "Deszcz",
           "freeze": "Mróz",
           "snow": "Śnieg",
+          "wind": "Wind",
           "bad_condition": "Zła pogoda",
           "bad_current_condition": "Zła bieżąca pogoda",
           "dirty_now": "Brudna powierzchnia — myj teraz",
+          "no_data": "No forecast data",
           "snoozed": "Drzemka",
           "unavailable": "Niedostępne"
         }
@@ -319,8 +325,10 @@
           "no_rain": "Nie — Deszcz",
           "no_freeze": "Nie — Mróz",
           "no_snow": "Nie — Śnieg",
+          "no_wind": "No — Wind",
           "no_bad_condition": "Nie — Zła pogoda",
           "no_bad_current_condition": "Nie — Zła bieżąca pogoda",
+          "no_data": "No — No forecast data",
           "snoozed": "Drzemka"
         }
       },

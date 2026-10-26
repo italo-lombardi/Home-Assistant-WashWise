@@ -28,7 +28,8 @@
           "bad_conditions": "阻止清洗的天气状况",
           "precip_weight": "降水评分权重",
           "freeze_weight": "结冰评分权重",
-          "condition_weight": "天气状况评分权重"
+          "condition_weight": "天气状况评分权重",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "要分析的预报时段数。使用逐日预报时每时段 = 1 天；使用逐小时预报时每时段 = 1 小时。值越大，覆盖天气范围越广，但判断结果越保守。",
@@ -38,7 +39,8 @@
           "bad_conditions": "在预报或当前天气状况中出现时会阻止清洗的天气状况代码。",
           "precip_weight": "预报中的降雨量对 0–100 分评分的扣减幅度。值越高，对多雨天气的惩罚越重。",
           "freeze_weight": "结冰天气对 0–100 分评分的扣减幅度。设为 0 可在评分中忽略结冰，但仍会阻止清洗判断。",
-          "condition_weight": "恶劣天气状况（风暴、冰雹、降雪）对 0–100 分评分的扣减幅度，严重程度按各状况单独计算。"
+          "condition_weight": "恶劣天气状况（风暴、冰雹、降雪）对 0–100 分评分的扣减幅度，严重程度按各状况单独计算。",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -114,13 +116,15 @@
           "days": "预报范围（时段数）",
           "precip_threshold_mm": "降水阈值（毫米）",
           "freeze_check": "在结冰温度时阻止清洗",
-          "forecast_type": "预报类型"
+          "forecast_type": "预报类型",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "要分析的预报时段数。使用逐日预报时每时段 = 1 天；使用逐小时预报时每时段 = 1 小时。",
           "precip_threshold_mm": "每日总降水量超过此值将阻止清洗。",
           "freeze_check": "开启后，预报气温低于 0 °C 的日期将阻止清洗。",
-          "forecast_type": "逐日模式每天一条记录；逐小时模式每小时一条记录。逐小时更精准，但需要来源支持逐小时数据。"
+          "forecast_type": "逐日模式每天一条记录；逐小时模式每小时一条记录。逐小时更精准，但需要来源支持逐小时数据。",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "scoring": {
@@ -303,9 +307,11 @@
           "rain": "降雨",
           "freeze": "结冰",
           "snow": "降雪",
+          "wind": "Wind",
           "bad_condition": "恶劣天气",
           "bad_current_condition": "当前天气恶劣",
           "dirty_now": "表面脏污——立即清洗",
+          "no_data": "No forecast data",
           "snoozed": "已暂停",
           "unavailable": "不可用"
         }
@@ -319,8 +325,10 @@
           "no_rain": "否——降雨",
           "no_freeze": "否——结冰",
           "no_snow": "否——降雪",
+          "no_wind": "No — Wind",
           "no_bad_condition": "否——恶劣天气",
           "no_bad_current_condition": "否——当前天气恶劣",
+          "no_data": "No — No forecast data",
           "snoozed": "已暂停"
         }
       },

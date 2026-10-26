@@ -92,6 +92,31 @@ async def test_get_forecast_parses_fixture(
     assert all(isinstance(day.date, date) for day in result)
 
 
+async def test_get_forecast_resolves_wind_unit_from_entity(hass: HomeAssistant) -> None:
+    """Wind unit declared on the parent entity (not the row) is applied.
+
+    Mirrors the temperature-unit path: providers like met.no expose
+    ``wind_speed_unit`` on the entity state, not on each forecast frame. A row
+    reporting 15 (m/s) must normalize to 54 km/h, not be read as 15 km/h.
+    """
+    entity_id = "weather.windy"
+    hass.states.async_set(
+        entity_id,
+        "sunny",
+        {"temperature_unit": "°C", "wind_speed_unit": "m/s"},
+    )
+    response = {
+        entity_id: {"forecast": [{"datetime": "2026-06-11T00:00:00+00:00", "wind_speed": 15.0}]}
+    }
+    _register_forecast_service(hass, response)
+
+    result = await weather_source.get_forecast(hass, entity_id, mode="daily", days=1)
+
+    assert len(result) == 1
+    # 15 m/s = 54 km/h (not 15).
+    assert result[0].wind_speed_kmh == pytest.approx(54.0, abs=1e-2)
+
+
 # ---------------------------------------------------------------------------
 # is_available
 # ---------------------------------------------------------------------------
@@ -181,6 +206,44 @@ def test_to_celsius_conversions(value: Any, unit: Any, expected: float | None) -
         assert result is None
     else:
         assert result == pytest.approx(expected, abs=1e-6)
+
+
+# ---------------------------------------------------------------------------
+# _to_kmh
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("value", "unit", "expected"),
+    [
+        (10.0, "m/s", 36.0),  # 10 m/s = 36 km/h
+        (50.0, "km/h", 50.0),  # already km/h, passthrough
+        (10.0, "mph", 16.09344),  # miles -> km
+        (10.0, "kn", 18.52),  # knots -> km/h
+        (20.0, None, 20.0),  # no unit -> assume km/h
+        (20.0, "parsecs/fortnight", 20.0),  # unknown unit -> raw numeric
+        (None, "m/s", None),  # missing value
+        ("nope", "m/s", None),  # unparseable value
+        (5.0, 123, 5.0),  # non-string unit -> raw numeric
+    ],
+)
+def test_to_kmh_conversions(value: Any, unit: Any, expected: float | None) -> None:
+    """Wind-speed normalization across units, with graceful fallbacks."""
+    result = weather_source._to_kmh(value, unit)
+    if expected is None:
+        assert result is None
+    else:
+        assert result == pytest.approx(expected, abs=1e-2)
+
+
+def test_to_kmh_converter_failure_returns_none(monkeypatch: Any) -> None:
+    """A SpeedConverter blow-up degrades to None rather than crashing."""
+
+    def _boom(*_args: Any, **_kwargs: Any) -> float:
+        raise ValueError("boom")
+
+    monkeypatch.setattr(weather_source.SpeedConverter, "convert", _boom)
+    assert weather_source._to_kmh(10.0, "m/s") is None
 
 
 # ---------------------------------------------------------------------------

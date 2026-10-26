@@ -28,7 +28,8 @@
           "bad_conditions": "Blokující povětrnostní podmínky",
           "precip_weight": "Váha skóre srážek",
           "freeze_weight": "Váha skóre mrazu",
-          "condition_weight": "Váha skóre podmínek"
+          "condition_weight": "Váha skóre podmínek",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Počet úseků předpovědi k analýze. U denní předpovědi každý úsek = 1 den; u hodinové každý úsek = 1 hodina. Větší hodnoty zachytí více počasí, ale dávají konzervativnější výsledky.",
@@ -38,7 +39,8 @@
           "bad_conditions": "Kódy povětrnostních podmínek, které blokují mytí, pokud se vyskytnou v předpovědi nebo jako aktuální podmínka.",
           "precip_weight": "O kolik déšť v předpovědi snižuje skóre 0–100. Vyšší hodnota přísněji penalizuje deštivé dny.",
           "freeze_weight": "O kolik mrazivý den snižuje skóre 0–100. Nastavte na 0, chcete-li mráz ignorovat při výpočtu skóre, ale přesto blokovat výsledek.",
-          "condition_weight": "O kolik špatné povětrnostní podmínky (bouřky, krupobití, sníh) snižují skóre 0–100. Závažnost je určena pro každou podmínku zvlášť."
+          "condition_weight": "O kolik špatné povětrnostní podmínky (bouřky, krupobití, sníh) snižují skóre 0–100. Závažnost je určena pro každou podmínku zvlášť.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -114,13 +116,15 @@
           "days": "Horizont předpovědi (úseky)",
           "precip_threshold_mm": "Prahová hodnota srážek (mm)",
           "freeze_check": "Blokovat při mrazivých teplotách",
-          "forecast_type": "Typ předpovědi"
+          "forecast_type": "Typ předpovědi",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Počet úseků předpovědi k analýze. U denní předpovědi každý úsek = 1 den; u hodinové každý úsek = 1 hodina.",
           "precip_threshold_mm": "Celkové srážky za den přesahující tuto hodnotu blokují mytí.",
           "freeze_check": "Je-li zapnuto, den předpovědi, jehož teplota klesne pod 0 °C, blokuje mytí.",
-          "forecast_type": "Denní používá jeden záznam na den; hodinová používá jeden záznam na hodinu. Hodinová je přesnější, ale vyžaduje, aby zdroj poskytoval hodinová data."
+          "forecast_type": "Denní používá jeden záznam na den; hodinová používá jeden záznam na hodinu. Hodinová je přesnější, ale vyžaduje, aby zdroj poskytoval hodinová data.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "scoring": {
@@ -303,9 +307,11 @@
           "rain": "Déšť",
           "freeze": "Mráz",
           "snow": "Sníh",
+          "wind": "Wind",
           "bad_condition": "Špatné počasí",
           "bad_current_condition": "Špatné aktuální počasí",
           "dirty_now": "Povrch špinavý — myjte nyní",
+          "no_data": "No forecast data",
           "snoozed": "Odloženo",
           "unavailable": "Nedostupné"
         }
@@ -319,8 +325,10 @@
           "no_rain": "Ne — Déšť",
           "no_freeze": "Ne — Mráz",
           "no_snow": "Ne — Sníh",
+          "no_wind": "No — Wind",
           "no_bad_condition": "Ne — Špatné počasí",
           "no_bad_current_condition": "Ne — Špatné aktuální počasí",
+          "no_data": "No — No forecast data",
           "snoozed": "Odloženo"
         }
       },

@@ -35,6 +35,7 @@ from .const import (
     CONF_RAIN_GAUGE_THRESHOLD_MM,
     CONF_TEMPERATURE_UNIT,
     CONF_WEATHER_ENTITIES,
+    CONF_WIND_THRESHOLD,
     DEFAULT_CATEGORY,
     DEFAULT_CONDITION_WEIGHT,
     DEFAULT_FORECAST_TYPE,
@@ -134,6 +135,7 @@ _RECONFIGURE_STRIPPED_OPTION_KEYS: tuple[str, ...] = (
     CONF_PRECIP_WEIGHT,
     CONF_FREEZE_WEIGHT,
     CONF_CONDITION_WEIGHT,
+    CONF_WIND_THRESHOLD,
     CONF_RAIN_GAUGE_ENTITY,
     CONF_RAIN_GAUGE_THRESHOLD_MM,
     CONF_IRRIGATION_SWITCH_ENTITY,
@@ -248,6 +250,11 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             self._data.update(user_input)
+            # Blank wind field means "disabled": voluptuous omits the key, so
+            # a stale value already in _data (reconfigure of an entry that had
+            # wind set) would otherwise survive. Drop it explicitly.
+            if CONF_WIND_THRESHOLD not in user_input:
+                self._data.pop(CONF_WIND_THRESHOLD, None)
             if category == "garden_irrigation":
                 return await self.async_step_irrigation()
             title = (self._data.get(CONF_NAME) or "").strip() or _category_label(category)
@@ -291,6 +298,20 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                 vol.Required(
                     CONF_FREEZE_CHECK, default=preset["freeze_check"]
                 ): selector.BooleanSelector(),
+                # suggested_value preserves a previously-set wind threshold on
+                # reconfigure while still letting the user clear it to disable.
+                vol.Optional(
+                    CONF_WIND_THRESHOLD,
+                    description={"suggested_value": self._data.get(CONF_WIND_THRESHOLD)},
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0,
+                        max=200,
+                        step=1,
+                        mode=selector.NumberSelectorMode.BOX,
+                        unit_of_measurement="km/h",
+                    )
+                ),
                 vol.Required(
                     CONF_BAD_CONDITIONS, default=list(BAD_CONDITIONS)
                 ): _bad_conditions_selector(),
@@ -548,7 +569,14 @@ class WashWiseOptionsFlow(OptionsFlow):
         preset = CATEGORY_PRESETS.get(category, CATEGORY_PRESETS[DEFAULT_CATEGORY])
 
         if user_input is not None:
-            return self._save({**user_input, CONF_CUSTOMIZE_THRESHOLDS: True})
+            updates = {**user_input, CONF_CUSTOMIZE_THRESHOLDS: True}
+            # A blank wind field means "disable the wind blocker". voluptuous
+            # omits the key entirely when the optional NumberSelector is left
+            # empty, and the _save merge would otherwise preserve a previously
+            # saved value — so clear it explicitly here.
+            if CONF_WIND_THRESHOLD not in user_input:
+                updates[CONF_WIND_THRESHOLD] = None
+            return self._save(updates)
 
         data_schema = vol.Schema(
             {
@@ -584,6 +612,22 @@ class WashWiseOptionsFlow(OptionsFlow):
                     CONF_FREEZE_CHECK,
                     default=current.get(CONF_FREEZE_CHECK, preset["freeze_check"]),
                 ): selector.BooleanSelector(),
+                # suggested_value (not default) pre-fills the current wind
+                # threshold while still allowing the user to clear the box to
+                # disable the blocker — a default would be re-injected on a
+                # blank submit, making the setting impossible to turn off.
+                vol.Optional(
+                    CONF_WIND_THRESHOLD,
+                    description={"suggested_value": current.get(CONF_WIND_THRESHOLD)},
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0,
+                        max=200,
+                        step=1,
+                        mode=selector.NumberSelectorMode.BOX,
+                        unit_of_measurement="km/h",
+                    )
+                ),
             }
         )
 

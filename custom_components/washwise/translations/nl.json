@@ -28,7 +28,8 @@
           "bad_conditions": "Blokkerende weersomstandigheden",
           "precip_weight": "Weging neerslagscore",
           "freeze_weight": "Weging vriesscore",
-          "condition_weight": "Weging weerconditiescore"
+          "condition_weight": "Weging weerconditiescore",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Hoeveel voorspellingsdagen er vooruit worden gekeken, inclusief vandaag. Een grotere horizon vangt meer weer op, maar levert voorzichtigere oordelen op.",
@@ -38,7 +39,8 @@
           "bad_conditions": "Weerconditiecodes die wassen blokkeren wanneer ze in de voorspelling of als huidige conditie verschijnen.",
           "precip_weight": "Hoeveel regen in de voorspelling van de score van 0–100 aftrekt. Een hogere waarde bestraft regenachtige dagen strenger.",
           "freeze_weight": "Hoeveel een vriesdag van de score van 0–100 aftrekt. Stel in op 0 om vriezen in de score te negeren, terwijl het oordeel nog steeds geblokkeerd wordt.",
-          "condition_weight": "Hoeveel slechte weersomstandigheden (storm, hagel, sneeuw) van de score van 0–100 aftrekken. De ernst verschilt per conditie."
+          "condition_weight": "Hoeveel slechte weersomstandigheden (storm, hagel, sneeuw) van de score van 0–100 aftrekken. De ernst verschilt per conditie.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -114,13 +116,15 @@
           "days": "Voorspellingshorizon (dagen)",
           "precip_threshold_mm": "Neerslagdrempel (mm)",
           "freeze_check": "Blokkeren bij vriestemperaturen",
-          "forecast_type": "Type voorspelling"
+          "forecast_type": "Type voorspelling",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Hoeveel voorspellingsdagen er vooruit worden gekeken, inclusief vandaag.",
           "precip_threshold_mm": "Wanneer de totale neerslag per dag boven deze waarde uitkomt, wordt de wasbeurt geblokkeerd.",
           "freeze_check": "Wanneer ingeschakeld, blokkeert een voorspellingsdag waarop de temperatuur onder 0 °C zakt de wasbeurt.",
-          "forecast_type": "Dagelijks gebruikt één invoer per dag; Per uur aggregeert uurwaarden wanneer dat ondersteund wordt."
+          "forecast_type": "Dagelijks gebruikt één invoer per dag; Per uur aggregeert uurwaarden wanneer dat ondersteund wordt.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "scoring": {
@@ -303,9 +307,11 @@
           "rain": "Regen",
           "freeze": "Vorst",
           "snow": "Sneeuw",
+          "wind": "Wind",
           "bad_condition": "Slecht weer",
           "bad_current_condition": "Slecht actueel weer",
           "dirty_now": "Vies oppervlak — nu wassen",
+          "no_data": "No forecast data",
           "snoozed": "Gesluimerd",
           "unavailable": "Niet beschikbaar"
         }
@@ -319,8 +325,10 @@
           "no_rain": "Nee — Regen",
           "no_freeze": "Nee — Vorst",
           "no_snow": "Nee — Sneeuw",
+          "no_wind": "No — Wind",
           "no_bad_condition": "Nee — Slecht weer",
           "no_bad_current_condition": "Nee — Slecht actueel weer",
+          "no_data": "No — No forecast data",
           "snoozed": "Gesluimerd"
         }
       },

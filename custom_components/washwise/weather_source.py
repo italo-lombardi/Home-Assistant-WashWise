@@ -22,12 +22,13 @@ from typing import Any
 from homeassistant.const import (
     STATE_UNAVAILABLE,
     STATE_UNKNOWN,
+    UnitOfSpeed,
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant
-from homeassistant.util.unit_conversion import TemperatureConverter
+from homeassistant.util.unit_conversion import SpeedConverter, TemperatureConverter
 
-from .const import PRECIP_KEYS, TIME_KEYS, TMAX_KEYS, TMIN_KEYS
+from .const import PRECIP_KEYS, TIME_KEYS, TMAX_KEYS, TMIN_KEYS, WIND_KEYS
 from .models import CurrentWeather, ForecastDay
 
 _LOGGER = logging.getLogger(__name__)
@@ -124,14 +125,18 @@ async def get_forecast(
     if not isinstance(raw_forecast, list):
         return []
 
-    # Resolve the unit reported on the source entity once -- forecast rows
-    # rarely carry their own ``temperature_unit``.
+    # Resolve the units reported on the source entity once -- forecast rows
+    # rarely carry their own ``temperature_unit`` / ``wind_speed_unit``.
     state = hass.states.get(entity_id)
     entity_unit: str | None = None
+    entity_wind_unit: str | None = None
     if state is not None:
         attr_unit = state.attributes.get("temperature_unit")
         if isinstance(attr_unit, str) and attr_unit.strip():
             entity_unit = attr_unit
+        attr_wind_unit = state.attributes.get("wind_speed_unit")
+        if isinstance(attr_wind_unit, str) and attr_wind_unit.strip():
+            entity_wind_unit = attr_wind_unit
 
     # Entity's own temperature_unit attribute wins — it knows what unit its
     # forecast frames use. The fallback_unit (from coordinator config) is only
@@ -143,18 +148,25 @@ async def get_forecast(
     for raw in sliced:
         if not isinstance(raw, dict):
             continue
-        normalized = _normalize(raw, fallback_unit=effective_unit)
+        normalized = _normalize(
+            raw, fallback_unit=effective_unit, fallback_wind_unit=entity_wind_unit
+        )
         if normalized is not None:
             out.append(normalized)
     return out
 
 
-def _normalize(raw: dict[str, Any], fallback_unit: str | None = None) -> ForecastDay | None:
+def _normalize(
+    raw: dict[str, Any],
+    fallback_unit: str | None = None,
+    fallback_wind_unit: str | None = None,
+) -> ForecastDay | None:
     """Convert a provider-specific forecast entry to a ``ForecastDay``.
 
     Any exception or unparseable date returns ``None`` so the caller can
-    skip the entry without aborting the whole forecast. ``fallback_unit``
-    is used when the entry itself does not carry ``temperature_unit``.
+    skip the entry without aborting the whole forecast. ``fallback_unit`` and
+    ``fallback_wind_unit`` supply the temperature / wind-speed unit when the
+    entry itself does not carry its own.
     """
     try:
         time_value = _resolve_key(raw, TIME_KEYS)
@@ -182,12 +194,16 @@ def _normalize(raw: dict[str, Any], fallback_unit: str | None = None) -> Forecas
         tmin_c = _to_celsius(tmin_raw, unit)
         tmax_c = _to_celsius(tmax_raw, unit)
 
+        wind_raw = _resolve_key(raw, WIND_KEYS)
+        wind_kmh = _to_kmh(wind_raw, raw.get("wind_speed_unit") or fallback_wind_unit)
+
         return ForecastDay(
             date=fc_date,
             condition=condition,
             precipitation_mm=precip_mm,
             temp_min_c=tmin_c,
             temp_max_c=tmax_c,
+            wind_speed_kmh=wind_kmh,
             raw=dict(raw),
         )
     except Exception:
@@ -234,6 +250,57 @@ def _to_celsius(value: Any, unit: Any) -> float | None:
             unit,
             exc_info=True,
         )
+        return None
+
+
+# Map common HA / provider wind-speed unit strings to ``UnitOfSpeed``.
+_SPEED_UNIT_MAP: dict[str, str] = {
+    "km/h": UnitOfSpeed.KILOMETERS_PER_HOUR,
+    "kmh": UnitOfSpeed.KILOMETERS_PER_HOUR,
+    "kph": UnitOfSpeed.KILOMETERS_PER_HOUR,
+    UnitOfSpeed.KILOMETERS_PER_HOUR: UnitOfSpeed.KILOMETERS_PER_HOUR,
+    "m/s": UnitOfSpeed.METERS_PER_SECOND,
+    "mps": UnitOfSpeed.METERS_PER_SECOND,
+    UnitOfSpeed.METERS_PER_SECOND: UnitOfSpeed.METERS_PER_SECOND,
+    "mph": UnitOfSpeed.MILES_PER_HOUR,
+    UnitOfSpeed.MILES_PER_HOUR: UnitOfSpeed.MILES_PER_HOUR,
+    "kn": UnitOfSpeed.KNOTS,
+    "kt": UnitOfSpeed.KNOTS,
+    "knot": UnitOfSpeed.KNOTS,
+    "knots": UnitOfSpeed.KNOTS,
+    UnitOfSpeed.KNOTS: UnitOfSpeed.KNOTS,
+}
+
+
+def _to_kmh(value: Any, unit: Any) -> float | None:
+    """Convert a wind speed ``value`` from ``unit`` to km/h.
+
+    Mirrors :func:`_to_celsius`: returns ``None`` for missing/unparseable
+    values, and falls back to the raw numeric value when the unit is missing
+    or unrecognised (so an unknown unit degrades to "assume km/h" rather than
+    dropping the reading).
+    """
+    if value is None:
+        return None
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return None
+
+    target = UnitOfSpeed.KILOMETERS_PER_HOUR
+    if not isinstance(unit, str):
+        return numeric
+    mapped = (
+        _SPEED_UNIT_MAP.get(unit)
+        or _SPEED_UNIT_MAP.get(unit.strip())
+        or _SPEED_UNIT_MAP.get(unit.strip().lower())
+    )
+    if mapped is None or mapped == target:
+        return numeric
+    try:
+        return SpeedConverter.convert(numeric, mapped, target)
+    except Exception:
+        _LOGGER.debug("SpeedConverter failed for value=%r unit=%r", value, unit, exc_info=True)
         return None
 
 

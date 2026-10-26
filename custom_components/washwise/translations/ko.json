@@ -28,7 +28,8 @@
           "bad_conditions": "차단 날씨 조건",
           "precip_weight": "강수 점수 가중치",
           "freeze_weight": "동결 점수 가중치",
-          "condition_weight": "날씨 조건 점수 가중치"
+          "condition_weight": "날씨 조건 점수 가중치",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "분석할 예보 슬롯 수입니다. 일별 예보에서는 슬롯 1개 = 1일, 시간별에서는 슬롯 1개 = 1시간입니다. 값이 클수록 더 많은 날씨를 포착하지만 더 보수적인 판정을 냅니다.",
@@ -38,7 +39,8 @@
           "bad_conditions": "예보나 현재 날씨 조건에 나타날 때 세척을 차단하는 날씨 조건 코드입니다.",
           "precip_weight": "예보의 강수량이 0–100 점수에서 얼마나 감점되는지를 나타냅니다. 값이 높을수록 비 오는 날의 감점이 커집니다.",
           "freeze_weight": "영하의 날이 0–100 점수에서 얼마나 감점되는지를 나타냅니다. 판정은 차단하되 점수에서 동결을 무시하려면 0으로 설정하세요.",
-          "condition_weight": "나쁜 날씨 조건(폭풍, 우박, 눈)이 0–100 점수에서 얼마나 감점되는지를 나타냅니다. 심각도는 조건별로 다릅니다."
+          "condition_weight": "나쁜 날씨 조건(폭풍, 우박, 눈)이 0–100 점수에서 얼마나 감점되는지를 나타냅니다. 심각도는 조건별로 다릅니다.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -114,13 +116,15 @@
           "days": "예보 범위 (슬롯)",
           "precip_threshold_mm": "강수 임계값 (mm)",
           "freeze_check": "영하 온도 시 차단",
-          "forecast_type": "예보 유형"
+          "forecast_type": "예보 유형",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "분석할 예보 슬롯 수입니다. 일별 예보에서는 슬롯 1개 = 1일, 시간별에서는 슬롯 1개 = 1시간입니다.",
           "precip_threshold_mm": "이 값을 초과하는 일일 총 강수량은 세척을 차단합니다.",
           "freeze_check": "켜면 온도가 0°C 미만인 예보 일자는 세척을 차단합니다.",
-          "forecast_type": "일별은 하루 1개 항목을 사용하고, 시간별은 시간당 1개 항목을 사용합니다. 시간별이 더 정확하지만 소스가 시간별 데이터를 제공해야 합니다."
+          "forecast_type": "일별은 하루 1개 항목을 사용하고, 시간별은 시간당 1개 항목을 사용합니다. 시간별이 더 정확하지만 소스가 시간별 데이터를 제공해야 합니다.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "scoring": {
@@ -303,9 +307,11 @@
           "rain": "비",
           "freeze": "동결",
           "snow": "눈",
+          "wind": "Wind",
           "bad_condition": "나쁜 날씨",
           "bad_current_condition": "현재 날씨 불량",
           "dirty_now": "표면 오염 — 지금 세척하세요",
+          "no_data": "No forecast data",
           "snoozed": "일시 중지됨",
           "unavailable": "사용 불가"
         }
@@ -319,8 +325,10 @@
           "no_rain": "불가 — 비",
           "no_freeze": "불가 — 동결",
           "no_snow": "불가 — 눈",
+          "no_wind": "No — Wind",
           "no_bad_condition": "불가 — 나쁜 날씨",
           "no_bad_current_condition": "불가 — 현재 날씨 불량",
+          "no_data": "No — No forecast data",
           "snoozed": "일시 중지됨"
         }
       },

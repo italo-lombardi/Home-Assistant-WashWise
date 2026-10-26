@@ -1,10 +1,10 @@
 /**
- * WashWise Card v0.2.0
+ * WashWise Card v0.2.7
  * Custom Lovelace card for the Home Assistant WashWise integration.
  * Single-file, hand-coded, no build step.
  */
 
-const CARD_VERSION = "0.2.0";
+const CARD_VERSION = "0.2.7";
 
 console.info(
   `%c WASHWISE-CARD %c v${CARD_VERSION} %c — github.com/italo-lombardi/Home-Assistant-WashWise `,
@@ -279,6 +279,48 @@ const cardStyles = css`
     font-size: 0.9rem;
   }
 
+  /* Action row */
+  .ww-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-top: 1px solid var(--ww-divider);
+    padding-top: var(--ww-gap);
+  }
+
+  .ww-action {
+    flex: 1 1 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 10px;
+    min-height: 36px;
+    border: 1px solid var(--ww-divider);
+    border-radius: 10px;
+    background: transparent;
+    color: var(--ww-fg);
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    transition: background 120ms ease, border-color 120ms ease;
+  }
+
+  .ww-action:hover { background: var(--ww-divider); }
+
+  .ww-action:focus-visible {
+    outline: 2px solid var(--ww-accent);
+    outline-offset: 2px;
+  }
+
+  .ww-action[disabled] {
+    opacity: 0.5;
+    cursor: default;
+    pointer-events: none;
+  }
+
   /* Skeleton shimmer */
   @keyframes ww-shimmer {
     0% { background-position: 200% 0; }
@@ -316,6 +358,7 @@ const DEFAULT_CONFIG = {
   show_diagnostics: true,
   diagnostics_open: false,
   compact_mode: false,
+  show_actions: false,
   mode: "wash",
 };
 
@@ -325,6 +368,10 @@ const REASON_MAP = {
   freeze: "Freeze risk",
   snow: "Snow in forecast",
   bad_condition: "Bad weather expected",
+  bad_current_condition: "Bad current weather",
+  dirty_now: "Surface dirty — wash now",
+  wind: "High wind",
+  no_data: "No forecast data",
   unavailable: "No data",
   snoozed: "Snoozed",
 };
@@ -452,6 +499,7 @@ class WashWiseCard extends LitElement {
     if (cfg.show_reason) size += 1;
     if (cfg.show_forecast_strip) size += 2;
     if (cfg.show_diagnostics) size += 1;
+    if (cfg.show_actions) size += 1;
     return size;
   }
 
@@ -462,6 +510,15 @@ class WashWiseCard extends LitElement {
     if (!oldHass) return true;
     const id = this._config.entity;
     if (oldHass.states?.[id] !== this.hass.states?.[id]) return true;
+    // The action row needs config_entry_id from the entity registry, which can
+    // hydrate a tick after states. Re-render when it appears/changes so the row
+    // is not stranded hidden until an unrelated state change.
+    if (
+      oldHass.entities?.[id]?.config_entry_id !==
+      this.hass.entities?.[id]?.config_entry_id
+    ) {
+      return true;
+    }
     const snoozeSensorId = id
       .replace("binary_sensor.", "sensor.")
       .replace(/_can_wash$/, "_snooze_remaining");
@@ -510,6 +567,7 @@ class WashWiseCard extends LitElement {
             ? this._renderForecastStrip(stateObj)
             : nothing}
           ${cfg.show_diagnostics && !snoozed ? this._renderDiagnostics(stateObj, cfg.diagnostics_open) : nothing}
+          ${cfg.show_actions ? this._renderActions(stateObj, snoozed, isIrrigation) : nothing}
         </div>
       </ha-card>
     `;
@@ -598,6 +656,10 @@ class WashWiseCard extends LitElement {
       freeze: "Freeze risk",
       snow: "Snow in forecast — skip",
       bad_condition: "Bad weather — skip",
+      bad_current_condition: "Bad current weather — skip",
+      dirty_now: "Surface dirty — wash now",
+      wind: "High wind — skip",
+      no_data: "No forecast data",
       unavailable: "No data",
       snoozed: "Snoozed",
     };
@@ -692,6 +754,90 @@ class WashWiseCard extends LitElement {
         </dl>
       </details>
     `;
+  }
+
+  // ── Actions ──────────────────────────────────────────────────────────────
+
+  // Services key off the config entry, not the entity. The frontend hass holds
+  // the entity registry at hass.entities[entity_id].config_entry_id; without it
+  // we cannot target a service, so the row is hidden.
+  _entryId() {
+    const id = this._config?.entity;
+    if (!id) return null;
+    return this.hass?.entities?.[id]?.config_entry_id ?? null;
+  }
+
+  _renderActions(stateObj, snoozed, isIrrigation = false) {
+    // ponytail: wash-only. mark_washed/snooze are meaningless for a
+    // garden_irrigation entry (that path uses set_irrigation_switch); hide the
+    // row rather than show wrong-semantic buttons. Add irrigation actions here
+    // if that mode ever needs tappable controls.
+    if (isIrrigation) return nothing;
+    const entryId = this._entryId();
+    if (!entryId) return nothing;
+    // A dead coordinator rejects every service call; disable the whole row, not
+    // just Mark washed, so Snooze/Clear don't fire into a raw error toast.
+    const unavailable = stateObj.state === "unavailable" || stateObj.state === "unknown";
+    return html`
+      <div class="ww-actions">
+        <button
+          class="ww-action"
+          type="button"
+          ?disabled=${unavailable}
+          @click=${() => this._onMarkWashed(entryId)}
+        >🧺<span>Mark washed</span></button>
+        ${snoozed
+          ? html`<button
+              class="ww-action"
+              type="button"
+              ?disabled=${unavailable}
+              @click=${() => this._onClearSnooze(entryId)}
+            >▶️<span>Clear snooze</span></button>`
+          : html`<button
+              class="ww-action"
+              type="button"
+              ?disabled=${unavailable}
+              @click=${() => this._onSnooze(entryId)}
+            >⏸️<span>Snooze</span></button>`}
+      </div>
+    `;
+  }
+
+  // Thin wrapper so tests can stub the confirm without touching window.
+  // Fails safe: if confirm is unavailable (webview/SSR/kiosk) the destructive
+  // action is NOT fired — a missing prompt must never read as "yes".
+  _confirm(message) {
+    if (typeof window === "undefined" || typeof window.confirm !== "function") {
+      return false;
+    }
+    return window.confirm(message);
+  }
+
+  _callService(service, data) {
+    const p = this.hass?.callService?.("washwise", service, data);
+    // A rejected service call (e.g. stale entry_id → HomeAssistantError) must
+    // not surface as an unhandled rejection. Surface it; HA raises its own toast.
+    if (p && typeof p.catch === "function") {
+      p.catch((err) => {
+        console.error(`[washwise-card] service washwise.${service} failed`, err);
+      });
+    }
+    return p;
+  }
+
+  _onMarkWashed(entryId) {
+    // Mark washed resets the wash state; confirm before firing.
+    if (!this._confirm("Mark this surface as washed now?")) return;
+    this._callService("mark_washed", { entry_id: entryId });
+  }
+
+  _onSnooze(entryId) {
+    // No hours → backend applies the configured default (24h).
+    this._callService("snooze", { entry_id: entryId });
+  }
+
+  _onClearSnooze(entryId) {
+    this._callService("clear_snooze", { entry_id: entryId });
   }
 
   // ── Internals ──────────────────────────────────────────────────────────
@@ -1028,6 +1174,8 @@ class WashWiseCardEditor extends LitElement {
           "When enabled, the diagnostics section starts expanded. Otherwise it starts collapsed.", false)}
         ${this._renderToggle("compact_mode", "Compact mode",
           "Tighten paddings and typography to fit denser dashboards.", false)}
+        ${this._renderToggle("show_actions", "Show action buttons",
+          "Append tappable Mark washed / Snooze / Clear snooze buttons wired to the WashWise services.", false)}
       </div>
     `;
   }

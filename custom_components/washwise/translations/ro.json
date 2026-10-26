@@ -28,7 +28,8 @@
           "bad_conditions": "Condiții meteo care blochează spălarea",
           "precip_weight": "Pondere precipitații în scor",
           "freeze_weight": "Pondere îngheț în scor",
-          "condition_weight": "Pondere condiții în scor"
+          "condition_weight": "Pondere condiții în scor",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Numărul de intervale din prognoză de analizat. Cu prognoză zilnică, fiecare interval = 1 zi; cu prognoză orară, fiecare interval = 1 oră. Valorile mai mari captează mai mult timp, dar produc verdicte mai conservatoare.",
@@ -38,7 +39,8 @@
           "bad_conditions": "Coduri de condiții meteo care blochează spălarea când apar în prognoză sau ca stare curentă.",
           "precip_weight": "Cât de mult scade ploaia din prognoză scorul de la 0 la 100. O valoare mai mare penalizează mai agresiv zilele ploioase.",
           "freeze_weight": "Cât de mult scade o zi de îngheț din scorul de la 0 la 100. Setați la 0 pentru a ignora înghețul în calcul, menținând totuși blocarea verdictului.",
-          "condition_weight": "Cât de mult scad condițiile meteo nefavorabile (furtuni, grindină, ninsoare) din scorul de la 0 la 100. Severitatea este per condiție."
+          "condition_weight": "Cât de mult scad condițiile meteo nefavorabile (furtuni, grindină, ninsoare) din scorul de la 0 la 100. Severitatea este per condiție.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -114,13 +116,15 @@
           "days": "Orizont prognoză (intervale)",
           "precip_threshold_mm": "Prag precipitații (mm)",
           "freeze_check": "Blocare la temperaturi de îngheț",
-          "forecast_type": "Tip prognoză"
+          "forecast_type": "Tip prognoză",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Numărul de intervale din prognoză de analizat. Cu prognoză zilnică, fiecare interval = 1 zi; cu prognoză orară, fiecare interval = 1 oră.",
           "precip_threshold_mm": "Precipitațiile totale pe zi care depășesc această valoare blochează spălarea.",
           "freeze_check": "Când este activat, o zi din prognoză cu temperatura sub 0 °C blochează spălarea.",
-          "forecast_type": "Zilnic folosește o intrare pe zi; Orar folosește o intrare pe oră. Prognoza orară este mai precisă, dar necesită ca sursa să expună date orare."
+          "forecast_type": "Zilnic folosește o intrare pe zi; Orar folosește o intrare pe oră. Prognoza orară este mai precisă, dar necesită ca sursa să expună date orare.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "scoring": {
@@ -303,9 +307,11 @@
           "rain": "Ploaie",
           "freeze": "Îngheț",
           "snow": "Ninsoare",
+          "wind": "Wind",
           "bad_condition": "Condiții meteo nefavorabile",
           "bad_current_condition": "Condiții meteo curente nefavorabile",
           "dirty_now": "Suprafață murdară — spălați acum",
+          "no_data": "No forecast data",
           "snoozed": "Amânat",
           "unavailable": "Indisponibil"
         }
@@ -319,8 +325,10 @@
           "no_rain": "Nu — Ploaie",
           "no_freeze": "Nu — Îngheț",
           "no_snow": "Nu — Ninsoare",
+          "no_wind": "No — Wind",
           "no_bad_condition": "Nu — Condiții meteo nefavorabile",
           "no_bad_current_condition": "Nu — Condiții meteo curente nefavorabile",
+          "no_data": "No — No forecast data",
           "snoozed": "Amânat"
         }
       },

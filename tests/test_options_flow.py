@@ -22,6 +22,7 @@ from custom_components.washwise.const import (
     CONF_PRECIP_WEIGHT,
     CONF_TEMPERATURE_UNIT,
     CONF_WEATHER_ENTITIES,
+    CONF_WIND_THRESHOLD,
     DEFAULT_CATEGORY,
     DEFAULT_FORECAST_TYPE,
     DEFAULT_TEMPERATURE_UNIT,
@@ -219,6 +220,59 @@ async def test_options_thresholds_save_updates_options(
     assert result["type"] == FlowResultType.CREATE_ENTRY
     for key, value in payload.items():
         assert mock_config_entry.options[key] == value
+
+
+async def test_options_thresholds_sets_wind(
+    hass: HomeAssistant, mock_config_entry: MockConfigEntry
+) -> None:
+    """Supplying a wind threshold in the thresholds step persists it."""
+    await _setup_entry(hass, mock_config_entry)
+
+    result = await hass.config_entries.options.async_init(mock_config_entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "thresholds"}
+    )
+    payload = {
+        CONF_DAYS: 3,
+        CONF_PRECIP_THRESHOLD: 0.2,
+        CONF_FREEZE_CHECK: True,
+        CONF_FORECAST_TYPE: "daily",
+        CONF_WIND_THRESHOLD: 45,
+    }
+    result = await hass.config_entries.options.async_configure(result["flow_id"], payload)
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert mock_config_entry.options[CONF_WIND_THRESHOLD] == 45
+
+
+async def test_options_thresholds_clears_wind_when_blank(
+    hass: HomeAssistant, mock_config_entry: MockConfigEntry
+) -> None:
+    """A previously-set wind threshold is cleared when the field is left blank.
+
+    Regression guard: a blank optional NumberSelector omits the key from
+    user_input; the step must explicitly null it so the _save merge does not
+    preserve the stale value (otherwise the blocker can never be disabled).
+    """
+    mock_config_entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(mock_config_entry, options={CONF_WIND_THRESHOLD: 45})
+    await _setup_entry(hass, mock_config_entry)
+
+    result = await hass.config_entries.options.async_init(mock_config_entry.entry_id)
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {"next_step_id": "thresholds"}
+    )
+    # Submit WITHOUT CONF_WIND_THRESHOLD -> cleared.
+    payload = {
+        CONF_DAYS: 3,
+        CONF_PRECIP_THRESHOLD: 0.2,
+        CONF_FREEZE_CHECK: True,
+        CONF_FORECAST_TYPE: "daily",
+    }
+    result = await hass.config_entries.options.async_configure(result["flow_id"], payload)
+
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert mock_config_entry.options.get(CONF_WIND_THRESHOLD) is None
 
 
 async def test_options_thresholds_uses_new_category_after_change(

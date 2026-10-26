@@ -15,7 +15,9 @@ from custom_components.washwise.decision import (
     REASON_CLEAR,
     REASON_DIRTY_NOW,
     REASON_FREEZE,
+    REASON_NO_DATA,
     REASON_RAIN,
+    REASON_WIND,
     CurrentWeather,
     ForecastDay,
     compute,
@@ -448,32 +450,168 @@ def test_days_analyzed_equals_min_of_horizon_and_forecast_len(
 # ---------------------------------------------------------------------------
 
 
-def test_empty_forecast_returns_can_wash_true() -> None:
-    """No forecast data == no blockers == verdict False (treat as unavailable)."""
+def test_empty_forecast_returns_no_data() -> None:
+    """No forecast data == no blockers == verdict False with an honest reason."""
     cur = CurrentWeather(condition="sunny", temperature_c=18.0)
 
     result = compute(cur, [], _thresholds(), invert=False, now=NOW)
 
     assert result.can_wash is False
-    assert result.reason == REASON_CLEAR
+    assert result.reason == REASON_NO_DATA
     assert result.days_analyzed == 0
     assert result.blocking_days == []
 
 
-def test_zero_horizon_returns_can_wash_true() -> None:
+def test_zero_horizon_returns_no_data() -> None:
     cur = CurrentWeather(condition="sunny", temperature_c=18.0)
     forecast = [_day(i) for i in range(3)]
 
     result = compute(cur, forecast, _thresholds(days=0), invert=False, now=NOW)
 
     assert result.can_wash is False
-    assert result.reason == REASON_CLEAR
+    assert result.reason == REASON_NO_DATA
     assert result.days_analyzed == 0
 
 
 # ---------------------------------------------------------------------------
-# Threshold parametrize: precip flips verdict
+# Wind blocker (opt-in)
 # ---------------------------------------------------------------------------
+
+
+def _windy_day(offset: int, wind_kmh: float | None) -> ForecastDay:
+    return ForecastDay(
+        date=date.fromordinal(TODAY.toordinal() + offset),
+        condition="sunny",
+        precipitation_mm=0.0,
+        temp_min_c=12.0,
+        temp_max_c=22.0,
+        wind_speed_kmh=wind_kmh,
+    )
+
+
+def test_wind_under_threshold_does_not_block() -> None:
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [_windy_day(i, 20.0) for i in range(3)]
+
+    result = compute(cur, forecast, _thresholds(wind_threshold_kmh=40.0), invert=False, now=NOW)
+
+    assert result.can_wash is True
+    assert result.reason == REASON_CLEAR
+    assert result.score == 100
+
+
+def test_wind_over_threshold_blocks_with_wind_reason() -> None:
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    # Day 0 calm, day 1 too windy -> blocked on day 1, reason=wind.
+    forecast = [_windy_day(0, 10.0), _windy_day(1, 60.0), _windy_day(2, 10.0)]
+
+    result = compute(cur, forecast, _thresholds(wind_threshold_kmh=40.0), invert=False, now=NOW)
+
+    assert result.can_wash is False
+    assert result.reason == REASON_WIND
+    assert result.days_analyzed == 3
+    # day 1 (tomorrow) is the blocker; today is clear so days_until_wash=0.
+    assert result.days_until_wash == 0
+    assert result.score < 100
+    # The per-day summary carries the normalized wind value + blocker tag.
+    assert result.forecast_summary[1]["wind_speed"] == 60.0
+    assert "wind" in result.forecast_summary[1]["blockers"]
+
+
+def test_wind_disabled_when_no_threshold_configured() -> None:
+    """Gale-force wind is ignored entirely when no threshold is set (default)."""
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [_windy_day(i, 200.0) for i in range(3)]
+
+    result = compute(cur, forecast, _thresholds(), invert=False, now=NOW)
+
+    assert result.can_wash is True
+    assert result.score == 100
+
+
+def test_wind_ignored_in_invert_mode() -> None:
+    """Wind has no meaning for solar/irrigation — a windy day is not a blocker
+    and must never flip the inverted score into a bonus."""
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    # Windy but dry: in invert mode this should stay "no rain -> no wash",
+    # NOT become a wind-blocked or wind-boosted verdict.
+    forecast = [_windy_day(i, 200.0) for i in range(3)]
+
+    result = compute(cur, forecast, _thresholds(wind_threshold_kmh=40.0), invert=True, now=NOW)
+
+    assert result.can_wash is False
+    assert result.reason == REASON_CLEAR  # dry horizon, not "wind"
+    # No day should carry a wind blocker tag.
+    assert all("wind" not in d["blockers"] for d in result.forecast_summary)
+
+
+def test_invert_empty_forecast_returns_no_data() -> None:
+    """The no_data honesty fix also applies on the inverted path."""
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+
+    result = compute(cur, [], _thresholds(), invert=True, now=NOW)
+
+    assert result.can_wash is False
+    assert result.reason == REASON_NO_DATA
+    assert result.days_analyzed == 0
+
+
+def test_wind_missing_value_never_blocks() -> None:
+    """A configured threshold with no wind data in the forecast is a no-op."""
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [_windy_day(i, None) for i in range(3)]
+
+    result = compute(cur, forecast, _thresholds(wind_threshold_kmh=40.0), invert=False, now=NOW)
+
+    assert result.can_wash is True
+    assert result.score == 100
+
+
+def test_wind_only_block_reports_wind_not_rain() -> None:
+    """A wind-only blocked day must report wind, not be masked as rain.
+
+    Guards the _reason_from_blockers ordering: wind outranks the
+    condition-string rain fallthrough.
+    """
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    windy = ForecastDay(
+        date=date.fromordinal(TODAY.toordinal() + 1),
+        condition="cloudy",  # not a bad condition -> only wind blocks
+        precipitation_mm=0.0,
+        temp_min_c=12.0,
+        temp_max_c=22.0,
+        wind_speed_kmh=80.0,
+    )
+
+    result = compute(
+        cur,
+        [_windy_day(0, 5.0), windy],
+        _thresholds(wind_threshold_kmh=40.0),
+        invert=False,
+        now=NOW,
+    )
+
+    assert result.reason == REASON_WIND
+
+
+def test_condition_rain_without_precip_blocker_reports_rain() -> None:
+    """A day blocked by a 'rainy' condition with sub-threshold precip still
+    reports rain via the condition fallthrough (wind reorder didn't break it)."""
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [
+        ForecastDay(
+            date=date.fromordinal(TODAY.toordinal()),
+            condition="rainy",
+            precipitation_mm=0.0,  # under threshold -> no precip blocker
+            temp_min_c=12.0,
+            temp_max_c=22.0,
+        )
+    ]
+
+    result = compute(cur, forecast, _thresholds(), invert=False, now=NOW)
+
+    assert result.can_wash is False
+    assert result.reason == REASON_RAIN
 
 
 @pytest.mark.parametrize(

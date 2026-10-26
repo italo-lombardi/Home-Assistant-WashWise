@@ -28,7 +28,8 @@
           "bad_conditions": "Blokuojančios orų sąlygos",
           "precip_weight": "Kritulių balo svoris",
           "freeze_weight": "Šalnų balo svoris",
-          "condition_weight": "Sąlygų balo svoris"
+          "condition_weight": "Sąlygų balo svoris",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Analizuojamų prognozės intervalų skaičius. Naudojant dienos prognozę kiekvienas intervalas = 1 diena; naudojant valandinę — 1 valanda. Didesnės vertės aptinka daugiau orų, tačiau pateikia konservatyvesnes išvadas.",
@@ -38,7 +39,8 @@
           "bad_conditions": "Orų sąlygų kodai, blokuojantys skalbimą, kai jie rodomi prognozėje arba kaip dabartinė sąlyga.",
           "precip_weight": "Kiek lietus prognozėje atima iš 0–100 balo. Didesnė vertė griežčiau baudžia lietingas dienas.",
           "freeze_weight": "Kiek šalnų diena atima iš 0–100 balo. Nustatykite 0, jei norite ignoruoti šalnas skaičiuojant balą, vis dar blokuojant verdiktą.",
-          "condition_weight": "Kiek blogos orų sąlygos (audros, kruša, sniegas) atima iš 0–100 balo. Griežtumas priklauso nuo sąlygos."
+          "condition_weight": "Kiek blogos orų sąlygos (audros, kruša, sniegas) atima iš 0–100 balo. Griežtumas priklauso nuo sąlygos.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -114,13 +116,15 @@
           "days": "Prognozės horizontas (intervalai)",
           "precip_threshold_mm": "Kritulių ribinė vertė (mm)",
           "freeze_check": "Blokuoti esant šalnaoms",
-          "forecast_type": "Prognozės tipas"
+          "forecast_type": "Prognozės tipas",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Analizuojamų prognozės intervalų skaičius. Naudojant dienos prognozę kiekvienas intervalas = 1 diena; naudojant valandinę — 1 valanda.",
           "precip_threshold_mm": "Bendra kritulių suma per dieną, viršijanti šią vertę, blokuoja skalbimą.",
           "freeze_check": "Kai įjungta, prognozės diena, kurios temperatūra kerta 0 °C, blokuoja skalbimą.",
-          "forecast_type": "Dieninė naudoja po vieną įrašą per dieną; Valandinė — po vieną per valandą. Valandinė tikslesnė, tačiau šaltinis turi pateikti valandinę prognozę."
+          "forecast_type": "Dieninė naudoja po vieną įrašą per dieną; Valandinė — po vieną per valandą. Valandinė tikslesnė, tačiau šaltinis turi pateikti valandinę prognozę.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "scoring": {
@@ -303,9 +307,11 @@
           "rain": "Lietus",
           "freeze": "Šalna",
           "snow": "Sniegas",
+          "wind": "Wind",
           "bad_condition": "Blogas oras",
           "bad_current_condition": "Bloga dabartinė orų sąlyga",
           "dirty_now": "Paviršius nešvarus — plaukite dabar",
+          "no_data": "No forecast data",
           "snoozed": "Atidėta",
           "unavailable": "Nepasiekiama"
         }
@@ -319,8 +325,10 @@
           "no_rain": "Ne — Lietus",
           "no_freeze": "Ne — Šalna",
           "no_snow": "Ne — Sniegas",
+          "no_wind": "No — Wind",
           "no_bad_condition": "Ne — Blogas oras",
           "no_bad_current_condition": "Ne — Bloga dabartinė orų sąlyga",
+          "no_data": "No — No forecast data",
           "snoozed": "Atidėta"
         }
       },

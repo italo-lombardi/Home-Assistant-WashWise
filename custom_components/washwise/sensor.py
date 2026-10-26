@@ -215,9 +215,11 @@ class ReasonSensor(WashWiseSensorBase):
         "rain",
         "freeze",
         "snow",
+        "wind",
         "bad_condition",
         "bad_current_condition",
         "dirty_now",
+        "no_data",
         "snoozed",
         "unavailable",
     ]
@@ -254,8 +256,10 @@ class WashStatusSensor(WashWiseSensorBase):
         "no_rain",
         "no_freeze",
         "no_snow",
+        "no_wind",
         "no_bad_condition",
         "no_bad_current_condition",
+        "no_data",
         "snoozed",
     ]
 
@@ -275,8 +279,10 @@ class WashStatusSensor(WashWiseSensorBase):
         "rain": "no_rain",
         "freeze": "no_freeze",
         "snow": "no_snow",
+        "wind": "no_wind",
         "bad_condition": "no_bad_condition",
         "bad_current_condition": "no_bad_current_condition",
+        "no_data": "no_data",
         "snoozed": "snoozed",
     }
 

@@ -28,7 +28,8 @@
           "bad_conditions": "Blockierende Wetterlagen",
           "precip_weight": "Gewichtung Niederschlag",
           "freeze_weight": "Gewichtung Frost",
-          "condition_weight": "Gewichtung Wetterlage"
+          "condition_weight": "Gewichtung Wetterlage",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Wie viele Vorhersagetage einschließlich heute berücksichtigt werden. Längere Zeiträume erfassen mehr Wetterereignisse, führen aber zu vorsichtigeren Bewertungen.",
@@ -38,7 +39,8 @@
           "bad_conditions": "Wetterlagen-Codes, die das Waschen blockieren, wenn sie in der Vorhersage oder als aktuelle Wetterlage auftreten.",
           "precip_weight": "Wie stark Regen in der Vorhersage den Score (0–100) reduziert. Höhere Werte bestrafen Regentage stärker.",
           "freeze_weight": "Wie stark ein Frosttag den Score (0–100) reduziert. Auf 0 setzen, um Frost beim Score zu ignorieren, während die Bewertung weiterhin blockiert wird.",
-          "condition_weight": "Wie stark schlechte Wetterlagen (Sturm, Hagel, Schnee) den Score (0–100) reduzieren. Der Schweregrad wird je Wetterlage festgelegt."
+          "condition_weight": "Wie stark schlechte Wetterlagen (Sturm, Hagel, Schnee) den Score (0–100) reduzieren. Der Schweregrad wird je Wetterlage festgelegt.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -114,13 +116,15 @@
           "days": "Vorhersagezeitraum (Tage)",
           "precip_threshold_mm": "Niederschlagsschwelle (mm)",
           "freeze_check": "Bei Frosttemperaturen blockieren",
-          "forecast_type": "Vorhersagetyp"
+          "forecast_type": "Vorhersagetyp",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Wie viele Vorhersagetage einschließlich heute berücksichtigt werden.",
           "precip_threshold_mm": "Eine Tagesniederschlagsmenge oberhalb dieses Werts blockiert den Waschvorgang.",
           "freeze_check": "Wenn aktiviert, blockiert ein Vorhersagetag, an dem die Temperatur 0 °C über- oder unterschreitet, den Waschvorgang.",
-          "forecast_type": "„Täglich“ verwendet einen Eintrag pro Tag; „Stündlich“ fasst die stündlichen Einträge zusammen, sofern unterstützt."
+          "forecast_type": "„Täglich“ verwendet einen Eintrag pro Tag; „Stündlich“ fasst die stündlichen Einträge zusammen, sofern unterstützt.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "scoring": {
@@ -303,9 +307,11 @@
           "rain": "Regen",
           "freeze": "Frost",
           "snow": "Schnee",
+          "wind": "Wind",
           "bad_condition": "Schlechtes Wetter",
           "bad_current_condition": "Aktuell schlechtes Wetter",
           "dirty_now": "Schmutzig — jetzt waschen",
+          "no_data": "No forecast data",
           "snoozed": "Schlummert",
           "unavailable": "Nicht verfügbar"
         }
@@ -319,8 +325,10 @@
           "no_rain": "Nein — Regen",
           "no_freeze": "Nein — Frost",
           "no_snow": "Nein — Schnee",
+          "no_wind": "No — Wind",
           "no_bad_condition": "Nein — Schlechtes Wetter",
           "no_bad_current_condition": "Nein — Aktuell schlechtes Wetter",
+          "no_data": "No — No forecast data",
           "snoozed": "Schlummert"
         }
       },

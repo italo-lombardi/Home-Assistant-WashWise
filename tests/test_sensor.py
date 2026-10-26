@@ -771,8 +771,10 @@ def test_wash_status_options_match_state_keys() -> None:
         "no_rain",
         "no_freeze",
         "no_snow",
+        "no_wind",
         "no_bad_condition",
         "no_bad_current_condition",
+        "no_data",
         "snoozed",
     }
     coordinator = _make_coordinator(_make_decision())

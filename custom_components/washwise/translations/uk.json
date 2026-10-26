@@ -28,7 +28,8 @@
           "bad_conditions": "Погодні умови, що блокують прання",
           "precip_weight": "Вага оцінки опадів",
           "freeze_weight": "Вага оцінки замерзання",
-          "condition_weight": "Вага оцінки умов"
+          "condition_weight": "Вага оцінки умов",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Кількість слотів прогнозу для аналізу. При щоденному прогнозі кожен слот = 1 день; при погодинному — 1 година. Більші значення охоплюють більше погоди, але дають консервативніші висновки.",
@@ -38,7 +39,8 @@
           "bad_conditions": "Коди погодних умов, що блокують прання, коли з'являються в прогнозі або як поточна умова.",
           "precip_weight": "Наскільки дощ у прогнозі знижує оцінку від 0 до 100. Більше значення агресивніше штрафує дощові дні.",
           "freeze_weight": "Наскільки день із замерзанням знижує оцінку від 0 до 100. Встановіть 0, щоб ігнорувати замерзання в оцінці, зберігаючи блокування вердикту.",
-          "condition_weight": "Наскільки несприятливі погодні умови (грози, град, сніг) знижують оцінку від 0 до 100. Суворість залежить від конкретної умови."
+          "condition_weight": "Наскільки несприятливі погодні умови (грози, град, сніг) знижують оцінку від 0 до 100. Суворість залежить від конкретної умови.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -114,13 +116,15 @@
           "days": "Горизонт прогнозу (слоти)",
           "precip_threshold_mm": "Поріг опадів (мм)",
           "freeze_check": "Блокувати при температурі замерзання",
-          "forecast_type": "Тип прогнозу"
+          "forecast_type": "Тип прогнозу",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Кількість слотів прогнозу для аналізу. При щоденному прогнозі кожен слот = 1 день; при погодинному — 1 година.",
           "precip_threshold_mm": "Загальна кількість опадів на день вище цього значення блокує прання.",
           "freeze_check": "Якщо увімкнено, день прогнозу, коли температура опускається нижче 0 °C, блокує прання.",
-          "forecast_type": "Щоденний використовує один запис на день; Погодинний — один запис на годину. Погодинний точніший, але вимагає, щоб джерело надавало погодинні дані."
+          "forecast_type": "Щоденний використовує один запис на день; Погодинний — один запис на годину. Погодинний точніший, але вимагає, щоб джерело надавало погодинні дані.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "scoring": {
@@ -273,62 +277,136 @@
   },
   "entity": {
     "binary_sensor": {
-      "can_wash": {"name": "Можна мити"},
-      "day_ok": {"name": "День {day} — норма"},
-      "freeze_risk": {"name": "Ризик замерзання в прогнозі"},
-      "irrigation_suppressed": {"name": "Полив призупинено"},
-      "forecast_blocks_irrigation": {"name": "Прогноз блокує полив"},
-      "irrigation_switch_state": {"name": "Стан перемикача поливу"}
+      "can_wash": {
+        "name": "Можна мити"
+      },
+      "day_ok": {
+        "name": "День {day} — норма"
+      },
+      "freeze_risk": {
+        "name": "Ризик замерзання в прогнозі"
+      },
+      "irrigation_suppressed": {
+        "name": "Полив призупинено"
+      },
+      "forecast_blocks_irrigation": {
+        "name": "Прогноз блокує полив"
+      },
+      "irrigation_switch_state": {
+        "name": "Стан перемикача поливу"
+      }
     },
     "sensor": {
-      "score": {"name": "Оцінка прання"},
+      "score": {
+        "name": "Оцінка прання"
+      },
       "reason": {
         "name": "Причина",
         "state": {
-          "clear": "Ясно", "rain": "Дощ", "freeze": "Заморозки", "snow": "Сніг",
-          "bad_condition": "Несприятлива погода", "bad_current_condition": "Несприятлива поточна погода",
-          "dirty_now": "Поверхня забруднена — мийте зараз", "snoozed": "Відкладено", "unavailable": "Недоступно"
+          "clear": "Ясно",
+          "rain": "Дощ",
+          "freeze": "Заморозки",
+          "snow": "Сніг",
+          "wind": "Wind",
+          "bad_condition": "Несприятлива погода",
+          "bad_current_condition": "Несприятлива поточна погода",
+          "dirty_now": "Поверхня забруднена — мийте зараз",
+          "no_data": "No forecast data",
+          "snoozed": "Відкладено",
+          "unavailable": "Недоступно"
         }
       },
       "wash_status": {
         "name": "Статус прання",
         "state": {
-          "ok_clear": "Так — Ясно", "ok_dirty_now": "Так — Поверхня забруднена — мийте зараз",
-          "unknown_clear": "Невідомо", "no_rain": "Ні — Дощ", "no_freeze": "Ні — Заморозки",
-          "no_snow": "Ні — Сніг", "no_bad_condition": "Ні — Несприятлива погода",
-          "no_bad_current_condition": "Ні — Несприятлива поточна погода", "snoozed": "Відкладено"
+          "ok_clear": "Так — Ясно",
+          "ok_dirty_now": "Так — Поверхня забруднена — мийте зараз",
+          "unknown_clear": "Невідомо",
+          "no_rain": "Ні — Дощ",
+          "no_freeze": "Ні — Заморозки",
+          "no_snow": "Ні — Сніг",
+          "no_wind": "No — Wind",
+          "no_bad_condition": "Ні — Несприятлива погода",
+          "no_bad_current_condition": "Ні — Несприятлива поточна погода",
+          "no_data": "No — No forecast data",
+          "snoozed": "Відкладено"
         }
       },
-      "days_until_wash": {"name": "Днів до можливого прання"},
-      "days_since_wash": {"name": "Днів з останнього прання"},
-      "last_washed": {"name": "Останнє прання"},
-      "wash_count_30d": {"name": "Кількість прань (30 днів)"},
-      "active_provider": {"name": "Активний постачальник"},
-      "last_update": {"name": "Останнє оновлення"},
-      "days_analyzed": {"name": "Проаналізовано днів"},
-      "hours_analyzed": {"name": "Проаналізовано годин"},
-      "precip_total_mm": {"name": "Загальна кількість опадів за прогнозом"},
-      "worst_condition": {"name": "Найгірша умова в прогнозі"},
-      "min_temp": {"name": "Мінімальна температура за прогнозом"},
-      "max_temp": {"name": "Максимальна температура за прогнозом"},
-      "primary_provider_uptime": {"name": "Час роботи основного постачальника"},
-      "snooze_remaining": {"name": "Залишок відкладення"},
-      "day_score": {"name": "Оцінка дня {day}"},
+      "days_until_wash": {
+        "name": "Днів до можливого прання"
+      },
+      "days_since_wash": {
+        "name": "Днів з останнього прання"
+      },
+      "last_washed": {
+        "name": "Останнє прання"
+      },
+      "wash_count_30d": {
+        "name": "Кількість прань (30 днів)"
+      },
+      "active_provider": {
+        "name": "Активний постачальник"
+      },
+      "last_update": {
+        "name": "Останнє оновлення"
+      },
+      "days_analyzed": {
+        "name": "Проаналізовано днів"
+      },
+      "hours_analyzed": {
+        "name": "Проаналізовано годин"
+      },
+      "precip_total_mm": {
+        "name": "Загальна кількість опадів за прогнозом"
+      },
+      "worst_condition": {
+        "name": "Найгірша умова в прогнозі"
+      },
+      "min_temp": {
+        "name": "Мінімальна температура за прогнозом"
+      },
+      "max_temp": {
+        "name": "Максимальна температура за прогнозом"
+      },
+      "primary_provider_uptime": {
+        "name": "Час роботи основного постачальника"
+      },
+      "snooze_remaining": {
+        "name": "Залишок відкладення"
+      },
+      "day_score": {
+        "name": "Оцінка дня {day}"
+      },
       "category": {
         "name": "Категорія",
         "state": {
-          "car": "Автомобіль", "motorcycle": "Мотоцикл", "bicycle": "Велосипед", "boat": "Човен",
-          "rv_camper": "Автодім / Кемпер", "windows_house": "Вікна будинку",
-          "solar_panels": "Сонячні панелі", "patio_deck": "Патіо / Терраса",
-          "garden_irrigation": "Садовий полив", "laundry": "Прання", "custom": "Власна"
+          "car": "Автомобіль",
+          "motorcycle": "Мотоцикл",
+          "bicycle": "Велосипед",
+          "boat": "Човен",
+          "rv_camper": "Автодім / Кемпер",
+          "windows_house": "Вікна будинку",
+          "solar_panels": "Сонячні панелі",
+          "patio_deck": "Патіо / Терраса",
+          "garden_irrigation": "Садовий полив",
+          "laundry": "Прання",
+          "custom": "Власна"
         }
       },
-      "measured_rain_mm": {"name": "Виміряна кількість опадів"},
-      "rain_gauge_threshold_mm": {"name": "Поріг датчика опадів"}
+      "measured_rain_mm": {
+        "name": "Виміряна кількість опадів"
+      },
+      "rain_gauge_threshold_mm": {
+        "name": "Поріг датчика опадів"
+      }
     },
     "button": {
-      "mark_washed": {"name": "Позначити як вимите"},
-      "mark_irrigated": {"name": "Позначити як полите"}
+      "mark_washed": {
+        "name": "Позначити як вимите"
+      },
+      "mark_irrigated": {
+        "name": "Позначити як полите"
+      }
     }
   }
 }
