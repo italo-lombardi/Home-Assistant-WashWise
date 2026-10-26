@@ -106,11 +106,7 @@ async def test_get_forecast_resolves_wind_unit_from_entity(hass: HomeAssistant) 
         {"temperature_unit": "°C", "wind_speed_unit": "m/s"},
     )
     response = {
-        entity_id: {
-            "forecast": [
-                {"datetime": "2026-06-11T00:00:00+00:00", "wind_speed": 15.0}
-            ]
-        }
+        entity_id: {"forecast": [{"datetime": "2026-06-11T00:00:00+00:00", "wind_speed": 15.0}]}
     }
     _register_forecast_service(hass, response)
 

@@ -255,9 +255,7 @@ async def test_options_thresholds_clears_wind_when_blank(
     preserve the stale value (otherwise the blocker can never be disabled).
     """
     mock_config_entry.add_to_hass(hass)
-    hass.config_entries.async_update_entry(
-        mock_config_entry, options={CONF_WIND_THRESHOLD: 45}
-    )
+    hass.config_entries.async_update_entry(mock_config_entry, options={CONF_WIND_THRESHOLD: 45})
     await _setup_entry(hass, mock_config_entry)
 
     result = await hass.config_entries.options.async_init(mock_config_entry.entry_id)

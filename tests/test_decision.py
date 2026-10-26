@@ -493,9 +493,7 @@ def test_wind_under_threshold_does_not_block() -> None:
     cur = CurrentWeather(condition="sunny", temperature_c=18.0)
     forecast = [_windy_day(i, 20.0) for i in range(3)]
 
-    result = compute(
-        cur, forecast, _thresholds(wind_threshold_kmh=40.0), invert=False, now=NOW
-    )
+    result = compute(cur, forecast, _thresholds(wind_threshold_kmh=40.0), invert=False, now=NOW)
 
     assert result.can_wash is True
     assert result.reason == REASON_CLEAR
@@ -507,9 +505,7 @@ def test_wind_over_threshold_blocks_with_wind_reason() -> None:
     # Day 0 calm, day 1 too windy -> blocked on day 1, reason=wind.
     forecast = [_windy_day(0, 10.0), _windy_day(1, 60.0), _windy_day(2, 10.0)]
 
-    result = compute(
-        cur, forecast, _thresholds(wind_threshold_kmh=40.0), invert=False, now=NOW
-    )
+    result = compute(cur, forecast, _thresholds(wind_threshold_kmh=40.0), invert=False, now=NOW)
 
     assert result.can_wash is False
     assert result.reason == REASON_WIND
@@ -541,9 +537,7 @@ def test_wind_ignored_in_invert_mode() -> None:
     # NOT become a wind-blocked or wind-boosted verdict.
     forecast = [_windy_day(i, 200.0) for i in range(3)]
 
-    result = compute(
-        cur, forecast, _thresholds(wind_threshold_kmh=40.0), invert=True, now=NOW
-    )
+    result = compute(cur, forecast, _thresholds(wind_threshold_kmh=40.0), invert=True, now=NOW)
 
     assert result.can_wash is False
     assert result.reason == REASON_CLEAR  # dry horizon, not "wind"
@@ -567,9 +561,7 @@ def test_wind_missing_value_never_blocks() -> None:
     cur = CurrentWeather(condition="sunny", temperature_c=18.0)
     forecast = [_windy_day(i, None) for i in range(3)]
 
-    result = compute(
-        cur, forecast, _thresholds(wind_threshold_kmh=40.0), invert=False, now=NOW
-    )
+    result = compute(cur, forecast, _thresholds(wind_threshold_kmh=40.0), invert=False, now=NOW)
 
     assert result.can_wash is True
     assert result.score == 100
