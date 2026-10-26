@@ -196,9 +196,7 @@ def compute(
     # a windy day is neither a clean-signal nor a blocker — so it is disabled
     # when ``invert`` is set rather than flipping into a bogus score bonus.
     wind_raw = None if invert else thresholds.get("wind_threshold_kmh")
-    wind_threshold: float | None = (
-        float(wind_raw) if wind_raw is not None else None
-    )
+    wind_threshold: float | None = float(wind_raw) if wind_raw is not None else None
     wind_weight = float(thresholds.get("wind_weight", _DEFAULT_WIND_WEIGHT))
 
     today: date = now.date()
@@ -396,11 +394,7 @@ def _walk_forecast(
             day_blockers.append("condition")
 
         # Wind blocker (opt-in). Only active when a threshold is configured.
-        wind_blocker = (
-            wind_threshold is not None
-            and wind is not None
-            and wind > wind_threshold
-        )
+        wind_blocker = wind_threshold is not None and wind is not None and wind > wind_threshold
         if wind_blocker:
             day_blockers.append("wind")
 
@@ -458,9 +452,7 @@ def _walk_forecast(
             # Scale by how far over the threshold, capped at 1x the weight
             # (mirrors the precip penalty shape).
             assert wind is not None and wind_threshold is not None  # for type-checkers
-            day_score_penalty += wind_weight * min(
-                1.0, wind / max(0.1, wind_threshold)
-            )
+            day_score_penalty += wind_weight * min(1.0, wind / max(0.1, wind_threshold))
         score -= day_score_penalty
 
         forecast_summary.append(

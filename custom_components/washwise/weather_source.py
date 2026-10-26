@@ -195,9 +195,7 @@ def _normalize(
         tmax_c = _to_celsius(tmax_raw, unit)
 
         wind_raw = _resolve_key(raw, WIND_KEYS)
-        wind_kmh = _to_kmh(
-            wind_raw, raw.get("wind_speed_unit") or fallback_wind_unit
-        )
+        wind_kmh = _to_kmh(wind_raw, raw.get("wind_speed_unit") or fallback_wind_unit)
 
         return ForecastDay(
             date=fc_date,
@@ -302,9 +300,7 @@ def _to_kmh(value: Any, unit: Any) -> float | None:
     try:
         return SpeedConverter.convert(numeric, mapped, target)
     except Exception:
-        _LOGGER.debug(
-            "SpeedConverter failed for value=%r unit=%r", value, unit, exc_info=True
-        )
+        _LOGGER.debug("SpeedConverter failed for value=%r unit=%r", value, unit, exc_info=True)
         return None
 
 

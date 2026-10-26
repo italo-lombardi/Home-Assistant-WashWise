@@ -448,9 +448,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         """
         prev = self._last_decision
         self._last_decision = decision
-        changed = prev is not None and _verdict_fingerprint(prev) != _verdict_fingerprint(
-            decision
-        )
+        changed = prev is not None and _verdict_fingerprint(prev) != _verdict_fingerprint(decision)
         if changed:
             self.hass.bus.async_fire(
                 EVENT_VERDICT_CHANGED,
