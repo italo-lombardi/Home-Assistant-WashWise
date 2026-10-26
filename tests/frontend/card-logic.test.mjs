@@ -265,6 +265,27 @@ test("_renderReason: wind + no_data backend reasons have friendly labels (both m
   assert.match(irr("no_data"), /No forecast data/);
 });
 
+test("_renderReason: every backend reason key maps to a non-raw label (both modes)", () => {
+  // The full REASON_* enum from decision.py. If the backend adds a reason and
+  // the card map isn't updated, prettyReason falls through to `?? key` and the
+  // dashboard shows a raw token — exactly the honesty bug this guards against.
+  // Keep in sync with decision.py REASON_* values.
+  const BACKEND_REASONS = [
+    "clear", "rain", "freeze", "snow", "bad_condition",
+    "bad_current_condition", "dirty_now", "no_data", "wind",
+  ];
+  for (const reason of BACKEND_REASONS) {
+    const wash = Card.prototype._renderReason.call({}, { attributes: { reason } }, false).__html;
+    assert.doesNotMatch(wash, new RegExp(`>${reason}<`), `wash mode shows raw key for ${reason}`);
+    const irr = Card.prototype._renderReason.call(
+      { _irrigationReason: Card.prototype._irrigationReason },
+      { attributes: { reason } },
+      true
+    ).__html;
+    assert.doesNotMatch(irr, new RegExp(`>${reason}<`), `irrigation mode shows raw key for ${reason}`);
+  }
+});
+
 test("_renderReason: no reason attribute is hidden", () => {
   assert.equal(
     Card.prototype._renderReason.call({}, { attributes: {} }, false),
