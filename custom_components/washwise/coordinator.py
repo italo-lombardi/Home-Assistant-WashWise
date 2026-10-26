@@ -105,6 +105,9 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         self._enabled: bool = True
         self._active_weather_entity: str | None = None
         self._last_decision: Decision | None = None
+        # Last weather-derived (non-snoozed) verdict, used to restore the card
+        # instantly on clear_snooze without waiting for a forecast fetch.
+        self._last_real_decision: Decision | None = None
         self._unsub_registry: CALLBACK_TYPE | None = None
         self._unsub_state: CALLBACK_TYPE | None = None
         self._unsub_gauge: CALLBACK_TYPE | None = None
@@ -240,21 +243,54 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         ``timestamp`` defaults to ``utcnow``. The ``source`` field is set
         to ``"manual"`` -- the algorithm never appends "auto" entries
         itself.
+
+        Marking washed does not change the weather-derived verdict — it only
+        updates the wash log (and thus the ``last_washed`` / ``days_since``
+        sensors, which read the store directly). So push the CURRENT decision to
+        listeners synchronously instead of ``async_request_refresh`` — the latter
+        re-fetches the forecast over the network, adding seconds of lag before
+        the card reflects the tap. The store write above is already applied, so
+        the sensors re-render immediately with the new timestamp.
         """
         ts = timestamp if timestamp is not None else dt_util.utcnow()
         entry = WashEntry(timestamp=ts.isoformat(), source="manual")
         await self._store.append_wash(entry)
-        await self.async_request_refresh()
+        if self.data is not None:
+            self.async_set_updated_data(self.data)
+        else:
+            await self.async_request_refresh()
 
     async def async_snooze(self, duration: timedelta) -> None:
-        """Snooze the wash advisor for ``duration`` from now."""
+        """Snooze the wash advisor for ``duration`` from now.
+
+        The snoozed verdict is deterministic and needs no forecast, so build and
+        push it synchronously rather than triggering a network refresh.
+        """
         until = dt_util.utcnow() + duration
         await self._store.set_snooze(until)
-        await self.async_request_refresh()
+        snooze_decision = Decision(
+            can_wash=False,
+            score=0,
+            reason="snoozed",
+            days_until_wash=None,
+            blocking_days=[],
+            forecast_summary=[],
+            days_analyzed=0,
+        )
+        self._set_decision(snooze_decision)
+        self.async_set_updated_data(snooze_decision)
 
     async def async_clear_snooze(self) -> None:
-        """Clear any active snooze."""
+        """Clear any active snooze.
+
+        Restoring the real verdict needs the forecast. Push the last cached
+        non-snoozed decision immediately (so the card reacts instantly), then
+        kick a background refresh to recompute against current weather.
+        """
         await self._store.set_snooze(None)
+        if self._last_real_decision is not None:
+            self._set_decision(self._last_real_decision)
+            self.async_set_updated_data(self._last_real_decision)
         await self.async_request_refresh()
 
     async def async_force_refresh(self) -> None:
@@ -404,6 +440,9 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
             )
 
             self._active_weather_entity = eid
+            # Remember the real (weather-derived) verdict so clear_snooze can
+            # restore it instantly without re-fetching the forecast.
+            self._last_real_decision = decision
             # Settle the irrigation switch BEFORE firing the verdict-changed
             # event, so an automation reacting to the event sees the updated
             # switch state rather than the previous tick's.

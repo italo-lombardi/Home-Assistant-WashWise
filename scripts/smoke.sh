@@ -102,17 +102,30 @@ print(f'  ✓ diagnostics attrs present (score={a[\"score\"]}, reason={a[\"reaso
       f'freeze_risk={a[\"freeze_risk\"]}; forecast-derived: {opt or \"none (clear mock)\"})')
 " || FAILS=$((FAILS + 1))
 
-# --- 5. Service targeting by entity_id (the card path) -----------------------
-# mark_washed by entity_id → last_washed sensor flips from unknown to a timestamp.
+# --- 5. Service targeting by entity_id (the card path) + latency -------------
+# mark_washed by entity_id → last_washed flips from unknown to a timestamp.
+# Also assert the state reflects the change FAST: the synchronous-push fix means
+# the service must not block on a weather forecast fetch. Poll the sensor right
+# after the (blocking) service call and require the change within ~2s. A
+# regression to async_request_refresh would reintroduce the multi-second fetch.
 LAST_WASHED="sensor.washwise_smoke_car_last_washed"
 before=$(api "$HA/api/states/$LAST_WASHED" | python3 -c "import json,sys; print(json.load(sys.stdin).get('state','?'))")
+start=$(python3 -c "import time; print(time.time())")
 api -X POST "${JSON[@]}" -d "{\"entity_id\":\"$CAN_WASH\"}" "$HA/api/services/washwise/mark_washed" >/dev/null
-sleep 3
-after=$(api "$HA/api/states/$LAST_WASHED" | python3 -c "import json,sys; print(json.load(sys.stdin).get('state','?'))")
+after="$before"
+for _ in $(seq 1 20); do   # up to ~2s (20 × 0.1s)
+  after=$(api "$HA/api/states/$LAST_WASHED" | python3 -c "import json,sys; print(json.load(sys.stdin).get('state','?'))")
+  { [ "$after" != "$before" ] && [ "$after" != "unknown" ] && [ "$after" != "unavailable" ]; } && break
+  sleep 0.1
+done
+elapsed=$(python3 -c "import time; print(round(time.time() - $start, 2))")
 if [ "$after" != "unknown" ] && [ "$after" != "unavailable" ] && [ "$after" != "$before" ]; then
-  pass "mark_washed via entity_id → last_washed set ($before → $after)"
+  pass "mark_washed via entity_id → last_washed set in ${elapsed}s ($before → $after)"
+  # Soft latency guard: warn (don't fail CI-less smoke hard) if it took long.
+  python3 -c "import sys; sys.exit(0 if $elapsed <= 2.0 else 1)" \
+    || echo "  ⚠ latency ${elapsed}s > 2s — the sync-push fast path may have regressed"
 else
-  fail "mark_washed via entity_id → last_washed unchanged ($before → $after)"
+  fail "mark_washed via entity_id → last_washed unchanged after ${elapsed}s ($before → $after)"
 fi
 
 # --- 6. Snooze + clear_snooze by entity_id -----------------------------------
