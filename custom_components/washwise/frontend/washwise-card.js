@@ -1,10 +1,10 @@
 /**
- * WashWise Card v0.2.0
+ * WashWise Card v0.2.7
  * Custom Lovelace card for the Home Assistant WashWise integration.
  * Single-file, hand-coded, no build step.
  */
 
-const CARD_VERSION = "0.2.0";
+const CARD_VERSION = "0.2.7";
 
 console.info(
   `%c WASHWISE-CARD %c v${CARD_VERSION} %c — github.com/italo-lombardi/Home-Assistant-WashWise `,
