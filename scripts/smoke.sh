@@ -178,6 +178,40 @@ print(f'  ✓ diagnostics attrs present (score={a[\"score\"]}, reason={a[\"reaso
       f'freeze_risk={a[\"freeze_risk\"]}; forecast-derived: {opt or \"none (clear mock)\"})')
 " || FAILS=$((FAILS + 1))
 
+# --- 4b. last_update sensor is live, not frozen at creation ------------------
+# Regression guard: the Last-update sensor used to be seeded once from the
+# entry's created_at and never advanced (base DataUpdateCoordinator doesn't
+# touch last_update_success_time). A freshly-created entry whose coordinator has
+# run must report a last_update within the last few minutes, not a stale seed.
+LAST_UPDATE="$(echo "$CAN_WASH" | sed 's/^binary_sensor\./sensor./; s/_can_wash$/_last_update/')"
+api "$HA/api/states/$LAST_UPDATE" | python3 -c "
+import json, sys, datetime
+s = json.load(sys.stdin)
+st = s.get('state')
+try:
+    ts = datetime.datetime.fromisoformat(st)
+except Exception:
+    print(f'  ✗ last_update: unparseable state {st!r}'); sys.exit(1)
+age = (datetime.datetime.now(datetime.timezone.utc) - ts).total_seconds()
+ok = 0 <= age <= 600  # within 10 min of now (just created + evaluated)
+print(f'  {\"✓\" if ok else \"✗\"} last_update is live: {st} (age {int(age)}s)')
+sys.exit(0 if ok else 1)
+" || FAILS=$((FAILS + 1))
+
+# --- 4c. most_severe_forecast_condition never reports a benign sky -----------
+# Regression guard: WorstConditionSensor used to latch the first forecast day
+# regardless of severity, surfacing benign conditions (sunny/partlycloudy/cloudy)
+# as 'most severe'. It must be a bad condition or unknown/None — never benign.
+MOST_SEVERE="$(echo "$CAN_WASH" | sed 's/^binary_sensor\./sensor./; s/_can_wash$/_most_severe_forecast_condition/')"
+api "$HA/api/states/$MOST_SEVERE" | python3 -c "
+import json, sys
+BENIGN = {'sunny', 'clear-night', 'partlycloudy', 'cloudy', 'windy', 'fog'}
+st = json.load(sys.stdin).get('state')
+ok = st not in BENIGN  # unknown/None or an actual bad condition are both fine
+print(f'  {\"✓\" if ok else \"✗\"} most_severe_forecast_condition not benign-latched: {st!r}')
+sys.exit(0 if ok else 1)
+" || FAILS=$((FAILS + 1))
+
 # --- 5. Service targeting by entity_id (the card path) + latency -------------
 # mark_washed by entity_id → last_washed flips from unknown to a timestamp.
 # Also assert the state reflects the change FAST: the synchronous-push fix means
