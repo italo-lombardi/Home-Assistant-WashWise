@@ -256,19 +256,82 @@ const cardStyles = css`
     transform: rotate(90deg);
   }
 
-  details.ww-diagnostics dl {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: 4px 12px;
+  /* Diagnostics value list — icon · label · value-chip rows. */
+  .ww-diag-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
     margin: 8px 0 0;
   }
 
-  details.ww-diagnostics dt { color: var(--ww-fg-muted); }
+  .ww-diag-row {
+    display: grid;
+    grid-template-columns: 1.4em max-content 1fr;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 0;
+  }
 
-  details.ww-diagnostics dd {
+  .ww-diag-icon {
+    font-size: 0.95rem;
+    line-height: 1;
+    text-align: center;
+  }
+
+  .ww-diag-label { color: var(--ww-fg-muted); }
+
+  .ww-diag-value {
+    justify-self: end;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--ww-divider);
     color: var(--ww-fg);
-    margin: 0;
-    word-break: break-word;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Semantic value tones. */
+  .ww-diag-value.ok   { background: color-mix(in srgb, var(--ww-accent) 20%, transparent); color: var(--ww-accent); }
+  .ww-diag-value.warn { background: color-mix(in srgb, #e8a33d 24%, transparent); color: #a9680f; }
+  .ww-diag-value.bad  { background: color-mix(in srgb, var(--ww-bad) 18%, transparent); color: var(--ww-bad); }
+  .ww-diag-value.muted { background: var(--ww-divider); color: var(--ww-fg-muted); font-weight: 500; }
+
+  :host([data-theme='dark']) .ww-diag-value.warn { color: #e8a33d; }
+
+  .ww-diag-divider {
+    height: 1px;
+    background: var(--ww-divider);
+    margin: 6px 0;
+  }
+
+  /* Clickable entity link (e.g. weather source → more-info dialog). The
+     diagnostics weather-source value is both a chip and a link. */
+  .ww-link {
+    appearance: none;
+    border: none;
+    font: inherit;
+    cursor: pointer;
+    text-align: right;
+  }
+
+  .ww-diag-value.ww-link {
+    color: var(--ww-accent);
+    background: color-mix(in srgb, var(--ww-accent) 12%, transparent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 600;
+  }
+
+  .ww-link:hover { opacity: 0.8; }
+
+  .ww-link:focus-visible {
+    outline: 2px solid var(--ww-accent);
+    outline-offset: 2px;
+    border-radius: 999px;
   }
 
   .ww-error {
@@ -584,13 +647,13 @@ class WashWiseCard extends LitElement {
           ${this._renderHeader(friendly, verdict, isIrrigation)}
           ${cfg.show_score_gauge && !snoozed ? this._renderGauge(score, verdict) : nothing}
           ${cfg.show_reason ? this._renderReason(stateObj, isIrrigation) : nothing}
+          ${cfg.show_last_washed ? this._renderLastWashed() : nothing}
           ${isIrrigation ? this._renderRainGauge(cfg) : nothing}
           ${cfg.show_forecast_strip
             ? this._renderForecastStrip(stateObj)
             : nothing}
           ${cfg.show_diagnostics && !snoozed ? this._renderDiagnostics(stateObj, cfg.diagnostics_open) : nothing}
           ${cfg.show_actions ? this._renderActions(stateObj, snoozed, isIrrigation) : nothing}
-          ${cfg.show_last_washed ? this._renderLastWashed() : nothing}
         </div>
       </ha-card>
     `;
@@ -784,34 +847,106 @@ class WashWiseCard extends LitElement {
     const blockingCount = Array.isArray(details.blocking_days)
       ? details.blocking_days.length
       : null;
+
+    // Score tone: green when confident, amber mid, red low.
+    const scoreTone =
+      typeof a.score !== "number" ? "" : a.score >= 67 ? "ok" : a.score >= 34 ? "warn" : "bad";
+    // Merge min/max into a single temperature range row.
+    const temp =
+      typeof a.min_temp === "number" && typeof a.max_temp === "number"
+        ? `${a.min_temp} – ${a.max_temp} °C`
+        : typeof a.min_temp === "number"
+          ? `${a.min_temp} °C`
+          : typeof a.max_temp === "number"
+            ? `${a.max_temp} °C`
+            : null;
+
+    // [icon, label, value, tone] — tone ∈ "" | "ok" | "warn" | "bad" | "muted".
+    // null value → row omitted. A `null` ROW entry renders a group divider.
     const rows = [
-      ["Verdict reason", a.reason ? prettyReason(a.reason) : null],
-      ["Score", typeof a.score === "number" ? `${a.score}/100` : null],
+      ["🌦️", "Reason", a.reason ? prettyReason(a.reason) : null, ""],
+      ["💯", "Score", typeof a.score === "number" ? `${a.score} / 100` : null, scoreTone],
       [
+        "📅",
         "Days until wash",
         daysUntil === 0 ? "Today" : typeof daysUntil === "number" ? `${daysUntil}` : null,
+        "",
       ],
-      ["Days analyzed", a.days_analyzed],
-      ["Blocking days", typeof blockingCount === "number" ? `${blockingCount}` : null],
-      ["Total precip", typeof a.precip_total_mm === "number" ? `${a.precip_total_mm} mm` : null],
-      ["Max wind", typeof a.max_wind_kmh === "number" ? `${a.max_wind_kmh} km/h` : null],
-      ["Freeze risk", typeof a.freeze_risk === "boolean" ? (a.freeze_risk ? "Yes" : "No") : null],
-      ["Worst condition", a.worst_condition ? prettyCondition(a.worst_condition) : null],
-      ["Min temp", typeof a.min_temp === "number" ? `${a.min_temp} °C` : null],
-      ["Max temp", typeof a.max_temp === "number" ? `${a.max_temp} °C` : null],
-      ["Weather source", a.active_weather_entity],
+      ["🔎", "Days analyzed", a.days_analyzed != null ? `${a.days_analyzed}` : null, ""],
+      ["⛔", "Blocking days", typeof blockingCount === "number" ? `${blockingCount}` : null, ""],
+      null, // divider: verdict ↑ / forecast ↓
+      ["🌧️", "Total precip", typeof a.precip_total_mm === "number" ? `${a.precip_total_mm} mm` : null, ""],
+      ["💨", "Max wind", typeof a.max_wind_kmh === "number" ? `${a.max_wind_kmh} km/h` : null, ""],
+      [
+        "❄️",
+        "Freeze risk",
+        typeof a.freeze_risk === "boolean" ? (a.freeze_risk ? "Yes" : "No") : null,
+        a.freeze_risk === true ? "bad" : a.freeze_risk === false ? "muted" : "",
+      ],
+      ["🌩️", "Worst condition", a.worst_condition ? prettyCondition(a.worst_condition) : null, "warn"],
+      ["🌡️", "Temperature", temp, ""],
     ];
-    const populated = rows.filter(([, v]) => v !== undefined && v !== null && v !== "");
+
+    // Drop a leading/trailing/duplicate divider once empty rows are filtered.
+    const kept = rows.filter((r) => r === null || r[2] !== undefined && r[2] !== null && r[2] !== "");
+    const cleaned = [];
+    for (const r of kept) {
+      if (r === null && (cleaned.length === 0 || cleaned[cleaned.length - 1] === null)) continue;
+      cleaned.push(r);
+    }
+    while (cleaned.length && cleaned[cleaned.length - 1] === null) cleaned.pop();
+
+    // Weather source: clickable, shows the provider's friendly name.
+    const srcId = a.active_weather_entity;
+    const srcName = srcId
+      ? (this.hass?.states?.[srcId]?.attributes?.friendly_name ?? srcId)
+      : null;
+
     return html`
       <details class="ww-diagnostics" ?open=${open}>
         <summary>Diagnostics</summary>
-        <dl>
-          ${populated.map(
-            ([k, v]) => html`<dt>${k}</dt><dd>${String(v)}</dd>`
+        <div class="ww-diag-list">
+          ${cleaned.map((r) =>
+            r === null
+              ? html`<div class="ww-diag-divider"></div>`
+              : html`
+                  <div class="ww-diag-row">
+                    <span class="ww-diag-icon" aria-hidden="true">${r[0]}</span>
+                    <span class="ww-diag-label">${r[1]}</span>
+                    <span class="ww-diag-value ${r[3]}">${r[2]}</span>
+                  </div>
+                `
           )}
-        </dl>
+          ${srcId
+            ? html`
+                <div class="ww-diag-row">
+                  <span class="ww-diag-icon" aria-hidden="true">🛰️</span>
+                  <span class="ww-diag-label">Weather source</span>
+                  <button
+                    type="button"
+                    class="ww-diag-value ww-link"
+                    title="Show entity details"
+                    @click=${() => this._moreInfo(srcId)}
+                  >${srcName}</button>
+                </div>
+              `
+            : nothing}
+        </div>
       </details>
     `;
+  }
+
+  // Open Home Assistant's more-info dialog for an entity. The frontend listens
+  // for a bubbling, composed "hass-more-info" CustomEvent carrying entityId.
+  _moreInfo(entityId) {
+    if (!entityId) return;
+    this.dispatchEvent(
+      new CustomEvent("hass-more-info", {
+        detail: { entityId },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 
   // ── Actions ──────────────────────────────────────────────────────────────
@@ -1228,6 +1363,8 @@ class WashWiseCardEditor extends LitElement {
           "Display the 0–100 score as a horizontal bar.", true)}
         ${this._renderToggle("show_reason", "Show reason",
           "Display the human-readable reason behind the current verdict.", true)}
+        ${this._renderToggle("show_last_washed", "Show last washed",
+          "Show how long ago the surface was last marked washed (e.g. \"3 days ago\"), below the reason. Hidden until the first wash is recorded.", false)}
         ${this._renderToggle("show_forecast_strip", "Show forecast strip",
           "Display per-day forecast tiles below the verdict.", true)}
         ${this._renderToggle("show_diagnostics", "Show diagnostics",
@@ -1238,8 +1375,6 @@ class WashWiseCardEditor extends LitElement {
           "Tighten paddings and typography to fit denser dashboards.", false)}
         ${this._renderToggle("show_actions", "Show action buttons",
           "Append tappable Mark washed / Snooze / Clear snooze buttons wired to the WashWise services.", false)}
-        ${this._renderToggle("show_last_washed", "Show last washed",
-          "Append a footer showing how long ago the surface was last marked washed (e.g. \"3 days ago\"). Hidden until the first wash is recorded.", false)}
       </div>
     `;
   }

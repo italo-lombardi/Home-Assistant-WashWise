@@ -253,7 +253,7 @@ show_forecast_strip: true
 show_diagnostics: true
 diagnostics_open: false       # start diagnostics section expanded
 show_actions: false           # tappable Mark washed / Snooze / Clear snooze row
-show_last_washed: false       # footer: "Last washed: 3 days ago"
+show_last_washed: false       # "Last washed: 3 days ago" below the reason
 compact_mode: false
 ```
 

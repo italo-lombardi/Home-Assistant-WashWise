@@ -644,30 +644,81 @@ test("_renderDiagnostics: renders enriched rows from the real attribute names", 
       active_weather_entity: "weather.home",
     },
   };
-  const html = Card.prototype._renderDiagnostics.call({}, stateObj, false).__html;
-  assert.match(html, /Verdict reason<\/dt><dd>Rain in forecast/);
-  assert.match(html, /Score<\/dt><dd>64\/100/);
-  assert.match(html, /Days until wash<\/dt><dd>2/);
-  assert.match(html, /Blocking days<\/dt><dd>2/);
-  assert.match(html, /Total precip<\/dt><dd>4\.6 mm/);
-  assert.match(html, /Max wind<\/dt><dd>42 km\/h/);
-  assert.match(html, /Freeze risk<\/dt><dd>No/);
-  assert.match(html, /Worst condition<\/dt><dd>Lightning rainy/);
-  assert.match(html, /Min temp<\/dt><dd>12 °C/);
-  assert.match(html, /Weather source<\/dt><dd>weather\.home/);
+  const self = {
+    hass: { states: { "weather.home": { attributes: { friendly_name: "Home Weather" } } } },
+  };
+  const html = Card.prototype._renderDiagnostics.call(self, stateObj, false).__html;
+  // Rows are icon · label · value-chip. Assert the label/value pairing via the
+  // class-tagged spans (markup may sit between them).
+  const row = (label, value) =>
+    new RegExp(`ww-diag-label">${label}<[\\s\\S]*?ww-diag-value[^>]*>${value}<`);
+  assert.match(html, row("Reason", "Rain in forecast"));
+  assert.match(html, row("Score", "64 / 100"));
+  assert.match(html, /ww-diag-value warn[^>]*>64 \/ 100</, "mid score (34–66) → warn tone");
+  assert.match(html, row("Days until wash", "2"));
+  assert.match(html, row("Blocking days", "2"));
+  assert.match(html, row("Total precip", "4\\.6 mm"));
+  assert.match(html, row("Max wind", "42 km/h"));
+  assert.match(html, row("Freeze risk", "No"));
+  assert.match(html, /ww-diag-value muted[^>]*>No</, "freeze_risk false → muted tone");
+  assert.match(html, row("Worst condition", "Lightning rainy"));
+  // Temperature is merged into a single min–max range row.
+  assert.match(html, row("Temperature", "12 – 24 °C"));
+  assert.doesNotMatch(html, /Min temp|Max temp/, "min/max merged, not separate rows");
+  // A group divider separates verdict from forecast metrics.
+  assert.match(html, /ww-diag-divider/);
+  // Weather source is a clickable chip-link showing the provider's friendly name.
+  assert.match(html, /ww-diag-label">Weather source</);
+  assert.match(html, /class="ww-diag-value ww-link"[\s\S]*?>Home Weather</);
+});
+
+test("_renderDiagnostics: score tones (ok ≥67, warn ≥34, bad <34)", () => {
+  const h = (score) =>
+    Card.prototype._renderDiagnostics.call(
+      { hass: { states: {} } }, { attributes: { score } }, false
+    ).__html;
+  assert.match(h(80), /ww-diag-value ok[^>]*>80 \/ 100</);
+  assert.match(h(50), /ww-diag-value warn[^>]*>50 \/ 100</);
+  assert.match(h(10), /ww-diag-value bad[^>]*>10 \/ 100</);
+});
+
+test("_renderDiagnostics: weather source falls back to entity id when no friendly name", () => {
+  const html = Card.prototype._renderDiagnostics.call(
+    { hass: { states: {} } },
+    { attributes: { active_weather_entity: "weather.raw_id" } },
+    false
+  ).__html;
+  assert.match(html, /class="ww-diag-value ww-link"[\s\S]*?>weather\.raw_id</);
+});
+
+test("_moreInfo: dispatches a bubbling, composed hass-more-info event", () => {
+  const events = [];
+  const self = { dispatchEvent: (e) => events.push(e) };
+  Card.prototype._moreInfo.call(self, "weather.home");
+  assert.equal(events.length, 1);
+  assert.equal(events[0].type, "hass-more-info");
+  assert.deepEqual(events[0].detail, { entityId: "weather.home" });
+  assert.equal(events[0].bubbles, true);
+  assert.equal(events[0].composed, true);
+});
+
+test("_moreInfo: no-op without an entity id", () => {
+  const events = [];
+  Card.prototype._moreInfo.call({ dispatchEvent: (e) => events.push(e) }, "");
+  assert.equal(events.length, 0);
 });
 
 test("_renderDiagnostics: days-until-wash 0 renders as Today", () => {
   const html = Card.prototype._renderDiagnostics.call(
-    {}, { attributes: { days_until_wash: 0 } }, false
+    { hass: { states: {} } }, { attributes: { days_until_wash: 0 } }, false
   ).__html;
-  assert.match(html, /Days until wash<\/dt><dd>Today/);
+  assert.match(html, /ww-diag-label">Days until wash<[\s\S]*?ww-diag-value[^>]*>Today</);
 });
 
 test("_renderDiagnostics: absent aggregate attributes produce no rows", () => {
   // Empty-forecast / no-data: only days_analyzed present → one row, no blanks.
   const html = Card.prototype._renderDiagnostics.call(
-    {}, { attributes: { days_analyzed: 0 } }, false
+    { hass: { states: {} } }, { attributes: { days_analyzed: 0 } }, false
   ).__html;
   assert.doesNotMatch(html, /Total precip|Max wind|Worst condition|Min temp|Weather source/);
 });
