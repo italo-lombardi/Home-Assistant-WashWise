@@ -41,12 +41,21 @@ TIME_KEYS = ("datetime", "time", "timestamp")
 WIND_KEYS = ("wind_speed", "native_wind_speed", "windspeed", "wind")
 
 # Categories — preset thresholds + default icon.
+# ``wind_threshold_kmh`` is the per-category default wind blocker (km/h) seeded
+# into NEW entries at create time (see config_flow). It is NOT applied
+# retroactively: existing entries that never stored a wind value stay disabled.
+# invert categories (solar_panels, garden_irrigation) omit it — the wind blocker
+# is disabled for inverted logic. Numbers chosen for the activity's exposure AND
+# forecast horizon: a per-day blocker over a long horizon trips far more often,
+# so 5-day categories (boat, rv_camper) sit higher to avoid constant false
+# blocks; laundry is highest because wind aids line-drying.
 CATEGORY_PRESETS = {
     "car": {
         "days": 3,
         "precip_threshold_mm": 0.2,
         "freeze_check": True,
         "invert": False,
+        "wind_threshold_kmh": 35,
         "icon": "mdi:car",
     },
     "motorcycle": {
@@ -54,6 +63,7 @@ CATEGORY_PRESETS = {
         "precip_threshold_mm": 0.5,
         "freeze_check": True,
         "invert": False,
+        "wind_threshold_kmh": 35,
         "icon": "mdi:motorcycle",
     },
     "bicycle": {
@@ -61,6 +71,7 @@ CATEGORY_PRESETS = {
         "precip_threshold_mm": 0.8,
         "freeze_check": False,
         "invert": False,
+        "wind_threshold_kmh": 40,
         "icon": "mdi:bicycle",
     },
     "boat": {
@@ -68,6 +79,7 @@ CATEGORY_PRESETS = {
         "precip_threshold_mm": 0.1,
         "freeze_check": True,
         "invert": False,
+        "wind_threshold_kmh": 35,
         "icon": "mdi:sail-boat",
     },
     "rv_camper": {
@@ -75,6 +87,7 @@ CATEGORY_PRESETS = {
         "precip_threshold_mm": 0.1,
         "freeze_check": True,
         "invert": False,
+        "wind_threshold_kmh": 35,
         "icon": "mdi:rv-truck",
     },
     "windows_house": {
@@ -82,6 +95,7 @@ CATEGORY_PRESETS = {
         "precip_threshold_mm": 1.0,
         "freeze_check": False,
         "invert": False,
+        "wind_threshold_kmh": 25,
         "icon": "mdi:window-closed-variant",
     },
     "laundry": {
@@ -90,6 +104,7 @@ CATEGORY_PRESETS = {
         "freeze_check": True,
         "invert": False,
         "forecast_type": "hourly",
+        "wind_threshold_kmh": 50,
         "icon": "mdi:tshirt-crew",
     },
     "patio_deck": {
@@ -97,6 +112,7 @@ CATEGORY_PRESETS = {
         "precip_threshold_mm": 0.5,
         "freeze_check": False,
         "invert": False,
+        "wind_threshold_kmh": 35,
         "icon": "mdi:deck",
     },
     "solar_panels": {
@@ -118,6 +134,7 @@ CATEGORY_PRESETS = {
         "precip_threshold_mm": 0.2,
         "freeze_check": True,
         "invert": False,
+        "wind_threshold_kmh": 30,
         "icon": "mdi:water",
     },
 }

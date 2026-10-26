@@ -74,6 +74,46 @@ async def test_user_step_happy_path_creates_entry(hass: HomeAssistant) -> None:
     assert result["data"][CONF_NAME] == "Audi"
     assert result["data"][CONF_CATEGORY] == "car"
     assert result["data"][CONF_CUSTOMIZE_THRESHOLDS] is False
+    # New non-customize entries are seeded with the category's default wind
+    # blocker (car preset = 35 km/h) so they ship with it out of the box.
+    assert result["data"][CONF_WIND_THRESHOLD] == 35.0
+
+
+async def test_user_step_noncustomize_seeds_category_wind_default(
+    hass: HomeAssistant,
+) -> None:
+    """Non-customize create seeds the per-category default wind into entry.data.
+
+    windows_house preset = 25 km/h; an invert category (solar_panels) seeds
+    nothing because its preset omits the wind key.
+    """
+    result = await _init_flow(hass)
+    with patch("custom_components.washwise.async_setup_entry", return_value=True):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.home"],
+                CONF_NAME: "Panes",
+                CONF_CATEGORY: "windows_house",
+                CONF_CUSTOMIZE_THRESHOLDS: False,
+            },
+        )
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"][CONF_WIND_THRESHOLD] == 25.0
+
+    result2 = await _init_flow(hass)
+    with patch("custom_components.washwise.async_setup_entry", return_value=True):
+        result2 = await hass.config_entries.flow.async_configure(
+            result2["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.home"],
+                CONF_NAME: "Roof PV",
+                CONF_CATEGORY: "solar_panels",
+                CONF_CUSTOMIZE_THRESHOLDS: False,
+            },
+        )
+    assert result2["type"] == FlowResultType.CREATE_ENTRY
+    assert CONF_WIND_THRESHOLD not in result2["data"], "invert category seeds no wind"
 
 
 async def test_user_step_customize_off_skips_thresholds_step(
@@ -273,6 +313,137 @@ async def test_reconfigure_updates_entry_and_reloads(
         "weather.backup",
     ]
     assert mock_config_entry.data[CONF_CATEGORY] == "motorcycle"
+
+
+async def test_reconfigure_noncustomize_prerelease_entry_stays_wind_off(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """A pre-release entry (no stored wind) stays wind-off across reconfigure.
+
+    The fixture entry has no wind key — it models an entry created before the
+    per-category default existed. A non-customize reconfigure (e.g. rename) must
+    NOT silently switch the blocker on for it; the user has to opt in manually.
+    """
+    mock_config_entry.add_to_hass(hass)
+    assert CONF_WIND_THRESHOLD not in mock_config_entry.data
+
+    with (
+        patch("custom_components.washwise.async_setup_entry", return_value=True),
+        patch("custom_components.washwise.async_unload_entry", return_value=True),
+    ):
+        result = await mock_config_entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.home"],
+                CONF_NAME: "Renamed",
+                CONF_CATEGORY: "car",
+                CONF_CUSTOMIZE_THRESHOLDS: False,
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] == FlowResultType.ABORT
+    assert CONF_WIND_THRESHOLD not in mock_config_entry.data
+
+
+async def test_reconfigure_noncustomize_newera_entry_keeps_wind_default(
+    hass: HomeAssistant,
+) -> None:
+    """A new-era entry (seeded wind) keeps a default across non-customize reconfigure.
+
+    The strip loop removes the stored wind key; the re-seed restores the current
+    category's default so a rename doesn't drop the feature. Switching category
+    picks up the new category's default (motorcycle 35 → windows_house 25).
+    """
+    entry = MockConfigEntry(
+        version=1,
+        domain=DOMAIN,
+        title="NewEra",
+        data={
+            CONF_NAME: "NewEra",
+            CONF_WEATHER_ENTITIES: ["weather.home"],
+            CONF_CATEGORY: "motorcycle",
+            CONF_CUSTOMIZE_THRESHOLDS: False,
+            CONF_WIND_THRESHOLD: 35.0,
+        },
+        options={},
+        entry_id="newera_wind",
+        unique_id=f"{DOMAIN}_newera_wind",
+    )
+    entry.add_to_hass(hass)
+
+    with (
+        patch("custom_components.washwise.async_setup_entry", return_value=True),
+        patch("custom_components.washwise.async_unload_entry", return_value=True),
+    ):
+        result = await entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.home"],
+                CONF_NAME: "NewEra",
+                CONF_CATEGORY: "windows_house",
+                CONF_CUSTOMIZE_THRESHOLDS: False,
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] == FlowResultType.ABORT
+    # Re-seeded with the NEW category's default (windows_house = 25), not the old 35.
+    assert entry.data[CONF_WIND_THRESHOLD] == 25.0
+
+
+async def test_reconfigure_noncustomize_options_cleared_wind_stays_off(
+    hass: HomeAssistant,
+) -> None:
+    """A wind blocker cleared via Options is NOT re-enabled by a later reconfigure.
+
+    The create-time seed lives in entry.data; an Options→Thresholds clear writes
+    None to entry.options only, leaving the stale seed in data. A non-customize
+    reconfigure (e.g. a rename) must respect the effective (merged) state — the
+    user turned wind off, so it must stay off. Guards the had_wind-reads-effective
+    fix (reading raw data here would silently re-enable the blocker).
+    """
+    entry = MockConfigEntry(
+        version=1,
+        domain=DOMAIN,
+        title="ClearedWind",
+        data={
+            CONF_NAME: "ClearedWind",
+            CONF_WEATHER_ENTITIES: ["weather.home"],
+            CONF_CATEGORY: "car",
+            CONF_CUSTOMIZE_THRESHOLDS: False,
+            CONF_WIND_THRESHOLD: 35.0,  # stale create-time seed still in data
+        },
+        options={CONF_CUSTOMIZE_THRESHOLDS: True, CONF_WIND_THRESHOLD: None},  # user cleared it
+        entry_id="cleared_wind",
+        unique_id=f"{DOMAIN}_cleared_wind",
+    )
+    entry.add_to_hass(hass)
+
+    with (
+        patch("custom_components.washwise.async_setup_entry", return_value=True),
+        patch("custom_components.washwise.async_unload_entry", return_value=True),
+    ):
+        result = await entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.home"],
+                CONF_NAME: "ClearedWind Renamed",
+                CONF_CATEGORY: "car",
+                CONF_CUSTOMIZE_THRESHOLDS: False,
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] == FlowResultType.ABORT
+    # Effective wind was None (cleared) → not re-seeded. Neither data nor options
+    # carries a value, so the coordinator leaves the blocker disabled.
+    assert entry.data.get(CONF_WIND_THRESHOLD) is None
+    assert entry.options.get(CONF_WIND_THRESHOLD) is None
 
 
 async def test_reconfigure_clears_stale_weather_entities_from_options(

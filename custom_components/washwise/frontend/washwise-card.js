@@ -510,15 +510,6 @@ class WashWiseCard extends LitElement {
     if (!oldHass) return true;
     const id = this._config.entity;
     if (oldHass.states?.[id] !== this.hass.states?.[id]) return true;
-    // The action row needs config_entry_id from the entity registry, which can
-    // hydrate a tick after states. Re-render when it appears/changes so the row
-    // is not stranded hidden until an unrelated state change.
-    if (
-      oldHass.entities?.[id]?.config_entry_id !==
-      this.hass.entities?.[id]?.config_entry_id
-    ) {
-      return true;
-    }
     const snoozeSensorId = id
       .replace("binary_sensor.", "sensor.")
       .replace(/_can_wash$/, "_snooze_remaining");
@@ -758,23 +749,17 @@ class WashWiseCard extends LitElement {
 
   // ── Actions ──────────────────────────────────────────────────────────────
 
-  // Services key off the config entry, not the entity. The frontend hass holds
-  // the entity registry at hass.entities[entity_id].config_entry_id; without it
-  // we cannot target a service, so the row is hidden.
-  _entryId() {
-    const id = this._config?.entity;
-    if (!id) return null;
-    return this.hass?.entities?.[id]?.config_entry_id ?? null;
-  }
-
   _renderActions(stateObj, snoozed, isIrrigation = false) {
     // ponytail: wash-only. mark_washed/snooze are meaningless for a
     // garden_irrigation entry (that path uses set_irrigation_switch); hide the
     // row rather than show wrong-semantic buttons. Add irrigation actions here
     // if that mode ever needs tappable controls.
     if (isIrrigation) return nothing;
-    const entryId = this._entryId();
-    if (!entryId) return nothing;
+    // The row renders whenever show_actions is on. Buttons target the service by
+    // entity_id (always known from config); the backend resolves the config
+    // entry. Do NOT gate on the client-side entity registry — hass.entities has
+    // no config_entry_id in the editor preview / early load, which used to make
+    // an enabled show_actions silently render nothing.
     // A dead coordinator rejects every service call; disable the whole row, not
     // just Mark washed, so Snooze/Clear don't fire into a raw error toast.
     const unavailable = stateObj.state === "unavailable" || stateObj.state === "unknown";
@@ -784,20 +769,20 @@ class WashWiseCard extends LitElement {
           class="ww-action"
           type="button"
           ?disabled=${unavailable}
-          @click=${() => this._onMarkWashed(entryId)}
+          @click=${() => this._onMarkWashed()}
         >🧺<span>Mark washed</span></button>
         ${snoozed
           ? html`<button
               class="ww-action"
               type="button"
               ?disabled=${unavailable}
-              @click=${() => this._onClearSnooze(entryId)}
+              @click=${() => this._onClearSnooze()}
             >▶️<span>Clear snooze</span></button>`
           : html`<button
               class="ww-action"
               type="button"
               ?disabled=${unavailable}
-              @click=${() => this._onSnooze(entryId)}
+              @click=${() => this._onSnooze()}
             >⏸️<span>Snooze</span></button>`}
       </div>
     `;
@@ -825,19 +810,29 @@ class WashWiseCard extends LitElement {
     return p;
   }
 
-  _onMarkWashed(entryId) {
+  _onMarkWashed() {
+    // Target the service by entity_id — the card always knows it. The backend
+    // resolves the owning config entry from the entity registry, so this works
+    // even in the editor preview / early load where the client-side registry
+    // (hass.entities) has no config_entry_id.
+    const entity = this._config?.entity;
+    if (!entity) return;
     // Mark washed resets the wash state; confirm before firing.
     if (!this._confirm("Mark this surface as washed now?")) return;
-    this._callService("mark_washed", { entry_id: entryId });
+    this._callService("mark_washed", { entity_id: entity });
   }
 
-  _onSnooze(entryId) {
+  _onSnooze() {
+    const entity = this._config?.entity;
+    if (!entity) return;
     // No hours → backend applies the configured default (24h).
-    this._callService("snooze", { entry_id: entryId });
+    this._callService("snooze", { entity_id: entity });
   }
 
-  _onClearSnooze(entryId) {
-    this._callService("clear_snooze", { entry_id: entryId });
+  _onClearSnooze() {
+    const entity = this._config?.entity;
+    if (!entity) return;
+    this._callService("clear_snooze", { entity_id: entity });
   }
 
   // ── Internals ──────────────────────────────────────────────────────────

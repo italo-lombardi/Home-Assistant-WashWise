@@ -402,52 +402,24 @@ test("_renderGauge: bad verdict adds the bad fill class", () => {
   assert.match(frag, /ww-gauge-bar-fill bad/, "bad verdict → bad class on fill");
 });
 
-// ── Actions: entry_id resolution ──────────────────────────────────────────────
+// ── Actions: render (always shown in wash mode; irrigation hidden) ────────────
 
-test("_entryId: resolves config_entry_id from hass entity registry", () => {
-  const self = {
-    _config: { entity: "binary_sensor.x_can_wash" },
-    hass: { entities: { "binary_sensor.x_can_wash": { config_entry_id: "abc123" } } },
-  };
-  assert.equal(Card.prototype._entryId.call(self), "abc123");
-});
-
-test("_entryId: null when entity, registry entry, or hass missing", () => {
-  assert.equal(Card.prototype._entryId.call({ _config: {} }), null);
-  assert.equal(
-    Card.prototype._entryId.call({ _config: { entity: "binary_sensor.x_can_wash" }, hass: {} }),
-    null,
-    "no entities map"
-  );
-  assert.equal(
-    Card.prototype._entryId.call({
-      _config: { entity: "binary_sensor.x_can_wash" },
-      hass: { entities: {} },
-    }),
-    null,
-    "entity not in registry"
-  );
-});
-
-// ── Actions: render (context-aware, hide without entry_id) ────────────────────
-
-function actionsSelf(entryId) {
-  return {
-    _config: { entity: "binary_sensor.x_can_wash" },
-    hass: entryId
-      ? { entities: { "binary_sensor.x_can_wash": { config_entry_id: entryId } } }
-      : {},
-    _entryId: Card.prototype._entryId,
-  };
+function actionsSelf() {
+  return { _config: { entity: "binary_sensor.x_can_wash" } };
 }
 
-test("_renderActions: hidden when entry_id cannot be resolved", () => {
-  const frag = Card.prototype._renderActions.call(actionsSelf(null), { state: "on" }, false);
-  assert.equal(frag, NOTHING);
+test("_renderActions: rendered in wash mode regardless of entity registry", () => {
+  // Regression: the row used to be silently hidden without a resolvable
+  // config_entry_id, so an enabled show_actions toggle appeared to do nothing in
+  // the editor preview / early load. It now always renders in wash mode; buttons
+  // target the service by entity_id and the backend resolves the entry.
+  const frag = Card.prototype._renderActions.call(actionsSelf(), { state: "on" }, false);
+  assert.notEqual(frag, NOTHING, "action row renders");
+  assert.match(frag.__html, /Mark washed/);
 });
 
 test("_renderActions: hidden entirely in irrigation mode (wrong semantics)", () => {
-  const frag = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "off" }, false, true);
+  const frag = Card.prototype._renderActions.call(actionsSelf(), { state: "off" }, false, true);
   assert.equal(frag, NOTHING, "mark_washed/snooze are meaningless for irrigation");
 });
 
@@ -484,6 +456,7 @@ test("_renderActions: every button disabled when state unavailable/unknown", () 
 function captureCall(fn) {
   const calls = [];
   const self = {
+    _config: { entity: "binary_sensor.x_can_wash" },
     _confirm: () => true,
     _callService: (service, data) => calls.push({ service, data }),
   };
@@ -491,29 +464,50 @@ function captureCall(fn) {
   return calls;
 }
 
-test("_onMarkWashed: confirmed → calls mark_washed with entry_id", () => {
-  const calls = captureCall((self) => Card.prototype._onMarkWashed.call(self, "e9"));
-  assert.deepEqual(calls, [{ service: "mark_washed", data: { entry_id: "e9" } }]);
+test("_onMarkWashed: confirmed → calls mark_washed targeted by entity_id", () => {
+  const calls = captureCall((self) => Card.prototype._onMarkWashed.call(self));
+  assert.deepEqual(calls, [
+    { service: "mark_washed", data: { entity_id: "binary_sensor.x_can_wash" } },
+  ]);
 });
 
 test("_onMarkWashed: declined confirm → no service call", () => {
   const calls = [];
   const self = {
+    _config: { entity: "binary_sensor.x_can_wash" },
     _confirm: () => false,
     _callService: (service, data) => calls.push({ service, data }),
   };
-  Card.prototype._onMarkWashed.call(self, "e9");
+  Card.prototype._onMarkWashed.call(self);
   assert.deepEqual(calls, [], "confirm returning false aborts the call");
 });
 
-test("_onSnooze: fires snooze with entry_id only (no hours → backend default)", () => {
-  const calls = captureCall((self) => Card.prototype._onSnooze.call(self, "e9"));
-  assert.deepEqual(calls, [{ service: "snooze", data: { entry_id: "e9" } }]);
+test("_onSnooze: fires snooze with entity_id only (no hours → backend default)", () => {
+  const calls = captureCall((self) => Card.prototype._onSnooze.call(self));
+  assert.deepEqual(calls, [
+    { service: "snooze", data: { entity_id: "binary_sensor.x_can_wash" } },
+  ]);
 });
 
-test("_onClearSnooze: fires clear_snooze with entry_id", () => {
-  const calls = captureCall((self) => Card.prototype._onClearSnooze.call(self, "e9"));
-  assert.deepEqual(calls, [{ service: "clear_snooze", data: { entry_id: "e9" } }]);
+test("_onClearSnooze: fires clear_snooze with entity_id", () => {
+  const calls = captureCall((self) => Card.prototype._onClearSnooze.call(self));
+  assert.deepEqual(calls, [
+    { service: "clear_snooze", data: { entity_id: "binary_sensor.x_can_wash" } },
+  ]);
+});
+
+test("action handlers: no entity configured → no-op (no service call, no throw)", () => {
+  // Defensive: without a configured entity there is nothing to target.
+  for (const h of ["_onMarkWashed", "_onSnooze", "_onClearSnooze"]) {
+    const calls = [];
+    const self = {
+      _config: {},
+      _confirm: () => true,
+      _callService: (service, data) => calls.push({ service, data }),
+    };
+    Card.prototype[h].call(self);
+    assert.deepEqual(calls, [], `${h} must not call a service without an entity`);
+  }
 });
 
 test("_callService: forwards to hass.callService under the washwise domain", () => {
@@ -563,20 +557,6 @@ test("_confirm: returns false when window.confirm is unavailable", () => {
   }
 });
 
-// ── shouldUpdate: entity-registry hydration (entry_id arrives late) ────────────
-
-test("shouldUpdate: true when config_entry_id hydrates in a later hass update", () => {
-  const id = "binary_sensor.x_can_wash";
-  const sameState = { state: "on" };
-  const oldHass = { states: { [id]: sameState }, entities: {} };
-  const self = {
-    hass: { states: { [id]: sameState }, entities: { [id]: { config_entry_id: "abc" } } },
-    _config: { entity: id },
-  };
-  const changed = { has: () => false, get: () => oldHass };
-  assert.equal(
-    Card.prototype.shouldUpdate.call(self, changed),
-    true,
-    "registry arriving must trigger a render so the hidden action row appears"
-  );
-});
+// ── shouldUpdate: watched-state changes (registry no longer gates the row) ────
+// The action row targets services by entity_id and renders unconditionally in
+// wash mode, so there is no entry_id-hydration render to assert any more.

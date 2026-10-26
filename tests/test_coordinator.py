@@ -1022,9 +1022,63 @@ async def test_resolve_thresholds_wind_absent_when_unset(hass: HomeAssistant) ->
     assert "wind_threshold_kmh" not in thresholds
 
 
-# ---------------------------------------------------------------------------
-# Verdict-changed event
-# ---------------------------------------------------------------------------
+@freeze_time(FROZEN_NOW)
+async def test_resolve_thresholds_wind_seeded_in_data_noncustomize(hass: HomeAssistant) -> None:
+    """A non-customize entry with a seeded wind value in data applies it.
+
+    New entries (v0.2.7+) ship the per-category default seeded into entry.data.
+    The non-customize path must read that stored value — not the preset — so the
+    seeded default takes effect.
+    """
+    entry = MockConfigEntry(
+        version=1,
+        domain=DOMAIN,
+        title="SeededWind",
+        data={
+            CONF_NAME: "SeededWind",
+            CONF_WEATHER_ENTITIES: ["weather.primary"],
+            CONF_CATEGORY: DEFAULT_CATEGORY,
+            CONF_CUSTOMIZE_THRESHOLDS: False,
+            CONF_WIND_THRESHOLD: 35,
+        },
+        options={},
+        entry_id="wind_seed",
+        unique_id=f"{DOMAIN}_wind_seed",
+    )
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+
+    thresholds, _invert = coord._resolve_thresholds()
+    assert thresholds["wind_threshold_kmh"] == 35.0
+
+
+@freeze_time(FROZEN_NOW)
+async def test_resolve_thresholds_wind_not_retroactive_noncustomize(hass: HomeAssistant) -> None:
+    """A pre-0.2.7 non-customize entry (no stored wind key) stays disabled.
+
+    The per-category preset now defines wind_threshold_kmh, but it must NOT be
+    applied retroactively: an entry that never stored the key keeps the blocker
+    off, so existing users see no behavior change on upgrade.
+    """
+    entry = MockConfigEntry(
+        version=1,
+        domain=DOMAIN,
+        title="LegacyNoWind",
+        data={
+            CONF_NAME: "LegacyNoWind",
+            CONF_WEATHER_ENTITIES: ["weather.primary"],
+            CONF_CATEGORY: DEFAULT_CATEGORY,
+            CONF_CUSTOMIZE_THRESHOLDS: False,
+        },
+        options={},
+        entry_id="wind_legacy",
+        unique_id=f"{DOMAIN}_wind_legacy",
+    )
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+
+    thresholds, _invert = coord._resolve_thresholds()
+    assert "wind_threshold_kmh" not in thresholds
 
 
 def _decision(can_wash: bool, reason: str, score: int) -> Decision:
