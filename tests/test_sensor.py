@@ -552,6 +552,23 @@ def test_worst_condition_picks_highest_severity() -> None:
     assert sensor.native_value == "pouring"
 
 
+def test_worst_condition_keeps_max_when_later_bad_day_is_milder() -> None:
+    """A later, less-severe bad day does not displace the running worst.
+
+    Covers the ``severity > worst[0]`` false branch: pouring (1.0) seen first,
+    then rainy (0.5) — rainy must NOT overwrite pouring.
+    """
+    summary = [
+        {"date": date(2026, 6, 11), "condition": "pouring", "blocked": True},
+        {"date": date(2026, 6, 12), "condition": "rainy", "blocked": True},
+    ]
+    decision = _make_decision(forecast_summary=summary, days_analyzed=2)
+    coordinator = _make_coordinator(decision)
+    entry = _make_entry()
+
+    assert WorstConditionSensor(coordinator, entry).native_value == "pouring"
+
+
 def test_category_sensor_returns_configured_category() -> None:
     """``CategorySensor`` returns the category key from entry.data."""
     coordinator = _make_coordinator(_make_decision())
@@ -966,9 +983,39 @@ def test_worst_condition_none_when_no_conditions() -> None:
     assert sensor.native_value is None
 
 
-# ----------------------------------------------------------------------
-# PrimaryProviderUptimeSensor edge cases
-# ----------------------------------------------------------------------
+def test_worst_condition_none_when_all_benign() -> None:
+    """A forecast with only non-bad conditions has no worst condition → None.
+
+    Regression: the sensor used to latch the FIRST row (``worst is None`` on
+    iteration 1) regardless of severity, so an all-clean forecast surfaced a
+    benign sky (e.g. ``partlycloudy``) as the "most severe condition". Conditions
+    absent from BAD_CONDITION_SEVERITY must be skipped entirely.
+    """
+    summary = [
+        {"date": date(2026, 6, 11), "condition": "partlycloudy", "blocked": False},
+        {"date": date(2026, 6, 12), "condition": "cloudy", "blocked": False},
+        {"date": date(2026, 6, 13), "condition": "sunny", "blocked": False},
+    ]
+    decision = _make_decision(forecast_summary=summary, days_analyzed=3)
+    coordinator = _make_coordinator(decision)
+    entry = _make_entry()
+
+    sensor = WorstConditionSensor(coordinator, entry)
+
+    assert sensor.native_value is None, "benign forecast must not report a worst condition"
+
+
+def test_worst_condition_ignores_benign_before_bad() -> None:
+    """Benign leading rows are skipped; the bad condition is still found."""
+    summary = [
+        {"date": date(2026, 6, 11), "condition": "partlycloudy", "blocked": False},
+        {"date": date(2026, 6, 12), "condition": "rainy", "blocked": True},
+    ]
+    decision = _make_decision(forecast_summary=summary, days_analyzed=2)
+    coordinator = _make_coordinator(decision)
+    entry = _make_entry()
+
+    assert WorstConditionSensor(coordinator, entry).native_value == "rainy"
 
 
 def test_primary_provider_uptime_none_when_no_weather_entities() -> None:

@@ -513,7 +513,16 @@ class WorstConditionSensor(_DiagnosticBase):
 
     @property
     def native_value(self) -> str | None:
-        """Return the most severe forecast condition string seen."""
+        """Return the most severe *bad* forecast condition, or ``None``.
+
+        Only conditions that carry a severity in ``BAD_CONDITION_SEVERITY`` count:
+        a benign forecast (all ``sunny``/``cloudy``/``partlycloudy``) has no
+        "worst condition" and must return ``None``. The previous implementation
+        used ``.get(cond, 0.0)`` and latched the FIRST day because ``worst is
+        None`` on the first iteration regardless of severity, so a clean sky was
+        surfaced as the "most severe condition" (e.g. ``partlycloudy``). This now
+        mirrors ``binary_sensor._forecast_aggregates``'s ``worst_condition``.
+        """
         from .const import BAD_CONDITION_SEVERITY
 
         decision = self._decision
@@ -522,9 +531,9 @@ class WorstConditionSensor(_DiagnosticBase):
         worst: tuple[float, str] | None = None
         for day in decision.forecast_summary or []:
             cond = day.get("condition")
-            if not cond:
+            if cond not in BAD_CONDITION_SEVERITY:
                 continue
-            severity = float(BAD_CONDITION_SEVERITY.get(cond, 0.0))
+            severity = float(BAD_CONDITION_SEVERITY[cond])
             if worst is None or severity > worst[0]:
                 worst = (severity, cond)
         return worst[1] if worst is not None else None
