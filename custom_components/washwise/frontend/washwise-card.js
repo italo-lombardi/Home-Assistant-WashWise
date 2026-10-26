@@ -345,13 +345,6 @@ const FORECAST_ICON_MAP = {
   exceptional: "⚠️",
 };
 
-function clampInt(raw, min, max, fallback) {
-  if (raw === undefined || raw === null || raw === "") return fallback;
-  const n = typeof raw === "number" ? raw : Number(raw);
-  if (!Number.isFinite(n)) return fallback;
-  return Math.max(min, Math.min(max, Math.trunc(n)));
-}
-
 function forecastIcon(condition) {
   if (!condition) return "·";
   return FORECAST_ICON_MAP[condition] ?? condition.slice(0, 2);
