@@ -558,7 +558,14 @@ class WashWiseOptionsFlow(OptionsFlow):
         preset = CATEGORY_PRESETS.get(category, CATEGORY_PRESETS[DEFAULT_CATEGORY])
 
         if user_input is not None:
-            return self._save({**user_input, CONF_CUSTOMIZE_THRESHOLDS: True})
+            updates = {**user_input, CONF_CUSTOMIZE_THRESHOLDS: True}
+            # A blank wind field means "disable the wind blocker". voluptuous
+            # omits the key entirely when the optional NumberSelector is left
+            # empty, and the _save merge would otherwise preserve a previously
+            # saved value — so clear it explicitly here.
+            if CONF_WIND_THRESHOLD not in user_input:
+                updates[CONF_WIND_THRESHOLD] = None
+            return self._save(updates)
 
         data_schema = vol.Schema(
             {
@@ -594,13 +601,13 @@ class WashWiseOptionsFlow(OptionsFlow):
                     CONF_FREEZE_CHECK,
                     default=current.get(CONF_FREEZE_CHECK, preset["freeze_check"]),
                 ): selector.BooleanSelector(),
-                (
-                    vol.Optional(
-                        CONF_WIND_THRESHOLD,
-                        default=current[CONF_WIND_THRESHOLD],
-                    )
-                    if current.get(CONF_WIND_THRESHOLD) is not None
-                    else vol.Optional(CONF_WIND_THRESHOLD)
+                # suggested_value (not default) pre-fills the current wind
+                # threshold while still allowing the user to clear the box to
+                # disable the blocker — a default would be re-injected on a
+                # blank submit, making the setting impossible to turn off.
+                vol.Optional(
+                    CONF_WIND_THRESHOLD,
+                    description={"suggested_value": current.get(CONF_WIND_THRESHOLD)},
                 ): selector.NumberSelector(
                     selector.NumberSelectorConfig(
                         min=0,

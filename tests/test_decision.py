@@ -533,6 +533,35 @@ def test_wind_disabled_when_no_threshold_configured() -> None:
     assert result.score == 100
 
 
+def test_wind_ignored_in_invert_mode() -> None:
+    """Wind has no meaning for solar/irrigation — a windy day is not a blocker
+    and must never flip the inverted score into a bonus."""
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    # Windy but dry: in invert mode this should stay "no rain -> no wash",
+    # NOT become a wind-blocked or wind-boosted verdict.
+    forecast = [_windy_day(i, 200.0) for i in range(3)]
+
+    result = compute(
+        cur, forecast, _thresholds(wind_threshold_kmh=40.0), invert=True, now=NOW
+    )
+
+    assert result.can_wash is False
+    assert result.reason == REASON_CLEAR  # dry horizon, not "wind"
+    # No day should carry a wind blocker tag.
+    assert all("wind" not in d["blockers"] for d in result.forecast_summary)
+
+
+def test_invert_empty_forecast_returns_no_data() -> None:
+    """The no_data honesty fix also applies on the inverted path."""
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+
+    result = compute(cur, [], _thresholds(), invert=True, now=NOW)
+
+    assert result.can_wash is False
+    assert result.reason == REASON_NO_DATA
+    assert result.days_analyzed == 0
+
+
 def test_wind_missing_value_never_blocks() -> None:
     """A configured threshold with no wind data in the forecast is a no-op."""
     cur = CurrentWeather(condition="sunny", temperature_c=18.0)

@@ -125,14 +125,18 @@ async def get_forecast(
     if not isinstance(raw_forecast, list):
         return []
 
-    # Resolve the unit reported on the source entity once -- forecast rows
-    # rarely carry their own ``temperature_unit``.
+    # Resolve the units reported on the source entity once -- forecast rows
+    # rarely carry their own ``temperature_unit`` / ``wind_speed_unit``.
     state = hass.states.get(entity_id)
     entity_unit: str | None = None
+    entity_wind_unit: str | None = None
     if state is not None:
         attr_unit = state.attributes.get("temperature_unit")
         if isinstance(attr_unit, str) and attr_unit.strip():
             entity_unit = attr_unit
+        attr_wind_unit = state.attributes.get("wind_speed_unit")
+        if isinstance(attr_wind_unit, str) and attr_wind_unit.strip():
+            entity_wind_unit = attr_wind_unit
 
     # Entity's own temperature_unit attribute wins — it knows what unit its
     # forecast frames use. The fallback_unit (from coordinator config) is only
@@ -144,18 +148,25 @@ async def get_forecast(
     for raw in sliced:
         if not isinstance(raw, dict):
             continue
-        normalized = _normalize(raw, fallback_unit=effective_unit)
+        normalized = _normalize(
+            raw, fallback_unit=effective_unit, fallback_wind_unit=entity_wind_unit
+        )
         if normalized is not None:
             out.append(normalized)
     return out
 
 
-def _normalize(raw: dict[str, Any], fallback_unit: str | None = None) -> ForecastDay | None:
+def _normalize(
+    raw: dict[str, Any],
+    fallback_unit: str | None = None,
+    fallback_wind_unit: str | None = None,
+) -> ForecastDay | None:
     """Convert a provider-specific forecast entry to a ``ForecastDay``.
 
     Any exception or unparseable date returns ``None`` so the caller can
-    skip the entry without aborting the whole forecast. ``fallback_unit``
-    is used when the entry itself does not carry ``temperature_unit``.
+    skip the entry without aborting the whole forecast. ``fallback_unit`` and
+    ``fallback_wind_unit`` supply the temperature / wind-speed unit when the
+    entry itself does not carry its own.
     """
     try:
         time_value = _resolve_key(raw, TIME_KEYS)
@@ -184,7 +195,9 @@ def _normalize(raw: dict[str, Any], fallback_unit: str | None = None) -> Forecas
         tmax_c = _to_celsius(tmax_raw, unit)
 
         wind_raw = _resolve_key(raw, WIND_KEYS)
-        wind_kmh = _to_kmh(wind_raw, raw.get("wind_speed_unit"))
+        wind_kmh = _to_kmh(
+            wind_raw, raw.get("wind_speed_unit") or fallback_wind_unit
+        )
 
         return ForecastDay(
             date=fc_date,

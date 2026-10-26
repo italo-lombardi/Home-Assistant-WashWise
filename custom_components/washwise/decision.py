@@ -191,7 +191,11 @@ def compute(
     condition_weight = float(thresholds.get("condition_weight", _DEFAULT_CONDITION_WEIGHT))
     # Wind is opt-in: a threshold of ``None``/absent disables the blocker and
     # its penalty entirely, so existing entries behave exactly as before.
-    wind_raw = thresholds.get("wind_threshold_kmh")
+    # Wind is a plain "bad for washing" blocker and has no coherent meaning in
+    # inverted (solar/irrigation) mode — rain is the positive signal there, and
+    # a windy day is neither a clean-signal nor a blocker — so it is disabled
+    # when ``invert`` is set rather than flipping into a bogus score bonus.
+    wind_raw = None if invert else thresholds.get("wind_threshold_kmh")
     wind_threshold: float | None = (
         float(wind_raw) if wind_raw is not None else None
     )
@@ -295,10 +299,12 @@ def compute(
                 days_analyzed=days_analyzed,
             )
         # No rain in horizon -> panels stay dirty; invert score for consistency.
+        # Mirror the non-inverted honesty fix: zero analyzed days is "no data",
+        # not a confident "clear".
         return Decision(
             can_wash=False,
             score=100 - score_int,
-            reason=REASON_CLEAR,
+            reason=REASON_NO_DATA if days_analyzed == 0 else REASON_CLEAR,
             days_until_wash=None,
             blocking_days=[],
             forecast_summary=forecast_summary,

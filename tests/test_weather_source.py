@@ -92,6 +92,35 @@ async def test_get_forecast_parses_fixture(
     assert all(isinstance(day.date, date) for day in result)
 
 
+async def test_get_forecast_resolves_wind_unit_from_entity(hass: HomeAssistant) -> None:
+    """Wind unit declared on the parent entity (not the row) is applied.
+
+    Mirrors the temperature-unit path: providers like met.no expose
+    ``wind_speed_unit`` on the entity state, not on each forecast frame. A row
+    reporting 15 (m/s) must normalize to 54 km/h, not be read as 15 km/h.
+    """
+    entity_id = "weather.windy"
+    hass.states.async_set(
+        entity_id,
+        "sunny",
+        {"temperature_unit": "°C", "wind_speed_unit": "m/s"},
+    )
+    response = {
+        entity_id: {
+            "forecast": [
+                {"datetime": "2026-06-11T00:00:00+00:00", "wind_speed": 15.0}
+            ]
+        }
+    }
+    _register_forecast_service(hass, response)
+
+    result = await weather_source.get_forecast(hass, entity_id, mode="daily", days=1)
+
+    assert len(result) == 1
+    # 15 m/s = 54 km/h (not 15).
+    assert result[0].wind_speed_kmh == pytest.approx(54.0, abs=1e-2)
+
+
 # ---------------------------------------------------------------------------
 # is_available
 # ---------------------------------------------------------------------------
