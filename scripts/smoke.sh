@@ -74,12 +74,40 @@ sleep 8
 
 CAN_WASH="binary_sensor.washwise_smoke_car_can_wash"
 
-# --- 3. Wind default seeded for the new car entry (35 km/h) -------------------
-if [ -n "$ENTRY_ID" ]; then
-  api "$HA/api/config/config_entries/entry" >/dev/null 2>&1
-fi
-# Read stored data via the entry listing is not enough (data not exposed); check
-# the resolved threshold surfaces by confirming the entry exists + diag below.
+# --- 3. Customize-create pre-fills the wind cutoff with the category default --
+# Drive a CUSTOMIZE create to the thresholds step and read the wind field's
+# suggested_value from the returned data_schema. Guards the bug where the
+# customize path left the wind box empty (seed only ran the non-customize path).
+# car preset default = 35; an invert category (solar_panels) omits wind →
+# suggested absent/null. Both flows are aborted (no entry created).
+check_wind_prefill() {
+  local category="$1" expect="$2"
+  local flow fid step
+  flow=$(api -X POST "${JSON[@]}" -d '{"handler":"washwise"}' "$HA/api/config/config_entries/flow")
+  fid=$(echo "$flow" | python3 -c "import json,sys; print(json.load(sys.stdin)['flow_id'])")
+  step=$(api -X POST "${JSON[@]}" \
+    -d "{\"weather_entities\":[\"$WEATHER\"],\"name\":\"Smoke Cust $category\",\"category\":\"$category\",\"customize_thresholds\":true}" \
+    "$HA/api/config/config_entries/flow/$fid")
+  api -X DELETE "$HA/api/config/config_entries/flow/$fid" >/dev/null 2>&1  # abort, no entry
+  echo "$step" | EXPECT="$expect" CAT="$category" python3 -c "
+import json, os, sys
+d = json.load(sys.stdin)
+if d.get('step_id') != 'thresholds':
+    print(f'  ✗ wind-prefill[{os.environ[\"CAT\"]}]: did not reach thresholds step'); sys.exit(1)
+wind = next((f for f in d.get('data_schema', []) if f.get('name') == 'wind_threshold_kmh'), None)
+sug = (wind or {}).get('description', {}).get('suggested_value')
+exp = os.environ['EXPECT']
+if exp == 'none':
+    ok = sug is None
+    print(f'  {\"✓\" if ok else \"✗\"} wind-prefill[{os.environ[\"CAT\"]}]: suggested={sug!r} (expected none)')
+    sys.exit(0 if ok else 1)
+ok = sug == float(exp) or sug == int(exp)
+print(f'  {\"✓\" if ok else \"✗\"} wind-prefill[{os.environ[\"CAT\"]}]: suggested={sug!r} (expected {exp})')
+sys.exit(0 if ok else 1)
+" || FAILS=$((FAILS + 1))
+}
+check_wind_prefill "car" "35"
+check_wind_prefill "solar_panels" "none"
 
 # --- 4. Enriched diagnostics attributes present on can_wash ------------------
 api "$HA/api/states/$CAN_WASH" | python3 -c "
