@@ -8,6 +8,7 @@ import voluptuous as vol
 from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import entity_registry as er
 
 from .const import DOMAIN
 from .coordinator import WashWiseCoordinator
@@ -18,42 +19,65 @@ SERVICE_CLEAR_SNOOZE = "clear_snooze"
 SERVICE_SET_IRRIGATION_SWITCH = "set_irrigation_switch"
 
 ATTR_ENTRY_ID = "entry_id"
+ATTR_ENTITY_ID = "entity_id"
 ATTR_TIMESTAMP = "timestamp"
 ATTR_HOURS = "hours"
 ATTR_STATE = "state"
 
 _SERVICES_REGISTERED_FLAG = "_services_registered"
 
-MARK_WASHED_SCHEMA = vol.Schema(
+# Each service targets a WashWise instance by ``entry_id``. The Lovelace card,
+# however, only reliably knows the entity_id it was configured with — the
+# frontend ``hass.entities`` registry (which carries config_entry_id) is not
+# always populated for a custom card, so the card cannot depend on resolving the
+# entry itself. Accept ``entity_id`` as an alternative target and resolve the
+# owning entry server-side from the entity registry. ``vol.Exclusive`` forbids
+# supplying BOTH; it permits neither, so the "one is required" half is enforced
+# at runtime by ``_resolve_entry_id`` (raises if both are absent).
+_TARGET = vol.Schema(
     {
-        vol.Required(ATTR_ENTRY_ID): cv.string,
+        vol.Exclusive(ATTR_ENTRY_ID, "target"): cv.string,
+        vol.Exclusive(ATTR_ENTITY_ID, "target"): cv.entity_id,
+    }
+)
+
+MARK_WASHED_SCHEMA = _TARGET.extend(
+    {
         vol.Optional(ATTR_TIMESTAMP): cv.datetime,
     }
 )
 
-SNOOZE_SCHEMA = vol.Schema(
+SNOOZE_SCHEMA = _TARGET.extend(
     {
-        vol.Required(ATTR_ENTRY_ID): cv.string,
         vol.Optional(ATTR_HOURS): vol.All(vol.Coerce(int), vol.Range(min=1)),
     }
 )
 
-CLEAR_SNOOZE_SCHEMA = vol.Schema(
-    {
-        vol.Required(ATTR_ENTRY_ID): cv.string,
-    }
-)
+CLEAR_SNOOZE_SCHEMA = _TARGET.extend({})
 
-SET_IRRIGATION_SWITCH_SCHEMA = vol.Schema(
+SET_IRRIGATION_SWITCH_SCHEMA = _TARGET.extend(
     {
-        vol.Required(ATTR_ENTRY_ID): cv.string,
         vol.Required(ATTR_STATE): vol.In(["on", "off"]),
     }
 )
 
 
+def _resolve_entry_id(hass: HomeAssistant, call: ServiceCall) -> str:
+    """Return the target entry_id, resolving from entity_id when needed."""
+    entry_id = call.data.get(ATTR_ENTRY_ID)
+    if entry_id:
+        return entry_id
+    entity_id = call.data.get(ATTR_ENTITY_ID)
+    if not entity_id:
+        raise HomeAssistantError("Provide either 'entry_id' or 'entity_id'.")
+    entity = er.async_get(hass).async_get(entity_id)
+    if entity is None or entity.config_entry_id is None:
+        raise HomeAssistantError(f"Entity '{entity_id}' is not a registered WashWise entity.")
+    return entity.config_entry_id
+
+
 def _resolve_coordinator(hass: HomeAssistant, call: ServiceCall) -> WashWiseCoordinator:
-    entry_id: str = call.data[ATTR_ENTRY_ID]
+    entry_id = _resolve_entry_id(hass, call)
     domain_data = hass.data.get(DOMAIN, {})
     coord = domain_data.get(entry_id)
     if not isinstance(coord, WashWiseCoordinator):

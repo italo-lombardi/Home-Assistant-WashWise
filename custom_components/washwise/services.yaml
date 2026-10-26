@@ -1,14 +1,22 @@
 mark_washed:
   name: Mark as washed
-  description: Record that the surface was just washed. Appends an entry to the wash log.
+  description: Record that the surface was just washed. Appends an entry to the wash log. Provide either entry_id or entity_id.
   fields:
     entry_id:
       name: Configuration
-      description: WashWise configuration entry to update.
-      required: true
+      description: WashWise configuration entry to update. Mutually exclusive with entity_id.
+      required: false
       selector:
         config_entry:
           integration: washwise
+    entity_id:
+      name: Entity
+      description: A WashWise entity whose configuration entry to update. Mutually exclusive with entry_id.
+      required: false
+      selector:
+        entity:
+          integration: washwise
+          domain: binary_sensor
     timestamp:
       name: Timestamp
       description: Optional timestamp for the wash event. Defaults to now.
@@ -19,15 +27,23 @@ mark_washed:
 
 snooze:
   name: Snooze
-  description: Pause the wash advisor for a number of hours.
+  description: Pause the wash advisor for a number of hours. Provide either entry_id or entity_id.
   fields:
     entry_id:
       name: Configuration
-      description: WashWise configuration entry to snooze.
-      required: true
+      description: WashWise configuration entry to snooze. Mutually exclusive with entity_id.
+      required: false
       selector:
         config_entry:
           integration: washwise
+    entity_id:
+      name: Entity
+      description: A WashWise entity whose configuration entry to snooze. Mutually exclusive with entry_id.
+      required: false
+      selector:
+        entity:
+          integration: washwise
+          domain: binary_sensor
     hours:
       name: Hours
       description: How many hours to snooze (minimum 1). Defaults to 24.
@@ -42,27 +58,43 @@ snooze:
 
 clear_snooze:
   name: Clear snooze
-  description: Cancel any active snooze and return to the normal verdict.
+  description: Cancel any active snooze and return to the normal verdict. Provide either entry_id or entity_id.
   fields:
     entry_id:
       name: Configuration
-      description: WashWise configuration entry to clear snooze for.
-      required: true
+      description: WashWise configuration entry to clear snooze for. Mutually exclusive with entity_id.
+      required: false
       selector:
         config_entry:
           integration: washwise
+    entity_id:
+      name: Entity
+      description: A WashWise entity whose configuration entry to clear snooze for. Mutually exclusive with entry_id.
+      required: false
+      selector:
+        entity:
+          integration: washwise
+          domain: binary_sensor
 
 set_irrigation_switch:
   name: Set irrigation switch
-  description: Manually turn the configured irrigation program switch on or off, overriding the automatic suppression logic.
+  description: Manually turn the configured irrigation program switch on or off, overriding the automatic suppression logic. Provide either entry_id or entity_id.
   fields:
     entry_id:
       name: Configuration
-      description: WashWise garden_irrigation configuration entry to target.
-      required: true
+      description: WashWise garden_irrigation configuration entry to target. Mutually exclusive with entity_id.
+      required: false
       selector:
         config_entry:
           integration: washwise
+    entity_id:
+      name: Entity
+      description: A WashWise entity whose garden_irrigation configuration entry to target. Mutually exclusive with entry_id.
+      required: false
+      selector:
+        entity:
+          integration: washwise
+          domain: binary_sensor
     state:
       name: State
       description: Turn the irrigation switch on or off.

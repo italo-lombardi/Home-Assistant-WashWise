@@ -105,6 +105,7 @@ Visible only when **Customize thresholds** is on. Pre-filled from the selected c
 | Horizon (days) | How many forecast days to analyse (0–7). |
 | Precipitation cutoff (mm) | Any day above this value blocks the verdict. |
 | Freeze check | Block when any forecast day crosses 0 °C. |
+| Wind cutoff (km/h) | Optional. Any day whose forecast wind speed exceeds this blocks the verdict (`wind` reason). New configs are pre-filled with the [category default](#categories); leave blank to disable. |
 | Score weights | Independent weights for precipitation, freeze, and bad-condition penalties. |
 
 ### Reconfigure & options
@@ -117,21 +118,30 @@ The **Advanced** step includes a **Temperature unit** override. Leave it on **Au
 
 ## Categories
 
-| Category | Horizon | Precip cutoff | Freeze check | Inverted |
-|----------|---------|---------------|--------------|----------|
-| Car | 3 d | 0.2 mm | yes | no |
-| Motorcycle | 2 d | 0.5 mm | yes | no |
-| Bicycle | 2 d | 0.8 mm | no | no |
-| Boat | 5 d | 0.1 mm | yes | no |
-| RV / Camper | 5 d | 0.1 mm | yes | no |
-| House windows | 1 d | 1.0 mm | no | no |
-| Laundry | 7 h | 0.1 mm | yes | no |
-| Solar panels | 0 d | 0.0 mm | no | **yes** |
-| Patio / deck | 2 d | 0.5 mm | no | no |
-| Garden irrigation | 1 d | 2.0 mm | no | **yes** |
-| Custom | 3 d | 0.2 mm | yes | no |
+| Category | Horizon | Precip cutoff | Freeze check | Wind cutoff¹ | Inverted |
+|----------|---------|---------------|--------------|--------------|----------|
+| Car | 3 d | 0.2 mm | yes | 35 km/h | no |
+| Motorcycle | 2 d | 0.5 mm | yes | 35 km/h | no |
+| Bicycle | 2 d | 0.8 mm | no | 40 km/h | no |
+| Boat | 5 d | 0.1 mm | yes | 35 km/h | no |
+| RV / Camper | 5 d | 0.1 mm | yes | 35 km/h | no |
+| House windows | 1 d | 1.0 mm | no | 25 km/h | no |
+| Laundry | 7 h | 0.1 mm | yes | 50 km/h | no |
+| Solar panels | 0 d | 0.0 mm | no | — | **yes** |
+| Patio / deck | 2 d | 0.5 mm | no | 35 km/h | no |
+| Garden irrigation | 1 d | 2.0 mm | no | — | **yes** |
+| Custom | 3 d | 0.2 mm | yes | 30 km/h | no |
 
 Solar panels and Garden irrigation invert the verdict — rain forecast means "self-cleaning expected" / "skip irrigation" rather than "wash now".
+
+¹ **Wind cutoff applies to new configurations only.** The wind blocker is a per-entry
+opt-in setting. Configurations **created from v0.2.7 on** are seeded with the per-category
+default shown above (inverted categories omit it — wind is irrelevant to them). A day whose
+forecast wind speed exceeds the cutoff blocks the verdict with a `wind` reason, like the
+precipitation cutoff. **Configurations created before v0.2.7 keep the wind blocker off** and
+are not changed on upgrade — to enable it, open **Configure → Thresholds** (or Reconfigure with
+*Customize thresholds* on) and set a **Wind cutoff (km/h)** value by hand. Leaving the field
+blank disables it.
 
 ---
 

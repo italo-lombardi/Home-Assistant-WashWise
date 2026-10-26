@@ -589,10 +589,13 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
             bad_override = _pick(CONF_BAD_CONDITIONS, None)
             if bad_override:
                 thresholds["bad_conditions"] = list(bad_override)
-            # Wind is opt-in and off by default: only include a threshold when
-            # the user actually set one (preset never seeds it). ``None`` /
-            # absent leaves the decision engine's wind blocker disabled.
-            wind_threshold = _pick(CONF_WIND_THRESHOLD, preset.get("wind_threshold_kmh"))
+            # Wind is seeded into entry.data at create time for new entries and
+            # otherwise set explicitly by the user. Read only the stored value —
+            # never fall back to the preset, so existing pre-0.2.7 entries that
+            # never stored a wind key stay disabled rather than retroactively
+            # inheriting the new per-category default. ``None`` / absent leaves
+            # the decision engine's wind blocker disabled.
+            wind_threshold = _pick(CONF_WIND_THRESHOLD, None)
             if wind_threshold is not None:
                 thresholds["wind_threshold_kmh"] = float(wind_threshold)
         else:
@@ -604,6 +607,14 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
                 "freeze_weight": float(DEFAULT_FREEZE_WEIGHT),
                 "condition_weight": float(DEFAULT_CONDITION_WEIGHT),
             }
+            # Wind default is seeded into entry.data at create time for NEW
+            # entries (config_flow), so read the stored value — never the preset
+            # directly. Existing pre-0.2.7 entries have no stored key and stay
+            # disabled, exactly as before; only freshly-created entries carry the
+            # per-category default. options win over data if somehow set.
+            stored_wind = options.get(CONF_WIND_THRESHOLD, self.entry.data.get(CONF_WIND_THRESHOLD))
+            if stored_wind is not None:
+                thresholds["wind_threshold_kmh"] = float(stored_wind)
 
         return thresholds, invert
 

@@ -16,11 +16,13 @@ import pytest
 import voluptuous as vol
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.washwise.const import DOMAIN
 from custom_components.washwise.coordinator import WashWiseCoordinator
 from custom_components.washwise.services import (
+    ATTR_ENTITY_ID,
     ATTR_ENTRY_ID,
     ATTR_HOURS,
     ATTR_TIMESTAMP,
@@ -182,8 +184,60 @@ async def test_unknown_entry_id_raises(stub_coordinator) -> None:
     coord.async_mark_washed.assert_not_called()
 
 
-async def test_no_entry_id_raises(stub_coordinator) -> None:
+async def test_no_target_raises(stub_coordinator) -> None:
+    """Neither entry_id nor entity_id → the resolver raises (not a schema error)."""
     hass, coord, _ = stub_coordinator
-    with pytest.raises(vol.Invalid):
+    with pytest.raises(HomeAssistantError):
         await hass.services.async_call(DOMAIN, SERVICE_MARK_WASHED, {}, blocking=True)
+    coord.async_mark_washed.assert_not_called()
+
+
+async def test_entry_id_and_entity_id_mutually_exclusive(stub_coordinator) -> None:
+    """Supplying both target keys is a schema (vol.Invalid) error."""
+    hass, coord, entry_id = stub_coordinator
+    with pytest.raises(vol.Invalid):
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_MARK_WASHED,
+            {ATTR_ENTRY_ID: entry_id, ATTR_ENTITY_ID: "binary_sensor.washwise_x_can_wash"},
+            blocking=True,
+        )
+    coord.async_mark_washed.assert_not_called()
+
+
+async def test_mark_washed_targeted_by_entity_id(stub_coordinator) -> None:
+    """entity_id target resolves the owning config entry via the registry.
+
+    This is the card's path: the Lovelace card only reliably knows the
+    entity_id, so the backend maps entity → entry server-side.
+    """
+    hass, coord, _entry_id = stub_coordinator
+    entity_id = (
+        er.async_get(hass)
+        .async_get_or_create(
+            "binary_sensor",
+            DOMAIN,
+            "car_can_wash",
+            config_entry=coord.entry,
+            suggested_object_id="washwise_car_can_wash",
+        )
+        .entity_id
+    )
+
+    await hass.services.async_call(
+        DOMAIN, SERVICE_MARK_WASHED, {ATTR_ENTITY_ID: entity_id}, blocking=True
+    )
+    coord.async_mark_washed.assert_called_once()
+
+
+async def test_entity_id_unregistered_raises(stub_coordinator) -> None:
+    """An entity_id not in the registry raises rather than silently no-op."""
+    hass, coord, _ = stub_coordinator
+    with pytest.raises(HomeAssistantError):
+        await hass.services.async_call(
+            DOMAIN,
+            SERVICE_MARK_WASHED,
+            {ATTR_ENTITY_ID: "binary_sensor.not_a_real_entity"},
+            blocking=True,
+        )
     coord.async_mark_washed.assert_not_called()

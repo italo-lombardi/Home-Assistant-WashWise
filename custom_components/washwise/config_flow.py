@@ -191,6 +191,25 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
 
     # ---------------------------------------------------------------- user
 
+    @staticmethod
+    def _seed_default_wind(data: dict[str, Any], category: str) -> None:
+        """Seed the category's default wind blocker into ``data`` in place.
+
+        Called on the non-customize create path and the non-customize reconfigure
+        path (neither shows the user a wind field). The preset carries a
+        per-category default (``wind_threshold_kmh``); invert categories omit it.
+        Writing it to ``entry.data`` makes new entries — and non-customize
+        reconfigures of new-era entries — ship with the default. Pre-existing
+        entries that never stored the key stay disabled: the coordinator reads
+        the stored value, never the preset, so the default is not applied
+        retroactively. An existing value is overwritten with the current
+        category's default (category may have changed on reconfigure).
+        """
+        preset = CATEGORY_PRESETS.get(category, CATEGORY_PRESETS[DEFAULT_CATEGORY])
+        default = preset.get("wind_threshold_kmh")
+        if default is not None:
+            data[CONF_WIND_THRESHOLD] = float(default)
+
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Step 1: weather sources, name, category, customise toggle."""
         errors: dict[str, str] = {}
@@ -219,6 +238,11 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                 if category == "garden_irrigation":
                     return await self.async_step_irrigation()
 
+                # Non-customize create: seed the per-category default wind
+                # blocker into entry.data so new entries ship with it. Only when
+                # the preset defines one (invert categories omit it). Existing
+                # entries are untouched (coordinator reads stored value only).
+                self._seed_default_wind(self._data, category)
                 title = name or _category_label(category)
                 return self.async_create_entry(title=title, data=self._data)
 
@@ -440,9 +464,24 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                     # customize/irrigation branches: customize=True will overwrite with
                     # fresh form values; garden_irrigation step does the same.
                     if not new_data[CONF_CUSTOMIZE_THRESHOLDS]:
+                        # Re-seed the per-category wind default only when the
+                        # entry's EFFECTIVE wind is currently set — i.e. a new-era
+                        # entry that still wants the blocker. Read the merged
+                        # data+options view, not raw data: the create-time seed
+                        # lives in data, but an Options→Thresholds "clear" writes
+                        # None to options only, leaving the stale seed in data. A
+                        # raw-data check would therefore re-enable a blocker the
+                        # user explicitly cleared on an unrelated rename. The
+                        # effective view is None when cleared (→ stays off) and
+                        # absent for pre-release entries (→ stays off); only a
+                        # genuinely-active default re-seeds (picking up the new
+                        # category if it changed).
+                        had_wind = current.get(CONF_WIND_THRESHOLD) is not None
                         for key in _RECONFIGURE_STRIPPED_OPTION_KEYS:
                             if key != CONF_CUSTOMIZE_THRESHOLDS:
                                 new_data.pop(key, None)
+                        if had_wind:
+                            self._seed_default_wind(new_data, category)
                     title = name or _category_label(category)
                     if new_data[CONF_CUSTOMIZE_THRESHOLDS]:
                         self._data = new_data
