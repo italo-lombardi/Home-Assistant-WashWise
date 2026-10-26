@@ -245,6 +245,26 @@ test("_renderReason: unknown reason key passes through verbatim", () => {
   assert.match(frag.__html, /custom_key/);
 });
 
+test("_renderReason: wind + no_data backend reasons have friendly labels (both modes)", () => {
+  // Backend added REASON_WIND="wind" and REASON_NO_DATA="no_data"; the card must
+  // not fall through to the raw key (regression the no-data honesty fix targets).
+  const wash = (reason) =>
+    Card.prototype._renderReason.call({}, { attributes: { reason } }, false).__html;
+  assert.match(wash("wind"), /High wind/);
+  assert.match(wash("no_data"), /No forecast data/);
+  assert.doesNotMatch(wash("wind"), />wind</, "raw key not shown");
+  assert.doesNotMatch(wash("no_data"), />no_data</, "raw key not shown");
+
+  const irr = (reason) =>
+    Card.prototype._renderReason.call(
+      { _irrigationReason: Card.prototype._irrigationReason },
+      { attributes: { reason } },
+      true
+    ).__html;
+  assert.match(irr("wind"), /High wind — skip/);
+  assert.match(irr("no_data"), /No forecast data/);
+});
+
 test("_renderReason: no reason attribute is hidden", () => {
   assert.equal(
     Card.prototype._renderReason.call({}, { attributes: {} }, false),

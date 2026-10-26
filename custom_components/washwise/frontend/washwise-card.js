@@ -368,6 +368,8 @@ const REASON_MAP = {
   freeze: "Freeze risk",
   snow: "Snow in forecast",
   bad_condition: "Bad weather expected",
+  wind: "High wind",
+  no_data: "No forecast data",
   unavailable: "No data",
   snoozed: "Snoozed",
 };
@@ -652,6 +654,8 @@ class WashWiseCard extends LitElement {
       freeze: "Freeze risk",
       snow: "Snow in forecast — skip",
       bad_condition: "Bad weather — skip",
+      wind: "High wind — skip",
+      no_data: "No forecast data",
       unavailable: "No data",
       snoozed: "Snoozed",
     };
