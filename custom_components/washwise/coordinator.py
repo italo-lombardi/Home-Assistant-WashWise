@@ -487,6 +487,15 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         """
         prev = self._last_decision
         self._last_decision = decision
+        # Advance the last-update timestamp on every verdict. The base
+        # DataUpdateCoordinator (unlike TimestampDataUpdateCoordinator) never
+        # touches last_update_success_time, so without this it stays frozen at
+        # the created_at seed forever and the last_update sensor can never detect
+        # a stalled integration. _set_decision is the single choke point every
+        # verdict path flows through (snooze short-circuit, provider walk, and
+        # the synchronous mark_washed/snooze/clear pushes).
+        with contextlib.suppress(Exception):  # pragma: no cover - HA without setter
+            self.last_update_success_time = dt_util.utcnow()  # type: ignore[attr-defined]
         changed = prev is not None and _verdict_fingerprint(prev) != _verdict_fingerprint(decision)
         if changed:
             self.hass.bus.async_fire(

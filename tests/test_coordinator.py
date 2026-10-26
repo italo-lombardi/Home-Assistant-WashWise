@@ -788,6 +788,28 @@ async def test_clear_snooze_restores_cached_real_decision(hass: HomeAssistant) -
     coord.async_request_refresh.assert_awaited()  # type: ignore[attr-defined] # background correct
 
 
+@freeze_time(FROZEN_NOW)
+async def test_set_decision_advances_last_update_timestamp(hass: HomeAssistant) -> None:
+    """Every verdict advances last_update_success_time (base coordinator doesn't).
+
+    Regression: WashWiseCoordinator extends the base DataUpdateCoordinator, which
+    never updates last_update_success_time — it was seeded once from created_at
+    and frozen forever, so the last_update sensor could never detect a stall.
+    _set_decision must move it to now.
+    """
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+    # Pin it to an obviously-stale value, as the created_at seed would.
+    stale = datetime(2026, 1, 1, 0, 0, 0, tzinfo=UTC)
+    coord.last_update_success_time = stale
+
+    coord._set_decision(_decision(True, "clear", 90))
+
+    assert coord.last_update_success_time == FROZEN_NOW, "last_update must advance to now"
+    assert coord.last_update_success_time != stale
+
+
 async def test_enabled_property_returns_internal_flag(hass: HomeAssistant) -> None:
     """``enabled`` returns the internal _enabled flag."""
     entry = _make_entry(["weather.primary"])
