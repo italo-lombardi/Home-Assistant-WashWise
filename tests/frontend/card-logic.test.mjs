@@ -50,13 +50,21 @@ test("_score: missing / non-finite → null", () => {
 
 // ── getCardSize (sums enabled sections) ───────────────────────────────────────
 
-test("getCardSize: all defaults on sums to 7", () => {
-  // base 2 + gauge 1 + reason 1 + forecast 2 + diagnostics 1 = 7
+test("getCardSize: all defaults on sums to 7 (actions off by default)", () => {
+  // base 2 + gauge 1 + reason 1 + forecast 2 + diagnostics 1 = 7; show_actions defaults off
   const size = Card.prototype.getCardSize.call({
     _config: { entity: "binary_sensor.x_can_wash" },
     _mergedConfig: Card.prototype._mergedConfig,
   });
   assert.equal(size, 7);
+});
+
+test("getCardSize: enabling actions adds 1", () => {
+  const size = Card.prototype.getCardSize.call({
+    _config: { entity: "binary_sensor.x_can_wash", show_actions: true },
+    _mergedConfig: Card.prototype._mergedConfig,
+  });
+  assert.equal(size, 8);
 });
 
 test("getCardSize: disabling forecast + diagnostics drops 3", () => {
@@ -80,6 +88,7 @@ test("_mergedConfig: user config overrides defaults, defaults fill gaps", () => 
   assert.equal(merged.theme, "dark", "user override wins");
   assert.equal(merged.mode, "wash", "default filled");
   assert.equal(merged.show_score_gauge, true, "default filled");
+  assert.equal(merged.show_actions, false, "action row off by default");
 });
 
 // ── setConfig (validation) ────────────────────────────────────────────────────
@@ -350,4 +359,123 @@ test("_renderGauge: null score → em-dash label, width falls back to 0", () => 
 test("_renderGauge: bad verdict adds the bad fill class", () => {
   const frag = Card.prototype._renderGauge.call({}, 30, "bad").__html;
   assert.match(frag, /ww-gauge-bar-fill bad/, "bad verdict → bad class on fill");
+});
+
+// ── Actions: entry_id resolution ──────────────────────────────────────────────
+
+test("_entryId: resolves config_entry_id from hass entity registry", () => {
+  const self = {
+    _config: { entity: "binary_sensor.x_can_wash" },
+    hass: { entities: { "binary_sensor.x_can_wash": { config_entry_id: "abc123" } } },
+  };
+  assert.equal(Card.prototype._entryId.call(self), "abc123");
+});
+
+test("_entryId: null when entity, registry entry, or hass missing", () => {
+  assert.equal(Card.prototype._entryId.call({ _config: {} }), null);
+  assert.equal(
+    Card.prototype._entryId.call({ _config: { entity: "binary_sensor.x_can_wash" }, hass: {} }),
+    null,
+    "no entities map"
+  );
+  assert.equal(
+    Card.prototype._entryId.call({
+      _config: { entity: "binary_sensor.x_can_wash" },
+      hass: { entities: {} },
+    }),
+    null,
+    "entity not in registry"
+  );
+});
+
+// ── Actions: render (context-aware, hide without entry_id) ────────────────────
+
+function actionsSelf(entryId) {
+  return {
+    _config: { entity: "binary_sensor.x_can_wash" },
+    hass: entryId
+      ? { entities: { "binary_sensor.x_can_wash": { config_entry_id: entryId } } }
+      : {},
+    _entryId: Card.prototype._entryId,
+  };
+}
+
+test("_renderActions: hidden when entry_id cannot be resolved", () => {
+  const frag = Card.prototype._renderActions.call(actionsSelf(null), { state: "on" }, false);
+  assert.equal(frag, NOTHING);
+});
+
+test("_renderActions: not snoozed → Mark washed + Snooze (no Clear)", () => {
+  const frag = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "on" }, false).__html;
+  assert.match(frag, /Mark washed/);
+  assert.match(frag, /Snooze/);
+  assert.doesNotMatch(frag, /Clear snooze/, "no Clear button when not snoozed");
+});
+
+test("_renderActions: snoozed → Mark washed + Clear snooze (no plain Snooze)", () => {
+  const frag = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "off" }, true).__html;
+  assert.match(frag, /Mark washed/);
+  assert.match(frag, /Clear snooze/);
+  // "Snooze" also appears inside "Clear snooze"; assert the standalone label is gone.
+  assert.doesNotMatch(frag, />⏸️<span>Snooze<\/span>/, "no standalone Snooze when snoozed");
+});
+
+test("_renderActions: Mark washed disabled when state unavailable/unknown", () => {
+  // The html stub renders Lit's ?disabled boolean binding literally as
+  // "?disabled=<bool>" (it does not model attribute removal), so assert on the
+  // bound value rather than the attribute's presence.
+  const u = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "unavailable" }, false).__html;
+  assert.match(u, /\?disabled=true/, "unavailable → disabled bound true");
+  const k = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "unknown" }, false).__html;
+  assert.match(k, /\?disabled=true/, "unknown → disabled bound true");
+  const ok = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "on" }, false).__html;
+  assert.match(ok, /\?disabled=false/, "available → disabled bound false");
+});
+
+// ── Actions: handlers (confirm gate + service call shape) ─────────────────────
+
+function captureCall(fn) {
+  const calls = [];
+  const self = {
+    _confirm: () => true,
+    _callService: (service, data) => calls.push({ service, data }),
+  };
+  fn(self);
+  return calls;
+}
+
+test("_onMarkWashed: confirmed → calls mark_washed with entry_id", () => {
+  const calls = captureCall((self) => Card.prototype._onMarkWashed.call(self, "e9"));
+  assert.deepEqual(calls, [{ service: "mark_washed", data: { entry_id: "e9" } }]);
+});
+
+test("_onMarkWashed: declined confirm → no service call", () => {
+  const calls = [];
+  const self = {
+    _confirm: () => false,
+    _callService: (service, data) => calls.push({ service, data }),
+  };
+  Card.prototype._onMarkWashed.call(self, "e9");
+  assert.deepEqual(calls, [], "confirm returning false aborts the call");
+});
+
+test("_onSnooze: fires snooze with entry_id only (no hours → backend default)", () => {
+  const calls = captureCall((self) => Card.prototype._onSnooze.call(self, "e9"));
+  assert.deepEqual(calls, [{ service: "snooze", data: { entry_id: "e9" } }]);
+});
+
+test("_onClearSnooze: fires clear_snooze with entry_id", () => {
+  const calls = captureCall((self) => Card.prototype._onClearSnooze.call(self, "e9"));
+  assert.deepEqual(calls, [{ service: "clear_snooze", data: { entry_id: "e9" } }]);
+});
+
+test("_callService: forwards to hass.callService under the washwise domain", () => {
+  const calls = [];
+  const self = { hass: { callService: (...a) => calls.push(a) } };
+  Card.prototype._callService.call(self, "snooze", { entry_id: "e1" });
+  assert.deepEqual(calls, [["washwise", "snooze", { entry_id: "e1" }]]);
+});
+
+test("_callService: no-op when hass has no callService", () => {
+  assert.doesNotThrow(() => Card.prototype._callService.call({ hass: {} }, "snooze", {}));
 });
