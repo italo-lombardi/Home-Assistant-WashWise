@@ -506,6 +506,15 @@ class WashWiseCard extends LitElement {
     if (!oldHass) return true;
     const id = this._config.entity;
     if (oldHass.states?.[id] !== this.hass.states?.[id]) return true;
+    // The action row needs config_entry_id from the entity registry, which can
+    // hydrate a tick after states. Re-render when it appears/changes so the row
+    // is not stranded hidden until an unrelated state change.
+    if (
+      oldHass.entities?.[id]?.config_entry_id !==
+      this.hass.entities?.[id]?.config_entry_id
+    ) {
+      return true;
+    }
     const snoozeSensorId = id
       .replace("binary_sensor.", "sensor.")
       .replace(/_can_wash$/, "_snooze_remaining");
@@ -554,7 +563,7 @@ class WashWiseCard extends LitElement {
             ? this._renderForecastStrip(stateObj)
             : nothing}
           ${cfg.show_diagnostics && !snoozed ? this._renderDiagnostics(stateObj, cfg.diagnostics_open) : nothing}
-          ${cfg.show_actions ? this._renderActions(stateObj, snoozed) : nothing}
+          ${cfg.show_actions ? this._renderActions(stateObj, snoozed, isIrrigation) : nothing}
         </div>
       </ha-card>
     `;
@@ -750,9 +759,16 @@ class WashWiseCard extends LitElement {
     return this.hass?.entities?.[id]?.config_entry_id ?? null;
   }
 
-  _renderActions(stateObj, snoozed) {
+  _renderActions(stateObj, snoozed, isIrrigation = false) {
+    // ponytail: wash-only. mark_washed/snooze are meaningless for a
+    // garden_irrigation entry (that path uses set_irrigation_switch); hide the
+    // row rather than show wrong-semantic buttons. Add irrigation actions here
+    // if that mode ever needs tappable controls.
+    if (isIrrigation) return nothing;
     const entryId = this._entryId();
     if (!entryId) return nothing;
+    // A dead coordinator rejects every service call; disable the whole row, not
+    // just Mark washed, so Snooze/Clear don't fire into a raw error toast.
     const unavailable = stateObj.state === "unavailable" || stateObj.state === "unknown";
     return html`
       <div class="ww-actions">
@@ -766,11 +782,13 @@ class WashWiseCard extends LitElement {
           ? html`<button
               class="ww-action"
               type="button"
+              ?disabled=${unavailable}
               @click=${() => this._onClearSnooze(entryId)}
             >▶️<span>Clear snooze</span></button>`
           : html`<button
               class="ww-action"
               type="button"
+              ?disabled=${unavailable}
               @click=${() => this._onSnooze(entryId)}
             >⏸️<span>Snooze</span></button>`}
       </div>
@@ -778,14 +796,25 @@ class WashWiseCard extends LitElement {
   }
 
   // Thin wrapper so tests can stub the confirm without touching window.
+  // Fails safe: if confirm is unavailable (webview/SSR/kiosk) the destructive
+  // action is NOT fired — a missing prompt must never read as "yes".
   _confirm(message) {
-    return typeof window !== "undefined" && typeof window.confirm === "function"
-      ? window.confirm(message)
-      : true;
+    if (typeof window === "undefined" || typeof window.confirm !== "function") {
+      return false;
+    }
+    return window.confirm(message);
   }
 
   _callService(service, data) {
-    return this.hass?.callService?.("washwise", service, data);
+    const p = this.hass?.callService?.("washwise", service, data);
+    // A rejected service call (e.g. stale entry_id → HomeAssistantError) must
+    // not surface as an unhandled rejection. Surface it; HA raises its own toast.
+    if (p && typeof p.catch === "function") {
+      p.catch((err) => {
+        console.error(`[washwise-card] service washwise.${service} failed`, err);
+      });
+    }
+    return p;
   }
 
   _onMarkWashed(entryId) {

@@ -405,6 +405,11 @@ test("_renderActions: hidden when entry_id cannot be resolved", () => {
   assert.equal(frag, NOTHING);
 });
 
+test("_renderActions: hidden entirely in irrigation mode (wrong semantics)", () => {
+  const frag = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "off" }, false, true);
+  assert.equal(frag, NOTHING, "mark_washed/snooze are meaningless for irrigation");
+});
+
 test("_renderActions: not snoozed → Mark washed + Snooze (no Clear)", () => {
   const frag = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "on" }, false).__html;
   assert.match(frag, /Mark washed/);
@@ -420,16 +425,17 @@ test("_renderActions: snoozed → Mark washed + Clear snooze (no plain Snooze)",
   assert.doesNotMatch(frag, />⏸️<span>Snooze<\/span>/, "no standalone Snooze when snoozed");
 });
 
-test("_renderActions: Mark washed disabled when state unavailable/unknown", () => {
+test("_renderActions: every button disabled when state unavailable/unknown", () => {
   // The html stub renders Lit's ?disabled boolean binding literally as
   // "?disabled=<bool>" (it does not model attribute removal), so assert on the
   // bound value rather than the attribute's presence.
   const u = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "unavailable" }, false).__html;
+  assert.doesNotMatch(u, /\?disabled=false/, "unavailable → no button left enabled");
   assert.match(u, /\?disabled=true/, "unavailable → disabled bound true");
-  const k = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "unknown" }, false).__html;
-  assert.match(k, /\?disabled=true/, "unknown → disabled bound true");
+  const us = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "unknown" }, true /*snoozed*/).__html;
+  assert.doesNotMatch(us, /\?disabled=false/, "snoozed+unknown → Clear also disabled");
   const ok = Card.prototype._renderActions.call(actionsSelf("e1"), { state: "on" }, false).__html;
-  assert.match(ok, /\?disabled=false/, "available → disabled bound false");
+  assert.doesNotMatch(ok, /\?disabled=true/, "available → nothing disabled");
 });
 
 // ── Actions: handlers (confirm gate + service call shape) ─────────────────────
@@ -478,4 +484,58 @@ test("_callService: forwards to hass.callService under the washwise domain", () 
 
 test("_callService: no-op when hass has no callService", () => {
   assert.doesNotThrow(() => Card.prototype._callService.call({ hass: {} }, "snooze", {}));
+});
+
+test("_callService: swallows a rejected service call (no unhandled rejection)", async () => {
+  const origErr = console.error;
+  let logged = false;
+  console.error = () => {
+    logged = true;
+  };
+  try {
+    const self = {
+      hass: { callService: () => Promise.reject(new Error("stale entry_id")) },
+    };
+    const p = Card.prototype._callService.call(self, "mark_washed", { entry_id: "x" });
+    await p.catch(() => {}); // settle without surfacing to the test runner
+    // give the attached .catch() a tick to run
+    await Promise.resolve();
+  } finally {
+    console.error = origErr;
+  }
+  assert.ok(logged, "rejection is caught and logged, not left unhandled");
+});
+
+// ── _confirm fail-safe (destructive action must not fire without a prompt) ────
+
+test("_confirm: returns false when window.confirm is unavailable", () => {
+  const origWindow = globalThis.window;
+  try {
+    globalThis.window = {}; // no confirm
+    assert.equal(Card.prototype._confirm.call({}, "x"), false);
+    globalThis.window = { confirm: () => true };
+    assert.equal(Card.prototype._confirm.call({}, "x"), true, "present confirm passes through");
+    globalThis.window = { confirm: () => false };
+    assert.equal(Card.prototype._confirm.call({}, "x"), false, "declined confirm → false");
+  } finally {
+    globalThis.window = origWindow;
+  }
+});
+
+// ── shouldUpdate: entity-registry hydration (entry_id arrives late) ────────────
+
+test("shouldUpdate: true when config_entry_id hydrates in a later hass update", () => {
+  const id = "binary_sensor.x_can_wash";
+  const sameState = { state: "on" };
+  const oldHass = { states: { [id]: sameState }, entities: {} };
+  const self = {
+    hass: { states: { [id]: sameState }, entities: { [id]: { config_entry_id: "abc" } } },
+    _config: { entity: id },
+  };
+  const changed = { has: () => false, get: () => oldHass };
+  assert.equal(
+    Card.prototype.shouldUpdate.call(self, changed),
+    true,
+    "registry arriving must trigger a render so the hidden action row appears"
+  );
 });
