@@ -213,6 +213,118 @@ def test_can_wash_attributes_populated() -> None:
     assert attrs["active_weather_entity"] == "weather.home"
 
 
+def test_can_wash_aggregate_diagnostics_from_forecast() -> None:
+    """Aggregate diagnostics are derived from the per-day forecast summary.
+
+    The default fixture has precip 0.0/4.5/0.1, temps 14-24/12-19/13-22, worst
+    condition "rainy", no wind, and no freeze blocker.
+    """
+    decision = _make_decision()
+    coordinator = _make_coordinator(decision)
+    attrs = WashWiseCanWashBinarySensor(coordinator, _make_entry()).extra_state_attributes
+
+    assert attrs["precip_total_mm"] == 4.6  # 0.0 + 4.5 + 0.1, rounded
+    assert attrs["min_temp"] == 12.0
+    assert attrs["max_temp"] == 24.0
+    assert attrs["worst_condition"] == "rainy"  # only bad condition present
+    assert attrs["freeze_risk"] is False
+    assert attrs["days_until_wash"] == 2
+    # No wind in the default fixture → key omitted, not a null row.
+    assert "max_wind_kmh" not in attrs
+
+
+def test_can_wash_aggregates_wind_and_worst_condition_severity() -> None:
+    """max_wind_kmh is the peak; worst_condition is the highest-severity bad day."""
+    fc = [
+        {
+            "date": date(2026, 6, 11),
+            "condition": "rainy",  # severity 0.5
+            "precipitation": 2.0,
+            "temp_min": 5.0,
+            "temp_max": 10.0,
+            "wind_speed": 18.0,
+            "blocked": True,
+            "blockers": ["precip"],
+        },
+        {
+            "date": date(2026, 6, 12),
+            "condition": "pouring",  # severity 1.0 → worst
+            "precipitation": 9.0,
+            "temp_min": 4.0,
+            "temp_max": 8.0,
+            "wind_speed": 42.0,  # peak
+            "blocked": True,
+            "blockers": ["precip", "wind"],
+        },
+    ]
+    decision = _make_decision(forecast_summary=fc)
+    attrs = WashWiseCanWashBinarySensor(
+        _make_coordinator(decision), _make_entry()
+    ).extra_state_attributes
+
+    assert attrs["max_wind_kmh"] == 42.0
+    assert attrs["worst_condition"] == "pouring"
+    assert attrs["precip_total_mm"] == 11.0
+
+
+def test_can_wash_aggregates_freeze_risk_from_blockers() -> None:
+    """freeze_risk is True when any day carries a 'freeze' blocker."""
+    fc = [
+        {
+            "date": date(2026, 6, 11),
+            "condition": "sunny",
+            "precipitation": 0.0,
+            "temp_min": -2.0,
+            "temp_max": 3.0,
+            "blocked": True,
+            "blockers": ["freeze"],
+        },
+    ]
+    decision = _make_decision(forecast_summary=fc)
+    attrs = WashWiseCanWashBinarySensor(
+        _make_coordinator(decision), _make_entry()
+    ).extra_state_attributes
+    assert attrs["freeze_risk"] is True
+
+
+def test_can_wash_aggregates_absent_for_empty_forecast() -> None:
+    """An empty forecast (no-data verdict) yields no aggregate keys."""
+    decision = _make_decision(days_analyzed=0, forecast_summary=[])
+    attrs = WashWiseCanWashBinarySensor(
+        _make_coordinator(decision), _make_entry()
+    ).extra_state_attributes
+    for key in ("precip_total_mm", "min_temp", "max_temp", "max_wind_kmh", "worst_condition"):
+        assert key not in attrs
+    # freeze_risk is also omitted when there are no days to inspect.
+    assert "freeze_risk" not in attrs
+
+
+def test_can_wash_aggregates_omit_numeric_keys_when_days_lack_fields() -> None:
+    """Non-empty forecast whose days carry no numeric fields omits those keys.
+
+    Covers the branch where the summary is non-empty but a given numeric list
+    (precip/temp/wind) is empty — the key must be absent, not a blank/0 row.
+    freeze_risk is still emitted (it is a presence check over blockers).
+    """
+    fc = [
+        {
+            "date": date(2026, 6, 11),
+            "condition": "snowy",  # bad condition present
+            # no precipitation / temp_min / temp_max / wind_speed keys at all
+            "blocked": True,
+            "blockers": [],
+        },
+    ]
+    decision = _make_decision(forecast_summary=fc)
+    attrs = WashWiseCanWashBinarySensor(
+        _make_coordinator(decision), _make_entry()
+    ).extra_state_attributes
+    for key in ("precip_total_mm", "min_temp", "max_temp", "max_wind_kmh"):
+        assert key not in attrs
+    assert attrs["worst_condition"] == "snowy"
+    assert attrs["freeze_risk"] is False  # emitted even when numerics absent
+
+
 # ----------------------------------------------------------------------
 # Per-day sensors aligned with horizon
 # ----------------------------------------------------------------------

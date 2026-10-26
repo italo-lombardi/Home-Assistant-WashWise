@@ -560,3 +560,179 @@ test("_confirm: returns false when window.confirm is unavailable", () => {
 // ── shouldUpdate: watched-state changes (registry no longer gates the row) ────
 // The action row targets services by entity_id and renders unconditionally in
 // wash mode, so there is no entry_id-hydration render to assert any more.
+
+// ── _renderLastWashed (relative time, derived sensor, hidden when no wash) ────
+
+function lastWashedSelf(sensorState) {
+  const canWash = "binary_sensor.x_can_wash";
+  const lastWashedId = "sensor.x_last_washed";
+  return {
+    _config: { entity: canWash },
+    hass: { states: sensorState === undefined ? {} : { [lastWashedId]: { state: sensorState } } },
+  };
+}
+
+test("_renderLastWashed: hidden when no entity configured", () => {
+  assert.equal(Card.prototype._renderLastWashed.call({ _config: {}, hass: { states: {} } }), NOTHING);
+});
+
+test("_renderLastWashed: hidden when sensor missing / unknown / unavailable", () => {
+  assert.equal(Card.prototype._renderLastWashed.call(lastWashedSelf(undefined)), NOTHING);
+  assert.equal(Card.prototype._renderLastWashed.call(lastWashedSelf("unknown")), NOTHING);
+  assert.equal(Card.prototype._renderLastWashed.call(lastWashedSelf("unavailable")), NOTHING);
+});
+
+test("_renderLastWashed: formats a coarse '… ago' from the sensor timestamp", () => {
+  const NOW = 1_700_000_000_000;
+  const origNow = Date.now;
+  Date.now = () => NOW;
+  try {
+    const iso = (secsAgo) => new Date(NOW - secsAgo * 1000).toISOString();
+    const render = (secsAgo) =>
+      Card.prototype._renderLastWashed.call(lastWashedSelf(iso(secsAgo))).__html;
+    assert.match(render(30), /just now/);
+    assert.match(render(5 * 60), /5 minutes ago/);
+    assert.match(render(60), /1 minute ago/);
+    assert.match(render(2 * 3600), /2 hours ago/);
+    assert.match(render(3 * 86400), /3 days ago/);
+    assert.match(render(2 * 604800), /2 weeks ago/);
+    assert.match(render(30), /Last washed/);
+  } finally {
+    Date.now = origNow;
+  }
+});
+
+test("_renderLastWashed: hidden for a future timestamp (unparseable guard)", () => {
+  const NOW = 1_700_000_000_000;
+  const origNow = Date.now;
+  Date.now = () => NOW;
+  try {
+    const future = new Date(NOW + 3600 * 1000).toISOString();
+    assert.equal(Card.prototype._renderLastWashed.call(lastWashedSelf(future)), NOTHING);
+    assert.equal(Card.prototype._renderLastWashed.call(lastWashedSelf("not-a-date")), NOTHING);
+  } finally {
+    Date.now = origNow;
+  }
+});
+
+// ── getCardSize: last-washed section adds 1 ───────────────────────────────────
+
+test("getCardSize: enabling last_washed adds 1", () => {
+  const size = Card.prototype.getCardSize.call({
+    _config: { entity: "binary_sensor.x_can_wash", show_last_washed: true },
+    _mergedConfig: Card.prototype._mergedConfig,
+  });
+  assert.equal(size, 8); // 7 default + 1 last_washed
+});
+
+// ── _renderDiagnostics (enriched rows from real attributes) ───────────────────
+
+test("_renderDiagnostics: renders enriched rows from the real attribute names", () => {
+  const stateObj = {
+    attributes: {
+      reason: "rain",
+      score: 64,
+      days_until_wash: 2,
+      days_analyzed: 3,
+      decision_details: { blocking_days: ["2026-06-12", "2026-06-13"] },
+      precip_total_mm: 4.6,
+      max_wind_kmh: 42,
+      freeze_risk: false,
+      worst_condition: "lightning-rainy",
+      min_temp: 12,
+      max_temp: 24,
+      active_weather_entity: "weather.home",
+    },
+  };
+  const self = {
+    hass: { states: { "weather.home": { attributes: { friendly_name: "Home Weather" } } } },
+  };
+  const html = Card.prototype._renderDiagnostics.call(self, stateObj, false).__html;
+  // Rows are icon · label · value-chip. Assert the label/value pairing via the
+  // class-tagged spans (markup may sit between them).
+  const row = (label, value) =>
+    new RegExp(`ww-diag-label">${label}<[\\s\\S]*?ww-diag-value[^>]*>${value}<`);
+  assert.match(html, row("Reason", "Rain in forecast"));
+  assert.match(html, row("Score", "64 / 100"));
+  assert.match(html, /ww-diag-value warn[^>]*>64 \/ 100</, "mid score (34–66) → warn tone");
+  assert.match(html, row("Days until wash", "2"));
+  assert.match(html, row("Blocking days", "2"));
+  assert.match(html, row("Total precip", "4\\.6 mm"));
+  assert.match(html, row("Max wind", "42 km/h"));
+  assert.match(html, row("Freeze risk", "No"));
+  assert.match(html, /ww-diag-value muted[^>]*>No</, "freeze_risk false → muted tone");
+  assert.match(html, row("Worst condition", "Lightning rainy"));
+  assert.match(html, /ww-diag-value bad[^>]*>Lightning rainy</, "severe condition → bad tone");
+  // Temperature is merged into a single min–max range row.
+  assert.match(html, row("Temperature", "12 – 24 °C"));
+  assert.doesNotMatch(html, /Min temp|Max temp/, "min/max merged, not separate rows");
+  // A group divider separates verdict from forecast metrics.
+  assert.match(html, /ww-diag-divider/);
+  // Weather source is a clickable chip-link showing the provider's friendly name.
+  assert.match(html, /ww-diag-label">Weather source</);
+  assert.match(html, /class="ww-diag-value ww-link"[\s\S]*?>Home Weather</);
+});
+
+test("_renderDiagnostics: score tones (ok ≥67, warn ≥34, bad <34)", () => {
+  const h = (score) =>
+    Card.prototype._renderDiagnostics.call(
+      { hass: { states: {} } }, { attributes: { score } }, false
+    ).__html;
+  assert.match(h(80), /ww-diag-value ok[^>]*>80 \/ 100</);
+  assert.match(h(50), /ww-diag-value warn[^>]*>50 \/ 100</);
+  assert.match(h(10), /ww-diag-value bad[^>]*>10 \/ 100</);
+});
+
+test("_renderDiagnostics: worst-condition tone — severe→bad, mild→warn", () => {
+  const h = (cond) =>
+    Card.prototype._renderDiagnostics.call(
+      { hass: { states: {} } }, { attributes: { worst_condition: cond } }, false
+    ).__html;
+  // Severe (BAD_CONDITION_SEVERITY ≥ 0.9): pouring / hail / lightning-rainy / exceptional.
+  assert.match(h("pouring"), /ww-diag-value bad[^>]*>Pouring</);
+  assert.match(h("hail"), /ww-diag-value bad[^>]*>Hail</);
+  // Milder bad condition stays amber.
+  assert.match(h("rainy"), /ww-diag-value warn[^>]*>Rainy</);
+  assert.match(h("snowy"), /ww-diag-value warn[^>]*>Snowy</);
+});
+
+test("_renderDiagnostics: weather source falls back to entity id when no friendly name", () => {
+  const html = Card.prototype._renderDiagnostics.call(
+    { hass: { states: {} } },
+    { attributes: { active_weather_entity: "weather.raw_id" } },
+    false
+  ).__html;
+  assert.match(html, /class="ww-diag-value ww-link"[\s\S]*?>weather\.raw_id</);
+});
+
+test("_moreInfo: dispatches a bubbling, composed hass-more-info event", () => {
+  const events = [];
+  const self = { dispatchEvent: (e) => events.push(e) };
+  Card.prototype._moreInfo.call(self, "weather.home");
+  assert.equal(events.length, 1);
+  assert.equal(events[0].type, "hass-more-info");
+  assert.deepEqual(events[0].detail, { entityId: "weather.home" });
+  assert.equal(events[0].bubbles, true);
+  assert.equal(events[0].composed, true);
+});
+
+test("_moreInfo: no-op without an entity id", () => {
+  const events = [];
+  Card.prototype._moreInfo.call({ dispatchEvent: (e) => events.push(e) }, "");
+  assert.equal(events.length, 0);
+});
+
+test("_renderDiagnostics: days-until-wash 0 renders as Today", () => {
+  const html = Card.prototype._renderDiagnostics.call(
+    { hass: { states: {} } }, { attributes: { days_until_wash: 0 } }, false
+  ).__html;
+  assert.match(html, /ww-diag-label">Days until wash<[\s\S]*?ww-diag-value[^>]*>Today</);
+});
+
+test("_renderDiagnostics: absent aggregate attributes produce no rows", () => {
+  // Empty-forecast / no-data: only days_analyzed present → one row, no blanks.
+  const html = Card.prototype._renderDiagnostics.call(
+    { hass: { states: {} } }, { attributes: { days_analyzed: 0 } }, false
+  ).__html;
+  assert.doesNotMatch(html, /Total precip|Max wind|Worst condition|Min temp|Weather source/);
+});
