@@ -5,7 +5,12 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- **`washwise_verdict_changed` event** — the coordinator fires this event on the HA bus whenever a verdict flips (any change to `can_wash`, `reason`, `score`, or `days_until_wash`), carrying `entry_id`, `title`, `category`, `can_wash`, `previous_can_wash`, `score`, `reason`, and `days_until_wash`. Lets automations react to "it just became washable" (or stopped being) without hand-rolling template triggers. Entering/leaving snooze or a no-data state counts as a flip; an idle re-poll with an identical verdict does not.
+- **Optional wind blocker/penalty** — a new per-entry `wind_threshold_kmh` threshold (off by default for every preset, so existing entries are unaffected). When set, a forecast day whose wind speed exceeds it blocks washing with a new `wind` reason and a scaled score penalty, mirroring the precipitation blocker. Provider wind values are normalised to km/h from m/s, mph, and knots. Exposed in the config-flow and options-flow Thresholds step.
 - **18 new translation locales** — zh-Hans, zh-Hant, ru, ja, ko, uk, cs, sk, hu, ro, bg, hr, fi, el, tr, lt, lv, ca. Backend language count: 11 → 29.
+
+### Fixed
+- **Honest verdict when no forecast data** — when every forecast entry is missing (`days_analyzed == 0`), the reason is now `no_data` instead of the misleading `clear`. The verdict was already `can_wash == False`; the card and `reason`/`wash_status` sensors now say *why* rather than reporting a confident-looking "clear".
 
 ## [0.2.6] - 2026-07-03
 

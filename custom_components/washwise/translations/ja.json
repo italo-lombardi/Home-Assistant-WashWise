@@ -28,7 +28,8 @@
           "bad_conditions": "洗浄をブロックする気象状況",
           "precip_weight": "降水量スコアの重み",
           "freeze_weight": "凍結スコアの重み",
-          "condition_weight": "気象状況スコアの重み"
+          "condition_weight": "気象状況スコアの重み",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "分析する予報スロット数。日次予報では1スロット＝1日、時間次予報では1スロット＝1時間です。大きな値ほど多くの気象をキャッチできますが、より保守的な判定になります。",
@@ -38,7 +39,8 @@
           "bad_conditions": "予報または現在の状況に現れた場合に洗浄をブロックする気象状況コード。",
           "precip_weight": "予報の雨量が0〜100スコアからどれだけ減点されるか。値が高いほど雨の日をより積極的に減点します。",
           "freeze_weight": "氷点下の日が0〜100スコアからどれだけ減点されるか。判定をブロックしたまま凍結をスコアリングから除外するには0を設定してください。",
-          "condition_weight": "悪天候（嵐、ひょう、雪）が0〜100スコアからどれだけ減点されるか。重大度は状況ごとに異なります。"
+          "condition_weight": "悪天候（嵐、ひょう、雪）が0〜100スコアからどれだけ減点されるか。重大度は状況ごとに異なります。",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -114,13 +116,15 @@
           "days": "予報期間（スロット数）",
           "precip_threshold_mm": "降水量しきい値（mm）",
           "freeze_check": "氷点下の気温でブロック",
-          "forecast_type": "予報タイプ"
+          "forecast_type": "予報タイプ",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "分析する予報スロット数。日次予報では1スロット＝1日、時間次予報では1スロット＝1時間です。",
           "precip_threshold_mm": "この値を超える1日あたりの総降水量があると洗浄がブロックされます。",
           "freeze_check": "オンにすると、気温が0°Cを下回る予報日は洗浄がブロックされます。",
-          "forecast_type": "日次は1日1エントリ、時間次は1時間1エントリを使用します。時間次はより正確ですが、ソースが時間次データを提供している必要があります。"
+          "forecast_type": "日次は1日1エントリ、時間次は1時間1エントリを使用します。時間次はより正確ですが、ソースが時間次データを提供している必要があります。",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "scoring": {
@@ -303,9 +307,11 @@
           "rain": "雨",
           "freeze": "凍結",
           "snow": "雪",
+          "wind": "Wind",
           "bad_condition": "悪天候",
           "bad_current_condition": "現在の悪天候",
           "dirty_now": "表面が汚れています — 今すぐ洗浄",
+          "no_data": "No forecast data",
           "snoozed": "スヌーズ中",
           "unavailable": "利用不可"
         }
@@ -319,8 +325,10 @@
           "no_rain": "不可 — 雨",
           "no_freeze": "不可 — 凍結",
           "no_snow": "不可 — 雪",
+          "no_wind": "No — Wind",
           "no_bad_condition": "不可 — 悪天候",
           "no_bad_current_condition": "不可 — 現在の悪天候",
+          "no_data": "No — No forecast data",
           "snoozed": "スヌーズ中"
         }
       },

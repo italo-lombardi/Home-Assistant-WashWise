@@ -28,7 +28,8 @@
           "bad_conditions": "Blokkerende værforhold",
           "precip_weight": "Nedbørsvekt",
           "freeze_weight": "Frostvekt",
-          "condition_weight": "Værforholdsvekt"
+          "condition_weight": "Værforholdsvekt",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Hvor mange varseldager som skal undersøkes fremover, inkludert i dag. Lengre horisonter fanger opp mer vær, men gir mer forsiktige avgjørelser.",
@@ -38,7 +39,8 @@
           "bad_conditions": "Værforholdskoder som blokkerer vask når de dukker opp i værvarselet eller som nåværende værforhold.",
           "precip_weight": "Hvor mye regn i værvarselet trekker fra poengsummen (0–100). Høyere verdi straffer regnværsdager hardere.",
           "freeze_weight": "Hvor mye en frostdag trekker fra poengsummen (0–100). Sett til 0 for å se bort fra frost i poengsummen, men fortsatt blokkere avgjørelsen.",
-          "condition_weight": "Hvor mye dårlige værforhold (uvær, hagl, snø) trekker fra poengsummen (0–100). Alvorlighetsgrad varierer per værforhold."
+          "condition_weight": "Hvor mye dårlige værforhold (uvær, hagl, snø) trekker fra poengsummen (0–100). Alvorlighetsgrad varierer per værforhold.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -114,13 +116,15 @@
           "days": "Varselhorisont (dager)",
           "precip_threshold_mm": "Nedbørsterskel (mm)",
           "freeze_check": "Blokker ved frosttemperaturer",
-          "forecast_type": "Varseltype"
+          "forecast_type": "Varseltype",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Hvor mange varseldager som skal undersøkes fremover, inkludert i dag.",
           "precip_threshold_mm": "Total nedbør per dag over denne verdien blokkerer vask.",
           "freeze_check": "Når dette er på, vil en varseldag der temperaturen krysser 0 °C blokkere vask.",
-          "forecast_type": "Daglig bruker én oppføring per dag; Per time slår sammen timesoppføringer når det støttes."
+          "forecast_type": "Daglig bruker én oppføring per dag; Per time slår sammen timesoppføringer når det støttes.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "scoring": {
@@ -303,9 +307,11 @@
           "rain": "Regn",
           "freeze": "Frost",
           "snow": "Snø",
+          "wind": "Wind",
           "bad_condition": "Dårlig vær",
           "bad_current_condition": "Dårlig vær akkurat nå",
           "dirty_now": "Skitten overflate — vask nå",
+          "no_data": "No forecast data",
           "snoozed": "Slumret",
           "unavailable": "Utilgjengelig"
         }
@@ -319,8 +325,10 @@
           "no_rain": "Nei — Regn",
           "no_freeze": "Nei — Frost",
           "no_snow": "Nei — Snø",
+          "no_wind": "No — Wind",
           "no_bad_condition": "Nei — Dårlig vær",
           "no_bad_current_condition": "Nei — Dårlig vær akkurat nå",
+          "no_data": "No — No forecast data",
           "snoozed": "Slumret"
         }
       },

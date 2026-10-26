@@ -28,7 +28,8 @@
           "bad_conditions": "Blocking weather conditions",
           "precip_weight": "Precipitation score weight",
           "freeze_weight": "Freeze score weight",
-          "condition_weight": "Condition score weight"
+          "condition_weight": "Condition score weight",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Number of forecast slots to analyse. With daily forecast each slot = 1 day; with hourly each slot = 1 hour. Larger values catch more weather but produce more conservative verdicts.",
@@ -38,7 +39,8 @@
           "bad_conditions": "Weather condition codes that block washing when they appear in the forecast or as the current condition.",
           "precip_weight": "How much rain in the forecast subtracts from the 0–100 score. Higher value penalizes rainy days more aggressively.",
           "freeze_weight": "How much a freezing day subtracts from the 0–100 score. Set to 0 to ignore freeze in scoring while still blocking the verdict.",
-          "condition_weight": "How much bad weather conditions (storms, hail, snow) subtract from the 0–100 score. Severity is per-condition."
+          "condition_weight": "How much bad weather conditions (storms, hail, snow) subtract from the 0–100 score. Severity is per-condition.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -114,13 +116,15 @@
           "days": "Forecast horizon (slots)",
           "precip_threshold_mm": "Precipitation threshold (mm)",
           "freeze_check": "Block on freezing temperatures",
-          "forecast_type": "Forecast type"
+          "forecast_type": "Forecast type",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Number of forecast slots to analyse. With daily forecast each slot = 1 day; with hourly each slot = 1 hour.",
           "precip_threshold_mm": "Total precipitation per day above this value blocks the wash.",
           "freeze_check": "When on, a forecast day whose temperature crosses 0 °C blocks the wash.",
-          "forecast_type": "Daily uses one entry per day; Hourly uses one entry per hour. Hourly is more accurate but requires the source to expose hourly data."
+          "forecast_type": "Daily uses one entry per day; Hourly uses one entry per hour. Hourly is more accurate but requires the source to expose hourly data.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "scoring": {
@@ -303,9 +307,11 @@
           "rain": "Rain",
           "freeze": "Freeze",
           "snow": "Snow",
+          "wind": "Wind",
           "bad_condition": "Bad weather",
           "bad_current_condition": "Bad current weather",
           "dirty_now": "Surface dirty — wash now",
+          "no_data": "No forecast data",
           "snoozed": "Snoozed",
           "unavailable": "Unavailable"
         }
@@ -319,8 +325,10 @@
           "no_rain": "No — Rain",
           "no_freeze": "No — Freeze",
           "no_snow": "No — Snow",
+          "no_wind": "No — Wind",
           "no_bad_condition": "No — Bad weather",
           "no_bad_current_condition": "No — Bad current weather",
+          "no_data": "No — No forecast data",
           "snoozed": "Snoozed"
         }
       },

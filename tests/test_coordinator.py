@@ -37,15 +37,18 @@ from custom_components.washwise.const import (
     CONF_NAME,
     CONF_SCAN_INTERVAL_MINUTES,
     CONF_WEATHER_ENTITIES,
+    CONF_WIND_THRESHOLD,
     DEFAULT_CATEGORY,
     DEFAULT_FORECAST_TYPE,
     DOMAIN,
+    EVENT_VERDICT_CHANGED,
     SCAN_INTERVAL,
     STALE_PROVIDER_TTL_DAYS,
 )
 from custom_components.washwise.coordinator import WashWiseCoordinator
 from custom_components.washwise.models import (
     CurrentWeather,
+    Decision,
     ForecastDay,
     ProviderHealth,
     StoredData,
@@ -967,6 +970,109 @@ async def test_resolve_thresholds_bad_conditions_override(hass: HomeAssistant) -
     thresholds, invert = coord._resolve_thresholds()
     assert thresholds["bad_conditions"] == ["fog", "snowy"]
     assert invert is False
+
+
+@freeze_time(FROZEN_NOW)
+async def test_resolve_thresholds_wind_included_when_set(hass: HomeAssistant) -> None:
+    """A configured wind threshold lands in thresholds as a float."""
+    entry = MockConfigEntry(
+        version=1,
+        domain=DOMAIN,
+        title="Windy",
+        data={
+            CONF_NAME: "Windy",
+            CONF_WEATHER_ENTITIES: ["weather.primary"],
+            CONF_CATEGORY: DEFAULT_CATEGORY,
+            CONF_CUSTOMIZE_THRESHOLDS: True,
+            CONF_FORECAST_TYPE: DEFAULT_FORECAST_TYPE,
+        },
+        options={CONF_WIND_THRESHOLD: 45},
+        entry_id="wind_on",
+        unique_id=f"{DOMAIN}_wind_on",
+    )
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+
+    thresholds, _invert = coord._resolve_thresholds()
+    assert thresholds["wind_threshold_kmh"] == 45.0
+
+
+@freeze_time(FROZEN_NOW)
+async def test_resolve_thresholds_wind_absent_when_unset(hass: HomeAssistant) -> None:
+    """With no wind threshold configured the key is omitted (blocker disabled)."""
+    entry = MockConfigEntry(
+        version=1,
+        domain=DOMAIN,
+        title="NoWind",
+        data={
+            CONF_NAME: "NoWind",
+            CONF_WEATHER_ENTITIES: ["weather.primary"],
+            CONF_CATEGORY: DEFAULT_CATEGORY,
+            CONF_CUSTOMIZE_THRESHOLDS: True,
+            CONF_FORECAST_TYPE: DEFAULT_FORECAST_TYPE,
+        },
+        options={},
+        entry_id="wind_off",
+        unique_id=f"{DOMAIN}_wind_off",
+    )
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+
+    thresholds, _invert = coord._resolve_thresholds()
+    assert "wind_threshold_kmh" not in thresholds
+
+
+# ---------------------------------------------------------------------------
+# Verdict-changed event
+# ---------------------------------------------------------------------------
+
+
+def _decision(can_wash: bool, reason: str, score: int) -> Decision:
+    return Decision(
+        can_wash=can_wash,
+        score=score,
+        reason=reason,
+        days_until_wash=0 if can_wash else None,
+        blocking_days=[],
+        forecast_summary=[],
+        days_analyzed=1,
+    )
+
+
+async def test_set_decision_fires_event_on_flip(hass: HomeAssistant) -> None:
+    """``_set_decision`` fires the bus event only when the verdict changes."""
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+
+    events: list[Any] = []
+    hass.bus.async_listen(EVENT_VERDICT_CHANGED, events.append)
+
+    # First decision always fires (no prior verdict).
+    coord._set_decision(_decision(True, "clear", 100))
+    await hass.async_block_till_done()
+    assert len(events) == 1
+    assert events[0].data["can_wash"] is True
+    assert events[0].data["previous_can_wash"] is None
+    assert events[0].data["entry_id"] == entry.entry_id
+
+    # Identical verdict -> no event.
+    coord._set_decision(_decision(True, "clear", 100))
+    await hass.async_block_till_done()
+    assert len(events) == 1
+
+    # Flip to can_wash=False -> fires with previous_can_wash=True.
+    coord._set_decision(_decision(False, "rain", 20))
+    await hass.async_block_till_done()
+    assert len(events) == 2
+    assert events[1].data["can_wash"] is False
+    assert events[1].data["previous_can_wash"] is True
+    assert events[1].data["reason"] == "rain"
+
+    # Same verdict, score-only change -> still fires (score is user-visible).
+    coord._set_decision(_decision(False, "rain", 35))
+    await hass.async_block_till_done()
+    assert len(events) == 3
 
 
 # ---------------------------------------------------------------------------

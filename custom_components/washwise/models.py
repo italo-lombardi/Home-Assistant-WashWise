@@ -46,7 +46,8 @@ class ForecastDay:
     precipitation_mm: float | None
     temp_min_c: float | None
     temp_max_c: float | None
-    raw: dict[str, Any]
+    wind_speed_kmh: float | None = None
+    raw: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> ForecastDay:
@@ -56,6 +57,7 @@ class ForecastDay:
             precipitation_mm=d.get("precipitation_mm"),
             temp_min_c=d.get("temp_min_c"),
             temp_max_c=d.get("temp_max_c"),
+            wind_speed_kmh=d.get("wind_speed_kmh"),
             raw=dict(d.get("raw") or {}),
         )
 
@@ -66,6 +68,7 @@ class ForecastDay:
             "precipitation_mm": self.precipitation_mm,
             "temp_min_c": self.temp_min_c,
             "temp_max_c": self.temp_max_c,
+            "wind_speed_kmh": self.wind_speed_kmh,
             "raw": dict(self.raw or {}),
         }
 

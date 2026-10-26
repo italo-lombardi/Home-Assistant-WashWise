@@ -15,7 +15,9 @@ from custom_components.washwise.decision import (
     REASON_CLEAR,
     REASON_DIRTY_NOW,
     REASON_FREEZE,
+    REASON_NO_DATA,
     REASON_RAIN,
+    REASON_WIND,
     CurrentWeather,
     ForecastDay,
     compute,
@@ -448,27 +450,100 @@ def test_days_analyzed_equals_min_of_horizon_and_forecast_len(
 # ---------------------------------------------------------------------------
 
 
-def test_empty_forecast_returns_can_wash_true() -> None:
-    """No forecast data == no blockers == verdict False (treat as unavailable)."""
+def test_empty_forecast_returns_no_data() -> None:
+    """No forecast data == no blockers == verdict False with an honest reason."""
     cur = CurrentWeather(condition="sunny", temperature_c=18.0)
 
     result = compute(cur, [], _thresholds(), invert=False, now=NOW)
 
     assert result.can_wash is False
-    assert result.reason == REASON_CLEAR
+    assert result.reason == REASON_NO_DATA
     assert result.days_analyzed == 0
     assert result.blocking_days == []
 
 
-def test_zero_horizon_returns_can_wash_true() -> None:
+def test_zero_horizon_returns_no_data() -> None:
     cur = CurrentWeather(condition="sunny", temperature_c=18.0)
     forecast = [_day(i) for i in range(3)]
 
     result = compute(cur, forecast, _thresholds(days=0), invert=False, now=NOW)
 
     assert result.can_wash is False
-    assert result.reason == REASON_CLEAR
+    assert result.reason == REASON_NO_DATA
     assert result.days_analyzed == 0
+
+
+# ---------------------------------------------------------------------------
+# Wind blocker (opt-in)
+# ---------------------------------------------------------------------------
+
+
+def _windy_day(offset: int, wind_kmh: float | None) -> ForecastDay:
+    return ForecastDay(
+        date=date.fromordinal(TODAY.toordinal() + offset),
+        condition="sunny",
+        precipitation_mm=0.0,
+        temp_min_c=12.0,
+        temp_max_c=22.0,
+        wind_speed_kmh=wind_kmh,
+    )
+
+
+def test_wind_under_threshold_does_not_block() -> None:
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [_windy_day(i, 20.0) for i in range(3)]
+
+    result = compute(
+        cur, forecast, _thresholds(wind_threshold_kmh=40.0), invert=False, now=NOW
+    )
+
+    assert result.can_wash is True
+    assert result.reason == REASON_CLEAR
+    assert result.score == 100
+
+
+def test_wind_over_threshold_blocks_with_wind_reason() -> None:
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    # Day 0 calm, day 1 too windy -> blocked on day 1, reason=wind.
+    forecast = [_windy_day(0, 10.0), _windy_day(1, 60.0), _windy_day(2, 10.0)]
+
+    result = compute(
+        cur, forecast, _thresholds(wind_threshold_kmh=40.0), invert=False, now=NOW
+    )
+
+    assert result.can_wash is False
+    assert result.reason == REASON_WIND
+    assert result.days_analyzed == 3
+    # day 1 (tomorrow) is the blocker; today is clear so days_until_wash=0.
+    assert result.days_until_wash == 0
+    assert result.score < 100
+    # The per-day summary carries the normalized wind value + blocker tag.
+    assert result.forecast_summary[1]["wind_speed"] == 60.0
+    assert "wind" in result.forecast_summary[1]["blockers"]
+
+
+def test_wind_disabled_when_no_threshold_configured() -> None:
+    """Gale-force wind is ignored entirely when no threshold is set (default)."""
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [_windy_day(i, 200.0) for i in range(3)]
+
+    result = compute(cur, forecast, _thresholds(), invert=False, now=NOW)
+
+    assert result.can_wash is True
+    assert result.score == 100
+
+
+def test_wind_missing_value_never_blocks() -> None:
+    """A configured threshold with no wind data in the forecast is a no-op."""
+    cur = CurrentWeather(condition="sunny", temperature_c=18.0)
+    forecast = [_windy_day(i, None) for i in range(3)]
+
+    result = compute(
+        cur, forecast, _thresholds(wind_threshold_kmh=40.0), invert=False, now=NOW
+    )
+
+    assert result.can_wash is True
+    assert result.score == 100
 
 
 # ---------------------------------------------------------------------------

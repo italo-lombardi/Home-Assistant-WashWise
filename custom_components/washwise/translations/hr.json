@@ -28,7 +28,8 @@
           "bad_conditions": "Vremenski uvjeti koji blokiraju pranje",
           "precip_weight": "Težina rezultata za oborine",
           "freeze_weight": "Težina rezultata za smrzavanje",
-          "condition_weight": "Težina rezultata za vremenske uvjete"
+          "condition_weight": "Težina rezultata za vremenske uvjete",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Broj vremenskih okvira prognoze za analizu. S dnevnom prognozom svaki okvir = 1 dan; s satnom svaki okvir = 1 sat. Veće vrijednosti hvataju više vremena, ali daju konzervativnije presude.",
@@ -38,7 +39,8 @@
           "bad_conditions": "Kodovi vremenskih uvjeta koji blokiraju pranje kad se pojave u prognozi ili kao trenutni uvjet.",
           "precip_weight": "Koliko oborine u prognozi oduzimaju od rezultata 0–100. Viša vrijednost agresivnije kažnjava kišne dane.",
           "freeze_weight": "Koliko dan smrzavanja oduzima od rezultata 0–100. Postavi na 0 da se smrzavanje ignorira u bodovanju, ali i dalje blokira presudu.",
-          "condition_weight": "Koliko loši vremenski uvjeti (oluje, tuča, snijeg) oduzimaju od rezultata 0–100. Ozbiljnost je po uvjetu."
+          "condition_weight": "Koliko loši vremenski uvjeti (oluje, tuča, snijeg) oduzimaju od rezultata 0–100. Ozbiljnost je po uvjetu.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -114,13 +116,15 @@
           "days": "Horizont prognoze (vremenski okviri)",
           "precip_threshold_mm": "Prag oborina (mm)",
           "freeze_check": "Blokira pri temperaturama smrzavanja",
-          "forecast_type": "Vrsta prognoze"
+          "forecast_type": "Vrsta prognoze",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Broj vremenskih okvira prognoze za analizu. S dnevnom prognozom svaki okvir = 1 dan; s satnom svaki okvir = 1 sat.",
           "precip_threshold_mm": "Ukupne oborine po danu iznad ove vrijednosti blokiraju pranje.",
           "freeze_check": "Kad je uključeno, dan prognoze čija temperatura prelazi 0 °C blokira pranje.",
-          "forecast_type": "Dnevno koristi jedan unos po danu; Satno koristi jedan unos po satu. Satno je preciznije, ali zahtijeva da izvor pruža satne podatke."
+          "forecast_type": "Dnevno koristi jedan unos po danu; Satno koristi jedan unos po satu. Satno je preciznije, ali zahtijeva da izvor pruža satne podatke.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "scoring": {
@@ -303,9 +307,11 @@
           "rain": "Kiša",
           "freeze": "Smrzavanje",
           "snow": "Snijeg",
+          "wind": "Wind",
           "bad_condition": "Loše vrijeme",
           "bad_current_condition": "Loši trenutni vremenski uvjeti",
           "dirty_now": "Površina prljava — operi odmah",
+          "no_data": "No forecast data",
           "snoozed": "Odgođeno",
           "unavailable": "Nedostupno"
         }
@@ -319,8 +325,10 @@
           "no_rain": "Ne — Kiša",
           "no_freeze": "Ne — Smrzavanje",
           "no_snow": "Ne — Snijeg",
+          "no_wind": "No — Wind",
           "no_bad_condition": "Ne — Loše vrijeme",
           "no_bad_current_condition": "Ne — Loši trenutni vremenski uvjeti",
+          "no_data": "No — No forecast data",
           "snoozed": "Odgođeno"
         }
       },

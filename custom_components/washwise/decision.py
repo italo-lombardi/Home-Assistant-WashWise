@@ -65,6 +65,8 @@ BAD_CONDITION_SEVERITY: dict[str, float] = {
 _DEFAULT_PRECIP_WEIGHT = 40.0
 _DEFAULT_FREEZE_WEIGHT = 30.0
 _DEFAULT_CONDITION_WEIGHT = 30.0
+# Wind penalty weight. Only applied when a wind threshold is configured.
+_DEFAULT_WIND_WEIGHT = 30.0
 
 # Reason i18n keys (kept as constants so callers / tests can reference them
 # without hard-coding strings).
@@ -75,6 +77,8 @@ REASON_SNOW = "snow"
 REASON_BAD_CONDITION = "bad_condition"
 REASON_BAD_CURRENT_CONDITION = "bad_current_condition"
 REASON_DIRTY_NOW = "dirty_now"
+REASON_NO_DATA = "no_data"
+REASON_WIND = "wind"
 
 _SNOW_CONDITIONS = frozenset({"snowy", "snowy-rainy"})
 
@@ -96,6 +100,7 @@ class ForecastDay:
     precipitation_mm: float | None
     temp_min_c: float | None
     temp_max_c: float | None
+    wind_speed_kmh: float | None = None
     raw: dict[str, Any] = field(default_factory=dict)
 
 
@@ -184,6 +189,13 @@ def compute(
     precip_weight = float(thresholds.get("precip_weight", _DEFAULT_PRECIP_WEIGHT))
     freeze_weight = float(thresholds.get("freeze_weight", _DEFAULT_FREEZE_WEIGHT))
     condition_weight = float(thresholds.get("condition_weight", _DEFAULT_CONDITION_WEIGHT))
+    # Wind is opt-in: a threshold of ``None``/absent disables the blocker and
+    # its penalty entirely, so existing entries behave exactly as before.
+    wind_raw = thresholds.get("wind_threshold_kmh")
+    wind_threshold: float | None = (
+        float(wind_raw) if wind_raw is not None else None
+    )
+    wind_weight = float(thresholds.get("wind_weight", _DEFAULT_WIND_WEIGHT))
 
     today: date = now.date()
 
@@ -227,6 +239,8 @@ def compute(
         precip_weight=precip_weight,
         freeze_weight=freeze_weight,
         condition_weight=condition_weight,
+        wind_threshold=wind_threshold,
+        wind_weight=wind_weight,
     )
     score_int = round(walked_score)  # already clamped by _walk_forecast
 
@@ -303,7 +317,7 @@ def compute(
     if can_wash:
         reason = REASON_CLEAR
     elif days_analyzed == 0:
-        reason = REASON_CLEAR
+        reason = REASON_NO_DATA
         # No forecast data — do not grant permission; treat as unavailable.
         can_wash = False
     else:
@@ -335,6 +349,8 @@ def _walk_forecast(
     precip_weight: float,
     freeze_weight: float,
     condition_weight: float,
+    wind_threshold: float | None,
+    wind_weight: float,
 ) -> tuple[list[dict[str, Any]], list[date], float, list[date], str | None]:
     """Walk the forecast horizon and build per-day diagnostics.
 
@@ -363,6 +379,7 @@ def _walk_forecast(
         cond = day.condition
         tmin = day.temp_min_c
         tmax = day.temp_max_c
+        wind = day.wind_speed_kmh
 
         # Precipitation blocker.
         if precip is not None and precip > precip_threshold:
@@ -371,6 +388,15 @@ def _walk_forecast(
         # Condition blocker.
         if cond is not None and cond in bad_conditions:
             day_blockers.append("condition")
+
+        # Wind blocker (opt-in). Only active when a threshold is configured.
+        wind_blocker = (
+            wind_threshold is not None
+            and wind is not None
+            and wind > wind_threshold
+        )
+        if wind_blocker:
+            day_blockers.append("wind")
 
         # Freeze blocker (carry-forward across days). The wording in the
         # plan -- "temp_check < 0 <= temp_min OR < 0 <= temp_max" -- means:
@@ -422,6 +448,13 @@ def _walk_forecast(
         if cond is not None and cond in bad_conditions:
             severity = BAD_CONDITION_SEVERITY.get(cond, 0.5)
             day_score_penalty += condition_weight * severity
+        if wind_blocker:
+            # Scale by how far over the threshold, capped at 1x the weight
+            # (mirrors the precip penalty shape).
+            assert wind is not None and wind_threshold is not None  # for type-checkers
+            day_score_penalty += wind_weight * min(
+                1.0, wind / max(0.1, wind_threshold)
+            )
         score -= day_score_penalty
 
         forecast_summary.append(
@@ -431,6 +464,7 @@ def _walk_forecast(
                 "precipitation": precip,
                 "temp_min": tmin,
                 "temp_max": tmax,
+                "wind_speed": wind,
                 "blocked": is_blocked,
                 "blockers": day_blockers,
                 "day_score": max(0, round(100 - day_score_penalty)),
@@ -451,6 +485,8 @@ def _reason_from_blockers(blockers: list[str], condition: str | None) -> str:
         return REASON_SNOW
     if "precip" in blockers or condition == "rainy" or condition == "pouring":
         return REASON_RAIN
+    if "wind" in blockers:
+        return REASON_WIND
     return REASON_BAD_CONDITION
 
 
@@ -462,8 +498,10 @@ __all__ = [
     "REASON_CLEAR",
     "REASON_DIRTY_NOW",
     "REASON_FREEZE",
+    "REASON_NO_DATA",
     "REASON_RAIN",
     "REASON_SNOW",
+    "REASON_WIND",
     "CurrentWeather",
     "Decision",
     "ForecastDay",

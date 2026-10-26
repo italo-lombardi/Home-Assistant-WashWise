@@ -184,6 +184,44 @@ def test_to_celsius_conversions(value: Any, unit: Any, expected: float | None) -
 
 
 # ---------------------------------------------------------------------------
+# _to_kmh
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("value", "unit", "expected"),
+    [
+        (10.0, "m/s", 36.0),  # 10 m/s = 36 km/h
+        (50.0, "km/h", 50.0),  # already km/h, passthrough
+        (10.0, "mph", 16.09344),  # miles -> km
+        (10.0, "kn", 18.52),  # knots -> km/h
+        (20.0, None, 20.0),  # no unit -> assume km/h
+        (20.0, "parsecs/fortnight", 20.0),  # unknown unit -> raw numeric
+        (None, "m/s", None),  # missing value
+        ("nope", "m/s", None),  # unparseable value
+        (5.0, 123, 5.0),  # non-string unit -> raw numeric
+    ],
+)
+def test_to_kmh_conversions(value: Any, unit: Any, expected: float | None) -> None:
+    """Wind-speed normalization across units, with graceful fallbacks."""
+    result = weather_source._to_kmh(value, unit)
+    if expected is None:
+        assert result is None
+    else:
+        assert result == pytest.approx(expected, abs=1e-2)
+
+
+def test_to_kmh_converter_failure_returns_none(monkeypatch: Any) -> None:
+    """A SpeedConverter blow-up degrades to None rather than crashing."""
+
+    def _boom(*_args: Any, **_kwargs: Any) -> float:
+        raise ValueError("boom")
+
+    monkeypatch.setattr(weather_source.SpeedConverter, "convert", _boom)
+    assert weather_source._to_kmh(10.0, "m/s") is None
+
+
+# ---------------------------------------------------------------------------
 # _resolve_key
 # ---------------------------------------------------------------------------
 

@@ -28,7 +28,8 @@
           "bad_conditions": "Mazgāšanu bloķējoši laika apstākļi",
           "precip_weight": "Nokrišņu punktu svars",
           "freeze_weight": "Sasalšanas punktu svars",
-          "condition_weight": "Laika apstākļu punktu svars"
+          "condition_weight": "Laika apstākļu punktu svars",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Analizējamo prognozes slotu skaits. Ar dienas prognozi katrs slots = 1 diena; ar stundas prognozi katrs slots = 1 stunda. Lielākas vērtības uztver vairāk laika, bet sniedz konservatīvākus secinājumus.",
@@ -38,7 +39,8 @@
           "bad_conditions": "Laika apstākļu kodi, kas bloķē mazgāšanu, ja tie parādās prognozē vai kā pašreizējais stāvoklis.",
           "precip_weight": "Cik daudz lietus prognozē atņem no 0–100 punktu skaita. Augstāka vērtība agresīvāk soda lietainas dienas.",
           "freeze_weight": "Cik daudz sasalšanas diena atņem no 0–100 punktu skaita. Iestatiet uz 0, lai ignorētu sasalšanu punktu skaitā, saglabājot verdikta bloķēšanu.",
-          "condition_weight": "Cik daudz slikti laika apstākļi (vētras, krusa, sniegs) atņem no 0–100 punktu skaita. Smagums ir atkarīgs no katra apstākļa."
+          "condition_weight": "Cik daudz slikti laika apstākļi (vētras, krusa, sniegs) atņem no 0–100 punktu skaita. Smagums ir atkarīgs no katra apstākļa.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -114,13 +116,15 @@
           "days": "Prognozes apvārsnis (slots)",
           "precip_threshold_mm": "Nokrišņu slieksnis (mm)",
           "freeze_check": "Bloķēt sasalšanas temperatūrās",
-          "forecast_type": "Prognozes veids"
+          "forecast_type": "Prognozes veids",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Analizējamo prognozes slotu skaits. Ar dienas prognozi katrs slots = 1 diena; ar stundas prognozi katrs slots = 1 stunda.",
           "precip_threshold_mm": "Kopējie nokrišņi dienā virs šīs vērtības bloķē mazgāšanu.",
           "freeze_check": "Ja ieslēgts, prognozes diena, kurā temperatūra nokrīt zem 0 °C, bloķē mazgāšanu.",
-          "forecast_type": "Dienas prognoze izmanto vienu ierakstu dienā; stundas prognoze izmanto vienu ierakstu stundā. Stundas prognoze ir precīzāka, bet prasa, lai avots sniegtu stundas datus."
+          "forecast_type": "Dienas prognoze izmanto vienu ierakstu dienā; stundas prognoze izmanto vienu ierakstu stundā. Stundas prognoze ir precīzāka, bet prasa, lai avots sniegtu stundas datus.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "scoring": {
@@ -303,9 +307,11 @@
           "rain": "Lietus",
           "freeze": "Sasalšana",
           "snow": "Sniegs",
+          "wind": "Wind",
           "bad_condition": "Slikti laika apstākļi",
           "bad_current_condition": "Slikti pašreizējie laika apstākļi",
           "dirty_now": "Virsma netīra — mazgājiet tagad",
+          "no_data": "No forecast data",
           "snoozed": "Atlikts",
           "unavailable": "Nav pieejams"
         }
@@ -319,8 +325,10 @@
           "no_rain": "Nē — Lietus",
           "no_freeze": "Nē — Sasalšana",
           "no_snow": "Nē — Sniegs",
+          "no_wind": "No — Wind",
           "no_bad_condition": "Nē — Slikti laika apstākļi",
           "no_bad_current_condition": "Nē — Slikti pašreizējie laika apstākļi",
+          "no_data": "No — No forecast data",
           "snoozed": "Atlikts"
         }
       },

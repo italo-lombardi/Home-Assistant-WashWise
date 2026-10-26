@@ -28,7 +28,8 @@
           "bad_conditions": "Engelleyici hava koşulları",
           "precip_weight": "Yağış puan ağırlığı",
           "freeze_weight": "Donma puan ağırlığı",
-          "condition_weight": "Koşul puan ağırlığı"
+          "condition_weight": "Koşul puan ağırlığı",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Analiz edilecek tahmin dilimi sayısı. Günlük tahminle her dilim = 1 gün; saatlik tahminle her dilim = 1 saat. Daha büyük değerler daha fazla hava durumunu yakalar ancak daha ihtiyatlı sonuçlar üretir.",
@@ -38,7 +39,8 @@
           "bad_conditions": "Tahmin veya mevcut koşulda göründüklerinde yıkamayı engelleyen hava durumu kodu koşulları.",
           "precip_weight": "Tahmindeki yağışın 0–100 puanından ne kadar çıkarıldığı. Daha yüksek değer, yağışlı günleri daha agresif şekilde cezalandırır.",
           "freeze_weight": "Donma gününün 0–100 puanından ne kadar çıkarıldığı. Sonucu yine engellerken puanlamada donmayı yok saymak için 0 olarak ayarlayın.",
-          "condition_weight": "Kötü hava koşullarının (fırtına, dolu, kar) 0–100 puanından ne kadar çıkarıldığı. Şiddet koşula göre değişir."
+          "condition_weight": "Kötü hava koşullarının (fırtına, dolu, kar) 0–100 puanından ne kadar çıkarıldığı. Şiddet koşula göre değişir.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -114,13 +116,15 @@
           "days": "Tahmin ufku (dilim)",
           "precip_threshold_mm": "Yağış eşiği (mm)",
           "freeze_check": "Dondurucu sıcaklıklarda engelle",
-          "forecast_type": "Tahmin türü"
+          "forecast_type": "Tahmin türü",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Analiz edilecek tahmin dilimi sayısı. Günlük tahminle her dilim = 1 gün; saatlik tahminle her dilim = 1 saat.",
           "precip_threshold_mm": "Gün başına bu değerin üzerindeki toplam yağış yıkamayı engeller.",
           "freeze_check": "Açıkken, sıcaklığı 0 °C'nin altına düşen bir tahmin günü yıkamayı engeller.",
-          "forecast_type": "Günlük, gün başına bir giriş kullanır; saatlik, saat başına bir giriş kullanır. Saatlik daha doğrudur ancak kaynağın saatlik veri sunmasını gerektirir."
+          "forecast_type": "Günlük, gün başına bir giriş kullanır; saatlik, saat başına bir giriş kullanır. Saatlik daha doğrudur ancak kaynağın saatlik veri sunmasını gerektirir.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "scoring": {
@@ -303,9 +307,11 @@
           "rain": "Yağmur",
           "freeze": "Donma",
           "snow": "Kar",
+          "wind": "Wind",
           "bad_condition": "Kötü hava",
           "bad_current_condition": "Kötü mevcut hava",
           "dirty_now": "Yüzey kirli — şimdi yıkayın",
+          "no_data": "No forecast data",
           "snoozed": "Ertelendi",
           "unavailable": "Kullanılamıyor"
         }
@@ -319,8 +325,10 @@
           "no_rain": "Hayır — Yağmur",
           "no_freeze": "Hayır — Donma",
           "no_snow": "Hayır — Kar",
+          "no_wind": "No — Wind",
           "no_bad_condition": "Hayır — Kötü hava",
           "no_bad_current_condition": "Hayır — Kötü mevcut hava",
+          "no_data": "No — No forecast data",
           "snoozed": "Ertelendi"
         }
       },

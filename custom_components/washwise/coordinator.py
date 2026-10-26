@@ -45,6 +45,7 @@ from .const import (
     CONF_SCAN_INTERVAL_MINUTES,
     CONF_TEMPERATURE_UNIT,
     CONF_WEATHER_ENTITIES,
+    CONF_WIND_THRESHOLD,
     DEFAULT_CATEGORY,
     DEFAULT_CONDITION_WEIGHT,
     DEFAULT_FORECAST_TYPE,
@@ -53,6 +54,7 @@ from .const import (
     DEFAULT_RAIN_GAUGE_THRESHOLD_MM,
     DEFAULT_TEMPERATURE_UNIT,
     DOMAIN,
+    EVENT_VERDICT_CHANGED,
     SCAN_INTERVAL,
     TEMPERATURE_UNIT_AUTO,
     TEMPERATURE_UNIT_CELSIUS,
@@ -290,7 +292,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
                     forecast_summary=[],
                     days_analyzed=0,
                 )
-                self._last_decision = snooze_decision
+                self._set_decision(snooze_decision)
                 return snooze_decision
 
         # Step 4: walk the provider chain.
@@ -365,6 +367,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
                         precipitation_mm=fd.precipitation_mm,
                         temp_min_c=fd.temp_min_c,
                         temp_max_c=fd.temp_max_c,
+                        wind_speed_kmh=fd.wind_speed_kmh,
                         raw=dict(fd.raw or {}),
                     )
                     for fd in forecast
@@ -385,7 +388,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
             )
 
             self._active_weather_entity = eid
-            self._last_decision = decision
+            self._set_decision(decision)
             await self._async_handle_irrigation(decision)
             self._update_count += 1
             if self._update_count % 50 == 0:
@@ -406,6 +409,42 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
     # ------------------------------------------------------------------
     # Internals
     # ------------------------------------------------------------------
+
+    @callback
+    def _set_decision(self, decision: Decision) -> Decision:
+        """Store the new decision and fire the verdict-changed event on a flip.
+
+        Called from every path that produces a verdict (snooze short-circuit
+        and the normal provider walk). Fires ``washwise_verdict_changed`` on
+        the HA bus only when the user-visible outcome actually changes —
+        ``can_wash``, ``reason``, ``score``, or ``days_until_wash`` — so that
+        entering/leaving snooze or a no-data state counts as a real change but
+        an idle re-poll with an identical verdict does not. The first decision
+        of the integration's life also fires (there is no prior verdict).
+        """
+        prev = self._last_decision
+        self._last_decision = decision
+        changed = prev is None or (
+            prev.can_wash != decision.can_wash
+            or prev.reason != decision.reason
+            or prev.score != decision.score
+            or prev.days_until_wash != decision.days_until_wash
+        )
+        if changed:
+            self.hass.bus.async_fire(
+                EVENT_VERDICT_CHANGED,
+                {
+                    "entry_id": self.entry.entry_id,
+                    "title": self.entry.title,
+                    "category": self.entry.data.get(CONF_CATEGORY, DEFAULT_CATEGORY),
+                    "can_wash": decision.can_wash,
+                    "previous_can_wash": prev.can_wash if prev is not None else None,
+                    "score": decision.score,
+                    "reason": decision.reason,
+                    "days_until_wash": decision.days_until_wash,
+                },
+            )
+        return decision
 
     async def _async_handle_irrigation(self, decision: Decision) -> None:
         """Read rain gauge and toggle irrigation switch for garden_irrigation category."""
@@ -531,6 +570,12 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
             bad_override = _pick(CONF_BAD_CONDITIONS, None)
             if bad_override:
                 thresholds["bad_conditions"] = list(bad_override)
+            # Wind is opt-in and off by default: only include a threshold when
+            # the user actually set one (preset never seeds it). ``None`` /
+            # absent leaves the decision engine's wind blocker disabled.
+            wind_threshold = _pick(CONF_WIND_THRESHOLD, preset.get("wind_threshold_kmh"))
+            if wind_threshold is not None:
+                thresholds["wind_threshold_kmh"] = float(wind_threshold)
         else:
             thresholds = {
                 "days": int(preset.get("days", 3)),

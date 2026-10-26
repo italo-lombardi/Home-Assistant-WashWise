@@ -35,6 +35,7 @@ from .const import (
     CONF_RAIN_GAUGE_THRESHOLD_MM,
     CONF_TEMPERATURE_UNIT,
     CONF_WEATHER_ENTITIES,
+    CONF_WIND_THRESHOLD,
     DEFAULT_CATEGORY,
     DEFAULT_CONDITION_WEIGHT,
     DEFAULT_FORECAST_TYPE,
@@ -291,6 +292,15 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                 vol.Required(
                     CONF_FREEZE_CHECK, default=preset["freeze_check"]
                 ): selector.BooleanSelector(),
+                vol.Optional(CONF_WIND_THRESHOLD): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0,
+                        max=200,
+                        step=1,
+                        mode=selector.NumberSelectorMode.BOX,
+                        unit_of_measurement="km/h",
+                    )
+                ),
                 vol.Required(
                     CONF_BAD_CONDITIONS, default=list(BAD_CONDITIONS)
                 ): _bad_conditions_selector(),
@@ -584,6 +594,22 @@ class WashWiseOptionsFlow(OptionsFlow):
                     CONF_FREEZE_CHECK,
                     default=current.get(CONF_FREEZE_CHECK, preset["freeze_check"]),
                 ): selector.BooleanSelector(),
+                (
+                    vol.Optional(
+                        CONF_WIND_THRESHOLD,
+                        default=current[CONF_WIND_THRESHOLD],
+                    )
+                    if current.get(CONF_WIND_THRESHOLD) is not None
+                    else vol.Optional(CONF_WIND_THRESHOLD)
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0,
+                        max=200,
+                        step=1,
+                        mode=selector.NumberSelectorMode.BOX,
+                        unit_of_measurement="km/h",
+                    )
+                ),
             }
         )
 

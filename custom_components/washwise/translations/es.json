@@ -28,7 +28,8 @@
           "bad_conditions": "Condiciones meteorológicas que bloquean",
           "precip_weight": "Peso de la puntuación de precipitación",
           "freeze_weight": "Peso de la puntuación de heladas",
-          "condition_weight": "Peso de la puntuación de condiciones"
+          "condition_weight": "Peso de la puntuación de condiciones",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Cuántos días de previsión mirar hacia adelante, incluido hoy. Los horizontes más amplios captan más fenómenos meteorológicos, pero producen veredictos más conservadores.",
@@ -38,7 +39,8 @@
           "bad_conditions": "Códigos de condición meteorológica que bloquean el lavado cuando aparecen en la previsión o como condición actual.",
           "precip_weight": "Cuánto resta a la puntuación de 0–100 la lluvia en la previsión. Un valor más alto penaliza los días lluviosos de forma más agresiva.",
           "freeze_weight": "Cuánto resta a la puntuación de 0–100 un día de heladas. Ponlo a 0 para ignorar las heladas en la puntuación, pero seguir bloqueando el veredicto.",
-          "condition_weight": "Cuánto restan a la puntuación de 0–100 las condiciones meteorológicas adversas (tormentas, granizo, nieve). La gravedad depende de cada condición."
+          "condition_weight": "Cuánto restan a la puntuación de 0–100 las condiciones meteorológicas adversas (tormentas, granizo, nieve). La gravedad depende de cada condición.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -114,13 +116,15 @@
           "days": "Horizonte de previsión (días)",
           "precip_threshold_mm": "Umbral de precipitación (mm)",
           "freeze_check": "Bloquear con temperaturas bajo cero",
-          "forecast_type": "Tipo de previsión"
+          "forecast_type": "Tipo de previsión",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Cuántos días de previsión mirar hacia adelante, incluido hoy.",
           "precip_threshold_mm": "La precipitación total diaria por encima de este valor bloquea el lavado.",
           "freeze_check": "Cuando está activado, un día de previsión cuya temperatura cruce los 0 °C bloquea el lavado.",
-          "forecast_type": "Diaria usa una entrada por día; Horaria agrupa las entradas horarias cuando son compatibles."
+          "forecast_type": "Diaria usa una entrada por día; Horaria agrupa las entradas horarias cuando son compatibles.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "scoring": {
@@ -303,9 +307,11 @@
           "rain": "Lluvia",
           "freeze": "Heladas",
           "snow": "Nieve",
+          "wind": "Wind",
           "bad_condition": "Mal tiempo",
           "bad_current_condition": "Mal tiempo actual",
           "dirty_now": "Superficie sucia — lavar ahora",
+          "no_data": "No forecast data",
           "snoozed": "Pospuesto",
           "unavailable": "No disponible"
         }
@@ -319,8 +325,10 @@
           "no_rain": "No — Lluvia",
           "no_freeze": "No — Heladas",
           "no_snow": "No — Nieve",
+          "no_wind": "No — Wind",
           "no_bad_condition": "No — Mal tiempo",
           "no_bad_current_condition": "No — Mal tiempo actual",
+          "no_data": "No — No forecast data",
           "snoozed": "Pospuesto"
         }
       },

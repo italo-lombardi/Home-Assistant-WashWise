@@ -28,7 +28,8 @@
           "bad_conditions": "Blokkoló időjárási állapotok",
           "precip_weight": "Csapadék pontszám súlya",
           "freeze_weight": "Fagyás pontszám súlya",
-          "condition_weight": "Időjárási állapot pontszám súlya"
+          "condition_weight": "Időjárási állapot pontszám súlya",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Az elemzendő előrejelzési időrések száma. Napi előrejelzésnél minden időrés = 1 nap; óránkéntnél = 1 óra. Nagyobb értékek több időjárást fognak be, de konzervatívabb verdikteket adnak.",
@@ -38,7 +39,8 @@
           "bad_conditions": "Időjárás-állapotkódok, amelyek blokkolják a mosást, ha megjelennek az előrejelzésben vagy aktuális állapotként.",
           "precip_weight": "Mennyivel von le az előrejelzésben szereplő eső a 0–100-as pontszámból. Magasabb érték agresszívabban bünteti az esős napokat.",
           "freeze_weight": "Mennyivel von le egy fagyos nap a 0–100-as pontszámból. Állítsd 0-ra, ha a fagyást figyelmen kívül akarod hagyni a pontozásnál, miközben a verdikt blokkolása megmarad.",
-          "condition_weight": "Mennyivel vonnak le a rossz időjárási körülmények (vihar, jégeső, hó) a 0–100-as pontszámból. A mérték állapotonként eltérő."
+          "condition_weight": "Mennyivel vonnak le a rossz időjárási körülmények (vihar, jégeső, hó) a 0–100-as pontszámból. A mérték állapotonként eltérő.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -114,13 +116,15 @@
           "days": "Előrejelzési horizont (időrések)",
           "precip_threshold_mm": "Csapadékküszöb (mm)",
           "freeze_check": "Blokkolás fagyás esetén",
-          "forecast_type": "Előrejelzés típusa"
+          "forecast_type": "Előrejelzés típusa",
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Az elemzendő előrejelzési időrések száma. Napi előrejelzésnél minden időrés = 1 nap; óránkéntnél = 1 óra.",
           "precip_threshold_mm": "Ha a napi csapadék összege meghaladja ezt az értéket, a mosás le van tiltva.",
           "freeze_check": "Ha be van kapcsolva, az előrejelzési nap blokkolja a mosást, ha a hőmérséklet 0 °C alá süllyed.",
-          "forecast_type": "A Napi egy bejegyzést használ naponként; az Óránkénti egy bejegyzést óránként. Az óránkénti pontosabb, de a forrástól óránkénti adatok szükségesek hozzá."
+          "forecast_type": "A Napi egy bejegyzést használ naponként; az Óránkénti egy bejegyzést óránként. Az óránkénti pontosabb, de a forrástól óránkénti adatok szükségesek hozzá.",
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "scoring": {
@@ -303,9 +307,11 @@
           "rain": "Eső",
           "freeze": "Fagyás",
           "snow": "Hó",
+          "wind": "Wind",
           "bad_condition": "Rossz időjárás",
           "bad_current_condition": "Rossz jelenlegi időjárás",
           "dirty_now": "Felület piszkos — most mosd le",
+          "no_data": "No forecast data",
           "snoozed": "Szüneteltetve",
           "unavailable": "Nem elérhető"
         }
@@ -319,8 +325,10 @@
           "no_rain": "Nem — Eső",
           "no_freeze": "Nem — Fagyás",
           "no_snow": "Nem — Hó",
+          "no_wind": "No — Wind",
           "no_bad_condition": "Nem — Rossz időjárás",
           "no_bad_current_condition": "Nem — Rossz jelenlegi időjárás",
+          "no_data": "No — No forecast data",
           "snoozed": "Szüneteltetve"
         }
       },
