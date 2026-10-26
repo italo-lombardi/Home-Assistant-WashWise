@@ -173,6 +173,35 @@ async def test_user_step_customize_on_shows_thresholds_with_category_defaults(
     assert defaults[CONF_FREEZE_CHECK] == boat_preset["freeze_check"]
 
 
+async def test_user_step_customize_on_prefills_wind_with_category_default(
+    hass: HomeAssistant,
+) -> None:
+    """Customize-create pre-fills the wind field with the category preset default.
+
+    Regression: on a fresh customize-create ``_data`` has no wind key (the seed
+    runs only the non-customize path), so the wind ``suggested_value`` used to be
+    ``None`` and the field rendered empty. It must fall back to the preset's
+    ``wind_threshold_kmh`` so a user who customizes still gets the default.
+    """
+    result = await _init_flow(hass)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {
+            CONF_WEATHER_ENTITIES: ["weather.home"],
+            CONF_NAME: "Car 1",
+            CONF_CATEGORY: "car",
+            CONF_CUSTOMIZE_THRESHOLDS: True,
+        },
+    )
+    assert result["step_id"] == "thresholds"
+
+    # Wind uses suggested_value (marker.description), not default.
+    schema = result["data_schema"].schema
+    wind_marker = next(m for m in schema if str(m) == CONF_WIND_THRESHOLD)
+    suggested = (wind_marker.description or {}).get("suggested_value")
+    assert suggested == CATEGORY_PRESETS["car"]["wind_threshold_kmh"]
+
+
 async def test_user_step_customize_on_completes_via_thresholds(
     hass: HomeAssistant,
 ) -> None:

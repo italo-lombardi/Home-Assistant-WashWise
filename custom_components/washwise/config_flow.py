@@ -324,9 +324,17 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                 ): selector.BooleanSelector(),
                 # suggested_value preserves a previously-set wind threshold on
                 # reconfigure while still letting the user clear it to disable.
+                # On a fresh customize-create _data has no wind key (the seed
+                # runs only the non-customize path), so fall back to the
+                # category preset default — else the field renders empty and a
+                # user who customizes gets no wind default unless they type one.
                 vol.Optional(
                     CONF_WIND_THRESHOLD,
-                    description={"suggested_value": self._data.get(CONF_WIND_THRESHOLD)},
+                    description={
+                        "suggested_value": self._data.get(
+                            CONF_WIND_THRESHOLD, preset.get("wind_threshold_kmh")
+                        )
+                    },
                 ): selector.NumberSelector(
                     selector.NumberSelectorConfig(
                         min=0,

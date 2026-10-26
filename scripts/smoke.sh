@@ -33,6 +33,11 @@ fail() { echo "  ✗ $1"; FAILS=$((FAILS + 1)); }
 
 api() { curl -s "${AUTH[@]}" "$@"; }
 
+# UTC timestamp at run start (HA log prefix format, e.g. 2026-10-26 22:35:00).
+# The log-error check below only considers lines at/after this, so errors from
+# earlier runs in the same hass lifetime don't fail a clean run.
+RUN_START=$(python3 -c "import datetime; print(datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S'))")
+
 echo "== WashWise smoke @ $HA =="
 
 # --- 0. API reachable ---------------------------------------------------------
@@ -61,25 +66,96 @@ else
 fi
 
 # --- 2. Create a fresh non-customize car entry (wind-seed + feature surface) --
+# Use a unique name per run: repeated fixed-name entries leave orphaned
+# `unavailable` entities in the registry across runs, and a new entry then can't
+# reclaim the base slug (gets a _2 suffix), so a hardcoded slug points at a dead
+# orphan. A unique name sidesteps slug collisions.
+SMOKE_NAME="Smoke Car $(python3 -c 'import time; print(int(time.time()))')"
 FLOW=$(api -X POST "${JSON[@]}" -d '{"handler":"washwise"}' "$HA/api/config/config_entries/flow")
 FID=$(echo "$FLOW" | python3 -c "import json,sys; print(json.load(sys.stdin)['flow_id'])")
 RES=$(api -X POST "${JSON[@]}" \
-  -d "{\"weather_entities\":[\"$WEATHER\"],\"name\":\"Smoke Car\",\"category\":\"car\",\"customize_thresholds\":false}" \
+  -d "{\"weather_entities\":[\"$WEATHER\"],\"name\":\"$SMOKE_NAME\",\"category\":\"car\",\"customize_thresholds\":false}" \
   "$HA/api/config/config_entries/flow/$FID")
 ENTRY_ID=$(echo "$RES" | python3 -c "import json,sys; d=json.load(sys.stdin); print((d.get('result') or {}).get('entry_id','') if isinstance(d.get('result'),dict) else '')")
 [ -n "$ENTRY_ID" ] && CREATED_ENTRY_IDS+=("$ENTRY_ID")
-echo "$RES" | python3 -c "import json,sys; d=json.load(sys.stdin); print('  '+('✓' if d.get('type')=='create_entry' else '✗')+' created Smoke Car:', d.get('type'))"
+echo "$RES" | python3 -c "import json,sys; d=json.load(sys.stdin); print('  '+('✓' if d.get('type')=='create_entry' else '✗')+' created \"$SMOKE_NAME\":', d.get('type'))"
 [ "$(echo "$RES" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("type"))')" = "create_entry" ] || FAILS=$((FAILS + 1))
-sleep 8
 
-CAN_WASH="binary_sensor.washwise_smoke_car_can_wash"
+# Resolve the can_wash entity_id for THIS entry from the entity registry (keyed
+# on config_entry_id), rather than guessing the slug — immune to _N suffixing.
+# The registry list is large, so request it over a websocket with a big frame.
+CAN_WASH=$(ENTRY_ID="$ENTRY_ID" docker exec -i -e ENTRY_ID="$ENTRY_ID" serene_booth /home/vscode/.local/ha-venv/bin/python3 - <<'PY' 2>/dev/null
+import json, os, asyncio, websockets
+async def main():
+    async with websockets.connect("ws://localhost:8123/api/websocket", max_size=20_000_000) as ws:
+        await ws.recv()
+        await ws.send(json.dumps({"type": "auth", "access_token": open("/tmp/ww_token.txt").read().strip()}))
+        await ws.recv()
+        await ws.send(json.dumps({"id": 1, "type": "config/entity_registry/list"}))
+        msg = json.loads(await ws.recv())
+        eid = os.environ["ENTRY_ID"]
+        for e in msg["result"]:
+            if (e.get("config_entry_id") == eid and e["entity_id"].startswith("binary_sensor.")
+                    and e["entity_id"].endswith("_can_wash")):
+                print(e["entity_id"]); return
+asyncio.run(main())
+PY
+)
+[ -n "$CAN_WASH" ] && pass "resolved can_wash entity: $CAN_WASH" || { fail "could not resolve can_wash entity for $ENTRY_ID"; CAN_WASH="binary_sensor.__missing__"; }
 
-# --- 3. Wind default seeded for the new car entry (35 km/h) -------------------
-if [ -n "$ENTRY_ID" ]; then
-  api "$HA/api/config/config_entries/entry" >/dev/null 2>&1
+# Wait for the new entry's coordinator to finish async setup before using it.
+# A fixed sleep is fragile: when other entries are mid-ConfigEntryNotReady retry
+# (mock providers warming up), the new entry's setup can be delayed past a short
+# sleep, leaving its services unregistered (mark_washed → "No WashWise instance
+# found" 500) and its entity `unavailable`. Poll can_wash until it resolves.
+ready=""
+for _ in $(seq 1 30); do   # up to ~30s
+  st=$(api "$HA/api/states/$CAN_WASH" | python3 -c "import json,sys
+try: print(json.load(sys.stdin).get('state',''))
+except Exception: print('')" 2>/dev/null)
+  if [ "$st" = "on" ] || [ "$st" = "off" ]; then ready="$st"; break; fi
+  sleep 1
+done
+if [ -n "$ready" ]; then
+  pass "Smoke Car coordinator ready (can_wash=$ready)"
+else
+  fail "Smoke Car coordinator did not become ready (can_wash=$st)"
 fi
-# Read stored data via the entry listing is not enough (data not exposed); check
-# the resolved threshold surfaces by confirming the entry exists + diag below.
+
+# --- 3. Customize-create pre-fills the wind cutoff with the category default --
+# Drive a CUSTOMIZE create to the thresholds step and read the wind field's
+# suggested_value from the returned data_schema. Guards the bug where the
+# customize path left the wind box empty (seed only ran the non-customize path).
+# car preset default = 35; an invert category (solar_panels) omits wind →
+# suggested absent/null. Both flows are aborted (no entry created).
+check_wind_prefill() {
+  local category="$1" expect="$2"
+  local flow fid step
+  flow=$(api -X POST "${JSON[@]}" -d '{"handler":"washwise"}' "$HA/api/config/config_entries/flow")
+  fid=$(echo "$flow" | python3 -c "import json,sys; print(json.load(sys.stdin)['flow_id'])")
+  step=$(api -X POST "${JSON[@]}" \
+    -d "{\"weather_entities\":[\"$WEATHER\"],\"name\":\"Smoke Cust $category\",\"category\":\"$category\",\"customize_thresholds\":true}" \
+    "$HA/api/config/config_entries/flow/$fid")
+  api -X DELETE "$HA/api/config/config_entries/flow/$fid" >/dev/null 2>&1  # abort, no entry
+  echo "$step" | EXPECT="$expect" CAT="$category" python3 -c "
+import json, os, sys
+d = json.load(sys.stdin)
+if d.get('step_id') != 'thresholds':
+    print(f'  ✗ wind-prefill[{os.environ[\"CAT\"]}]: did not reach thresholds step'); sys.exit(1)
+wind = next((f for f in d.get('data_schema', []) if f.get('name') == 'wind_threshold_kmh'), None)
+sug = (wind or {}).get('description', {}).get('suggested_value')
+exp = os.environ['EXPECT']
+if exp == 'none':
+    ok = sug is None
+    print(f'  {\"✓\" if ok else \"✗\"} wind-prefill[{os.environ[\"CAT\"]}]: suggested={sug!r} (expected none)')
+    sys.exit(0 if ok else 1)
+ok = sug == float(exp) or sug == int(exp)
+print(f'  {\"✓\" if ok else \"✗\"} wind-prefill[{os.environ[\"CAT\"]}]: suggested={sug!r} (expected {exp})')
+sys.exit(0 if ok else 1)
+" || FAILS=$((FAILS + 1))
+}
+check_wind_prefill "car" "35"
+check_wind_prefill "solar_panels" "none"
 
 # --- 4. Enriched diagnostics attributes present on can_wash ------------------
 api "$HA/api/states/$CAN_WASH" | python3 -c "
@@ -108,7 +184,7 @@ print(f'  ✓ diagnostics attrs present (score={a[\"score\"]}, reason={a[\"reaso
 # the service must not block on a weather forecast fetch. Poll the sensor right
 # after the (blocking) service call and require the change within ~2s. A
 # regression to async_request_refresh would reintroduce the multi-second fetch.
-LAST_WASHED="sensor.washwise_smoke_car_last_washed"
+LAST_WASHED="$(echo "$CAN_WASH" | sed 's/^binary_sensor\./sensor./; s/_can_wash$/_last_washed/')"
 before=$(api "$HA/api/states/$LAST_WASHED" | python3 -c "import json,sys; print(json.load(sys.stdin).get('state','?'))")
 start=$(python3 -c "import time; print(time.time())")
 api -X POST "${JSON[@]}" -d "{\"entity_id\":\"$CAN_WASH\"}" "$HA/api/services/washwise/mark_washed" >/dev/null
@@ -132,7 +208,7 @@ fi
 # Verify via the snooze_remaining sensor's snooze_until ATTRIBUTE + service HTTP
 # status, NOT the can_wash reason (the mock provider recalcs the verdict between
 # calls, racing `reason`). The active snooze shows as a future snooze_until.
-SNOOZE_REMAIN="sensor.washwise_smoke_car_snooze_remaining"
+SNOOZE_REMAIN="$(echo "$CAN_WASH" | sed 's/^binary_sensor\./sensor./; s/_can_wash$/_snooze_remaining/')"
 code=$(curl -s -o /dev/null -w '%{http_code}' "${AUTH[@]}" "${JSON[@]}" \
   -d "{\"entity_id\":\"$CAN_WASH\"}" "$HA/api/services/washwise/snooze")
 until_val=""
@@ -164,10 +240,13 @@ fi
 # Match on the log LEVEL token (" ERROR "/" CRITICAL "), not the substring
 # "error"/"exception": a mock provider is named weather.washwise_exceptionAL, so
 # a substring match would false-positive on every benign DEBUG line mentioning
-# it. Exclude the intentional HomeAssistantError the negative tests below raise
-# (expected, logged by the api component, not a product fault).
+# it. Only consider lines at/after RUN_START (errors from earlier runs in the
+# same hass lifetime must not fail a clean run). Exclude the intentional
+# HomeAssistantError the negative tests below raise (expected, logged by the api
+# component, not a product fault).
 errs=$(docker exec serene_booth grep -i washwise /tmp/ha-boot.log 2>/dev/null \
   | sed 's/\x1b\[[0-9;]*m//g' \
+  | awk -v start="$RUN_START" '{ ts=substr($0,1,19); if (ts >= start) print }' \
   | grep -E " (ERROR|CRITICAL) " \
   | grep -v entity_availability \
   | grep -v "is not a registered WashWise entity")
