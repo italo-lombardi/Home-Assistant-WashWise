@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.2.7] - 2026-10-26
+## [0.2.7] - 2026-10-27
 
 ### Added
 - **Download Diagnostics** — WashWise now supports Home Assistant's *Download diagnostics* (entry ⋮ menu). The export is comprehensive, to make debugging a confusing verdict or a bug report self-contained: the fully-resolved config (thresholds/weights/wind/bad-conditions as the decision actually uses them, plus raw data/options), the live decision with its full per-day `forecast_summary` and aggregates, coordinator state (`enabled`, active provider, `last_update`, update count/interval, irrigation sub-state), a snapshot of every configured weather provider's current state (condition/temp/wind + availability — surfaces a wrong/stale/unavailable provider or a unit mismatch at a glance), per-provider health + failover history, and the wash-log/snooze state. Nothing is redacted — WashWise stores no secrets, tokens, or coordinates.
