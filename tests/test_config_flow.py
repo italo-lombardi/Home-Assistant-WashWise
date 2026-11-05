@@ -160,8 +160,9 @@ async def test_reconfigure_sets_should_wash_min_days(
         await hass.async_block_till_done()
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "reconfigure_successful"
-    merged = {**mock_config_entry.data, **mock_config_entry.options}
-    assert merged.get(CONF_SHOULD_WASH_MIN_DAYS) == 9
+    # Reconfigure writes to entry.data; assert it directly (stronger than a
+    # merged view) — a non-customize reconfigure stores the submitted value there.
+    assert mock_config_entry.data.get(CONF_SHOULD_WASH_MIN_DAYS) == 9
 
 
 async def test_user_step_noncustomize_seeds_category_wind_default(
@@ -694,12 +695,17 @@ async def test_reconfigure_noncustomize_preserves_should_wash_min_days(
     user's "wait N days" gate to 0. It must survive.
     """
     mock_config_entry.add_to_hass(hass)
+    # Seed min_days in entry.DATA (its real post-promotion storage location, via
+    # async_step_user), NOT options — so this test genuinely pins the preserve
+    # guard: an unconditional write of user_input.get(..., 0) would reset data to
+    # 0 and this assertion would fail. (precip_weight stays in options to also
+    # confirm preset-shadowing overrides are still wiped.)
     hass.config_entries.async_update_entry(
         mock_config_entry,
+        data={**mock_config_entry.data, CONF_SHOULD_WASH_MIN_DAYS: 30},
         options={
             CONF_CUSTOMIZE_THRESHOLDS: True,
             "precip_weight": 80,  # preset-shadowing → should be wiped
-            CONF_SHOULD_WASH_MIN_DAYS: 30,  # independent gate → must survive
         },
     )
 
@@ -729,9 +735,9 @@ async def test_reconfigure_noncustomize_preserves_should_wash_min_days(
     assert result["reason"] == "reconfigure_successful"
     # Preset-shadowing override is wiped...
     assert "precip_weight" not in mock_config_entry.options
-    # ...but the independent should_wash gate survives (options or data).
-    merged = {**mock_config_entry.data, **mock_config_entry.options}
-    assert merged.get(CONF_SHOULD_WASH_MIN_DAYS) == 30
+    # ...but the independent should_wash gate survives IN DATA (asserts the
+    # inheritance arm directly, not a merged view that could mask a reset).
+    assert mock_config_entry.data.get(CONF_SHOULD_WASH_MIN_DAYS) == 30
 
 
 async def test_reconfigure_with_customize_true_overwrites_stale_options(
