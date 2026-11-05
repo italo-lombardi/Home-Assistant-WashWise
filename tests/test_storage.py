@@ -98,6 +98,19 @@ async def test_save_load_roundtrip(store: WashWiseStore, utc_now: datetime) -> N
     assert restored == payload
 
 
+async def test_cached_data_exposes_snapshot_after_load(
+    store: WashWiseStore, utc_now: datetime
+) -> None:
+    """``cached_data`` is None before any load, then mirrors the cached snapshot."""
+    assert store.cached_data is None
+    payload = StoredData(wash_log=[WashEntry(timestamp=utc_now.isoformat(), source="manual")])
+    await store.save(payload)
+    # save() populates the in-memory cache, so cached_data returns it without a disk read.
+    reads_before = store.disk_read_count
+    assert store.cached_data == payload
+    assert store.disk_read_count == reads_before
+
+
 # ---------------------------------------------------------------------------
 # append_wash — trims to last 365 entries
 # ---------------------------------------------------------------------------

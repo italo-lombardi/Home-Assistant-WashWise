@@ -195,25 +195,21 @@ function renderSnooze(remainingSeconds) {
   }
 }
 
-test("_renderReason snooze: weeks+days format for multi-week remaining", () => {
-  // 2w 3d = (2*7+3)*86400 = 1_468_800 s
-  assert.match(renderSnooze(2 * 604800 + 3 * 86400), /2w 3d/);
+test("_renderReason snooze: active snooze renders a live ha-relative-time to snooze_until", () => {
+  // renderSnooze builds snooze_until = NOW + seconds and returns the __html.
+  const NOW = 1_700_000_000_000;
+  const until = new Date(NOW + 3600 * 1000).toISOString();
+  const html = renderSnooze(3600);
+  assert.match(html, /ha-relative-time/, "uses HA's native self-ticking element");
+  assert.match(html, new RegExp(until.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), "bound to snooze_until");
+  assert.match(html, /Resumes:/);
+  assert.doesNotMatch(html, /\dh \d+m|\dw \d+d/, "no frozen manual format");
 });
 
-test("_renderReason snooze: days+hours format", () => {
-  assert.match(renderSnooze(3 * 86400 + 5 * 3600), /3d 5h/);
-});
-
-test("_renderReason snooze: hours+minutes format", () => {
-  assert.match(renderSnooze(5 * 3600 + 20 * 60), /5h 20m/);
-});
-
-test("_renderReason snooze: minutes-only format", () => {
-  assert.match(renderSnooze(45 * 60), /45m/);
-});
-
-test("_renderReason snooze: already elapsed shows em-dash", () => {
-  assert.match(renderSnooze(-10), /—/);
+test("_renderReason snooze: elapsed → em-dash, no relative-time element", () => {
+  const html = renderSnooze(-10);
+  assert.match(html, /—/);
+  assert.doesNotMatch(html, /ha-relative-time/);
 });
 
 // ── _renderReason: non-snooze reason labels ───────────────────────────────────
@@ -819,6 +815,14 @@ test("_renderHeader: can_wash mode unchanged (OK/No), irrigation (Irrigate/Skip)
   const irr = (v) => Card.prototype._renderHeader.call({}, "T", v, true, false).__html;
   assert.match(irr("ok"), /💧<span>Irrigate</);
   assert.match(irr("bad"), /🌧️<span>Skip</);
+});
+
+test("_renderHeader: snoozed verdict → muted Snoozed badge in both modes", () => {
+  for (const [isIrr, useShould] of [[false, false], [true, false], [false, true]]) {
+    const html = Card.prototype._renderHeader.call({}, "T", "snoozed", isIrr, useShould).__html;
+    assert.match(html, /ww-badge snoozed[\s\S]*?🔕<span>Snoozed</, `snoozed badge (irr=${isIrr} should=${useShould})`);
+    assert.doesNotMatch(html, />No<|>Skip</, "snoozed must not read as a weather No/Skip");
+  }
 });
 
 test("_renderDiagnostics: min_days rows show when min_days>0, hidden when 0/absent", () => {

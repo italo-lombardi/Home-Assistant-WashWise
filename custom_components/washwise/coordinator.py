@@ -764,7 +764,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         awaiting.
         """
         if stored is None:
-            stored = getattr(self._store, "_data", None)
+            stored = self._store.cached_data
         wash_log = getattr(stored, "wash_log", None) or []
         if not wash_log:
             return None
