@@ -8,13 +8,15 @@
           "weather_entities": "Źródła pogody",
           "name": "Nazwa",
           "category": "Kategoria",
+          "should_wash_min_days": "Minimalna liczba dni od ostatniego mycia",
           "customize_thresholds": "Dostosuj progi"
         },
         "data_description": {
           "weather_entities": "Wybierz co najmniej jedną encję pogodową HA. Używane jest pierwsze dostępne źródło z tej uporządkowanej listy; kolejne jest sprawdzane tylko wtedy, gdy poprzednie jest niedostępne.",
           "name": "Przyjazna nazwa tej instancji WashWise. Używana jako prefiks każdej encji utworzonej przez ten wpis.",
           "category": "Co myjesz. Każda kategoria ma rozsądne, domyślne progi i domyślną ikonę. Wybierz „Niestandardowa”, aby zacząć od neutralnych wartości domyślnych.",
-          "customize_thresholds": "Włącz, aby na następnym ekranie nadpisać domyślne wartości kategorii. Pozostaw wyłączone, aby użyć wartości zdefiniowanych dla wybranej kategorii."
+          "customize_thresholds": "Włącz, aby na następnym ekranie nadpisać domyślne wartości kategorii. Pozostaw wyłączone, aby użyć wartości zdefiniowanych dla wybranej kategorii.",
+          "should_wash_min_days": "Włączaj „Warto myć” dopiero wtedy, gdy od ostatniego zarejestrowanego mycia minęło co najmniej tyle pełnych dni. Wartość 0 wyłącza tę blokadę, więc „Warto myć” odzwierciedla „Można myć”. Wpis nigdy niemyty jest liczony jako zaległy."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Waga wyniku opadów",
           "freeze_weight": "Waga wyniku mrozu",
           "condition_weight": "Waga wyniku warunków pogodowych",
-          "wind_threshold_kmh": "Maks. prędkość wiatru (km/h)",
-          "should_wash_min_days": "Minimalna liczba dni od ostatniego mycia"
+          "wind_threshold_kmh": "Maks. prędkość wiatru (km/h)"
         },
         "data_description": {
           "days": "Ile dni prognozy uwzględnić, włącznie z dzisiaj. Większe horyzonty wychwytują więcej zjawisk pogodowych, ale dają bardziej zachowawcze werdykty.",
@@ -41,8 +42,7 @@
           "precip_weight": "O ile deszcz w prognozie obniża wynik w skali 0–100. Wyższa wartość bardziej karze deszczowe dni.",
           "freeze_weight": "O ile mroźny dzień obniża wynik w skali 0–100. Ustaw 0, aby ignorować mróz w punktacji, ale nadal blokować werdykt.",
           "condition_weight": "O ile złe warunki pogodowe (burze, grad, śnieg) obniżają wynik w skali 0–100. Dotkliwość jest indywidualna dla każdego warunku.",
-          "wind_threshold_kmh": "Pozostaw puste, aby wyłączyć. Dzień prognozy z silniejszym wiatrem blokuje mycie.",
-          "should_wash_min_days": "Włączaj „Warto myć” dopiero wtedy, gdy od ostatniego zarejestrowanego mycia minęło co najmniej tyle pełnych dni. Wartość 0 wyłącza tę blokadę, więc „Warto myć” odzwierciedla „Można myć”. Wpis nigdy niemyty jest liczony jako zaległy."
+          "wind_threshold_kmh": "Pozostaw puste, aby wyłączyć. Dzień prognozy z silniejszym wiatrem blokuje mycie."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Źródła pogody",
           "name": "Nazwa",
           "category": "Kategoria",
+          "should_wash_min_days": "Minimalna liczba dni od ostatniego mycia",
           "customize_thresholds": "Dostosuj progi"
         },
         "data_description": {
           "weather_entities": "Wybierz co najmniej jedną encję pogodową HA. Używane jest pierwsze dostępne źródło z tej uporządkowanej listy; kolejne jest sprawdzane tylko wtedy, gdy poprzednie jest niedostępne.",
           "name": "Przyjazna nazwa tej instancji WashWise. Używana jako prefiks każdej encji utworzonej przez ten wpis.",
           "category": "Co myjesz. Każda kategoria ma rozsądne, domyślne progi i domyślną ikonę. Wybierz „Niestandardowa”, aby zacząć od neutralnych wartości domyślnych.",
-          "customize_thresholds": "Włącz, aby na następnym ekranie nadpisać domyślne wartości kategorii. Pozostaw wyłączone, aby użyć wartości zdefiniowanych dla wybranej kategorii."
+          "customize_thresholds": "Włącz, aby na następnym ekranie nadpisać domyślne wartości kategorii. Pozostaw wyłączone, aby użyć wartości zdefiniowanych dla wybranej kategorii.",
+          "should_wash_min_days": "Włączaj „Warto myć” dopiero wtedy, gdy od ostatniego zarejestrowanego mycia minęło co najmniej tyle pełnych dni. Wartość 0 wyłącza tę blokadę, więc „Warto myć” odzwierciedla „Można myć”. Wpis nigdy niemyty jest liczony jako zaległy."
         }
       }
     },

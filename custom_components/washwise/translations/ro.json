@@ -8,13 +8,15 @@
           "weather_entities": "Surse meteo",
           "name": "Nume",
           "category": "Categorie",
+          "should_wash_min_days": "Număr minim de zile de la ultima spălare",
           "customize_thresholds": "Personalizare praguri"
         },
         "data_description": {
           "weather_entities": "Selectați una sau mai multe entități meteo din HA. Prima sursă disponibilă din această listă ordonată este utilizată; următoarea este încercată doar dacă cea anterioară nu este disponibilă.",
           "name": "Nume afișat pentru această instanță WashWise. Folosit ca prefix pentru fiecare entitate creată de această intrare.",
           "category": "Ce spălați. Fiecare categorie vine cu praguri implicite și o pictogramă implicită. Selectați Personalizat pentru a începe de la valori neutre.",
-          "customize_thresholds": "Activați pentru a suprascrie valorile implicite ale categoriei pe ecranul următor. Lăsați dezactivat pentru a folosi valorile prestabilite pentru categoria aleasă."
+          "customize_thresholds": "Activați pentru a suprascrie valorile implicite ale categoriei pe ecranul următor. Lăsați dezactivat pentru a folosi valorile prestabilite pentru categoria aleasă.",
+          "should_wash_min_days": "Activați „Ar trebui spălat” doar după ce au trecut cel puțin atâtea zile întregi de la ultima spălare înregistrată. Valoarea 0 dezactivează condiția, astfel încât „Ar trebui spălat” reflectă „Poate spăla”. O intrare nespălată niciodată este considerată restantă."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Pondere precipitații în scor",
           "freeze_weight": "Pondere îngheț în scor",
           "condition_weight": "Pondere condiții în scor",
-          "wind_threshold_kmh": "Viteză maximă a vântului (km/h)",
-          "should_wash_min_days": "Număr minim de zile de la ultima spălare"
+          "wind_threshold_kmh": "Viteză maximă a vântului (km/h)"
         },
         "data_description": {
           "days": "Numărul de intervale din prognoză de analizat. Cu prognoză zilnică, fiecare interval = 1 zi; cu prognoză orară, fiecare interval = 1 oră. Valorile mai mari captează mai mult timp, dar produc verdicte mai conservatoare.",
@@ -41,8 +42,7 @@
           "precip_weight": "Cât de mult scade ploaia din prognoză scorul de la 0 la 100. O valoare mai mare penalizează mai agresiv zilele ploioase.",
           "freeze_weight": "Cât de mult scade o zi de îngheț din scorul de la 0 la 100. Setați la 0 pentru a ignora înghețul în calcul, menținând totuși blocarea verdictului.",
           "condition_weight": "Cât de mult scad condițiile meteo nefavorabile (furtuni, grindină, ninsoare) din scorul de la 0 la 100. Severitatea este per condiție.",
-          "wind_threshold_kmh": "Lăsați gol pentru a dezactiva. O zi din prognoză cu vânt mai puternic decât această valoare blochează spălarea.",
-          "should_wash_min_days": "Activați „Ar trebui spălat” doar după ce au trecut cel puțin atâtea zile întregi de la ultima spălare înregistrată. Valoarea 0 dezactivează condiția, astfel încât „Ar trebui spălat” reflectă „Poate spăla”. O intrare nespălată niciodată este considerată restantă."
+          "wind_threshold_kmh": "Lăsați gol pentru a dezactiva. O zi din prognoză cu vânt mai puternic decât această valoare blochează spălarea."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Surse meteo",
           "name": "Nume",
           "category": "Categorie",
+          "should_wash_min_days": "Număr minim de zile de la ultima spălare",
           "customize_thresholds": "Personalizare praguri"
         },
         "data_description": {
           "weather_entities": "Selectați una sau mai multe entități meteo din HA. Prima sursă disponibilă din această listă ordonată este utilizată; următoarea este încercată doar dacă cea anterioară nu este disponibilă.",
           "name": "Nume afișat pentru această instanță WashWise. Folosit ca prefix pentru fiecare entitate creată de această intrare.",
           "category": "Ce spălați. Fiecare categorie vine cu praguri implicite și o pictogramă implicită. Selectați Personalizat pentru a începe de la valori neutre.",
-          "customize_thresholds": "Activați pentru a suprascrie valorile implicite ale categoriei pe ecranul următor. Lăsați dezactivat pentru a folosi valorile prestabilite pentru categoria aleasă."
+          "customize_thresholds": "Activați pentru a suprascrie valorile implicite ale categoriei pe ecranul următor. Lăsați dezactivat pentru a folosi valorile prestabilite pentru categoria aleasă.",
+          "should_wash_min_days": "Activați „Ar trebui spălat” doar după ce au trecut cel puțin atâtea zile întregi de la ultima spălare înregistrată. Valoarea 0 dezactivează condiția, astfel încât „Ar trebui spălat” reflectă „Poate spăla”. O intrare nespălată niciodată este considerată restantă."
         }
       }
     },

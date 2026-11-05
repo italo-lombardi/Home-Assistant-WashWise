@@ -8,13 +8,15 @@
           "weather_entities": "Zdroje počasí",
           "name": "Název",
           "category": "Kategorie",
+          "should_wash_min_days": "Minimální počet dní od posledního mytí",
           "customize_thresholds": "Přizpůsobit prahové hodnoty"
         },
         "data_description": {
           "weather_entities": "Vyberte jednu nebo více HA entit počasí. Použije se první dostupný zdroj v tomto seřazeném seznamu; další se vyzkouší pouze v případě, že předchozí není k dispozici.",
           "name": "Zobrazovaný název této instance WashWise. Slouží jako předpona každé entity vytvořené tímto záznamem.",
           "category": "Co myjete. Každá kategorie přichází s rozumnými výchozími prahovými hodnotami a výchozí ikonou. Zvolte Vlastní pro zahájení s neutrálními výchozími hodnotami.",
-          "customize_thresholds": "Zapněte, chcete-li na další obrazovce přepsat výchozí hodnoty kategorie. Vypněte, chcete-li použít přednastavené hodnoty pro zvolenou kategorii."
+          "customize_thresholds": "Zapněte, chcete-li na další obrazovce přepsat výchozí hodnoty kategorie. Vypněte, chcete-li použít přednastavené hodnoty pro zvolenou kategorii.",
+          "should_wash_min_days": "Zapněte „Doporučeno mýt“ až poté, co od posledního zaznamenaného mytí uplynul alespoň tento počet celých dní. Hodnota 0 tuto podmínku vypne, takže „Doporučeno mýt“ kopíruje „Lze mýt“. Záznam, který nebyl nikdy umyt, se počítá jako po termínu."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Váha skóre srážek",
           "freeze_weight": "Váha skóre mrazu",
           "condition_weight": "Váha skóre podmínek",
-          "wind_threshold_kmh": "Max. rychlost větru (km/h)",
-          "should_wash_min_days": "Minimální počet dní od posledního mytí"
+          "wind_threshold_kmh": "Max. rychlost větru (km/h)"
         },
         "data_description": {
           "days": "Počet úseků předpovědi k analýze. U denní předpovědi každý úsek = 1 den; u hodinové každý úsek = 1 hodina. Větší hodnoty zachytí více počasí, ale dávají konzervativnější výsledky.",
@@ -41,8 +42,7 @@
           "precip_weight": "O kolik déšť v předpovědi snižuje skóre 0–100. Vyšší hodnota přísněji penalizuje deštivé dny.",
           "freeze_weight": "O kolik mrazivý den snižuje skóre 0–100. Nastavte na 0, chcete-li mráz ignorovat při výpočtu skóre, ale přesto blokovat výsledek.",
           "condition_weight": "O kolik špatné povětrnostní podmínky (bouřky, krupobití, sníh) snižují skóre 0–100. Závažnost je určena pro každou podmínku zvlášť.",
-          "wind_threshold_kmh": "Ponechte prázdné pro vypnutí. Den předpovědi s větrem silnějším než tato hodnota blokuje mytí.",
-          "should_wash_min_days": "Zapněte „Doporučeno mýt“ až poté, co od posledního zaznamenaného mytí uplynul alespoň tento počet celých dní. Hodnota 0 tuto podmínku vypne, takže „Doporučeno mýt“ kopíruje „Lze mýt“. Záznam, který nebyl nikdy umyt, se počítá jako po termínu."
+          "wind_threshold_kmh": "Ponechte prázdné pro vypnutí. Den předpovědi s větrem silnějším než tato hodnota blokuje mytí."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Zdroje počasí",
           "name": "Název",
           "category": "Kategorie",
+          "should_wash_min_days": "Minimální počet dní od posledního mytí",
           "customize_thresholds": "Přizpůsobit prahové hodnoty"
         },
         "data_description": {
           "weather_entities": "Vyberte jednu nebo více HA entit počasí. Použije se první dostupný zdroj v tomto seřazeném seznamu; další se vyzkouší pouze v případě, že předchozí není k dispozici.",
           "name": "Zobrazovaný název této instance WashWise. Slouží jako předpona každé entity vytvořené tímto záznamem.",
           "category": "Co myjete. Každá kategorie přichází s rozumnými výchozími prahovými hodnotami a výchozí ikonou. Zvolte Vlastní pro zahájení s neutrálními výchozími hodnotami.",
-          "customize_thresholds": "Zapněte, chcete-li na další obrazovce přepsat výchozí hodnoty kategorie. Vypněte, chcete-li použít přednastavené hodnoty pro zvolenou kategorii."
+          "customize_thresholds": "Zapněte, chcete-li na další obrazovce přepsat výchozí hodnoty kategorie. Vypněte, chcete-li použít přednastavené hodnoty pro zvolenou kategorii.",
+          "should_wash_min_days": "Zapněte „Doporučeno mýt“ až poté, co od posledního zaznamenaného mytí uplynul alespoň tento počet celých dní. Hodnota 0 tuto podmínku vypne, takže „Doporučeno mýt“ kopíruje „Lze mýt“. Záznam, který nebyl nikdy umyt, se počítá jako po termínu."
         }
       }
     },

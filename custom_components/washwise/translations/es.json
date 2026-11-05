@@ -8,13 +8,15 @@
           "weather_entities": "Fuentes meteorológicas",
           "name": "Nombre",
           "category": "Categoría",
+          "should_wash_min_days": "Días mínimos desde el último lavado",
           "customize_thresholds": "Personalizar umbrales"
         },
         "data_description": {
           "weather_entities": "Elige una o más entidades meteorológicas de HA. Se utiliza la primera fuente disponible de esta lista ordenada; la siguiente solo se prueba si la anterior no está disponible.",
           "name": "Nombre descriptivo para esta instancia de WashWise. Se usa como prefijo en todas las entidades creadas por esta entrada.",
           "category": "Lo que vas a lavar. Cada categoría incluye umbrales predeterminados razonables y un icono predeterminado. Elige Personalizado para empezar con valores neutros.",
-          "customize_thresholds": "Actívalo para anular los valores predeterminados de la categoría en la siguiente pantalla. Déjalo desactivado para usar los valores predefinidos de la categoría elegida."
+          "customize_thresholds": "Actívalo para anular los valores predeterminados de la categoría en la siguiente pantalla. Déjalo desactivado para usar los valores predefinidos de la categoría elegida.",
+          "should_wash_min_days": "Activa «Conviene lavar» solo cuando hayan pasado al menos estos días completos desde el último lavado registrado. 0 desactiva esta condición, por lo que «Conviene lavar» coincide con «Apto para lavar». Una entrada que nunca se ha lavado cuenta como pendiente."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Peso de la puntuación de precipitación",
           "freeze_weight": "Peso de la puntuación de heladas",
           "condition_weight": "Peso de la puntuación de condiciones",
-          "wind_threshold_kmh": "Velocidad máxima del viento (km/h)",
-          "should_wash_min_days": "Días mínimos desde el último lavado"
+          "wind_threshold_kmh": "Velocidad máxima del viento (km/h)"
         },
         "data_description": {
           "days": "Cuántos días de previsión mirar hacia adelante, incluido hoy. Los horizontes más amplios captan más fenómenos meteorológicos, pero producen veredictos más conservadores.",
@@ -41,8 +42,7 @@
           "precip_weight": "Cuánto resta a la puntuación de 0–100 la lluvia en la previsión. Un valor más alto penaliza los días lluviosos de forma más agresiva.",
           "freeze_weight": "Cuánto resta a la puntuación de 0–100 un día de heladas. Ponlo a 0 para ignorar las heladas en la puntuación, pero seguir bloqueando el veredicto.",
           "condition_weight": "Cuánto restan a la puntuación de 0–100 las condiciones meteorológicas adversas (tormentas, granizo, nieve). La gravedad depende de cada condición.",
-          "wind_threshold_kmh": "Déjalo en blanco para desactivarlo. Un día de la previsión con más viento que este valor bloquea el lavado.",
-          "should_wash_min_days": "Activa «Conviene lavar» solo cuando hayan pasado al menos estos días completos desde el último lavado registrado. 0 desactiva esta condición, por lo que «Conviene lavar» coincide con «Apto para lavar». Una entrada que nunca se ha lavado cuenta como pendiente."
+          "wind_threshold_kmh": "Déjalo en blanco para desactivarlo. Un día de la previsión con más viento que este valor bloquea el lavado."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Fuentes meteorológicas",
           "name": "Nombre",
           "category": "Categoría",
+          "should_wash_min_days": "Días mínimos desde el último lavado",
           "customize_thresholds": "Personalizar umbrales"
         },
         "data_description": {
           "weather_entities": "Elige una o más entidades meteorológicas de HA. Se utiliza la primera fuente disponible de esta lista ordenada; la siguiente solo se prueba si la anterior no está disponible.",
           "name": "Nombre descriptivo para esta instancia de WashWise. Se usa como prefijo en todas las entidades creadas por esta entrada.",
           "category": "Lo que vas a lavar. Cada categoría incluye umbrales predeterminados razonables y un icono predeterminado. Elige Personalizado para empezar con valores neutros.",
-          "customize_thresholds": "Actívalo para anular los valores predeterminados de la categoría en la siguiente pantalla. Déjalo desactivado para usar los valores predefinidos de la categoría elegida."
+          "customize_thresholds": "Actívalo para anular los valores predeterminados de la categoría en la siguiente pantalla. Déjalo desactivado para usar los valores predefinidos de la categoría elegida.",
+          "should_wash_min_days": "Activa «Conviene lavar» solo cuando hayan pasado al menos estos días completos desde el último lavado registrado. 0 desactiva esta condición, por lo que «Conviene lavar» coincide con «Apto para lavar». Una entrada que nunca se ha lavado cuenta como pendiente."
         }
       }
     },

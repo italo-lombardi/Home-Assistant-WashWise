@@ -80,6 +80,90 @@ async def test_user_step_happy_path_creates_entry(hass: HomeAssistant) -> None:
     assert result["data"][CONF_WIND_THRESHOLD] == 35.0
 
 
+async def test_user_step_min_days_persists_customize_off(hass: HomeAssistant) -> None:
+    """should_wash_min_days set on the main step persists (customize off)."""
+    result = await _init_flow(hass)
+    with patch("custom_components.washwise.async_setup_entry", return_value=True):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.home"],
+                CONF_NAME: "MinDays Off",
+                CONF_CATEGORY: "car",
+                CONF_SHOULD_WASH_MIN_DAYS: 7,
+                CONF_CUSTOMIZE_THRESHOLDS: False,
+            },
+        )
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"][CONF_SHOULD_WASH_MIN_DAYS] == 7
+
+
+async def test_user_step_min_days_persists_through_customize_thresholds(
+    hass: HomeAssistant,
+) -> None:
+    """min_days set on the main step survives the customize→thresholds path,
+    and the thresholds step no longer carries the field."""
+    result = await _init_flow(hass)
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {
+            CONF_WEATHER_ENTITIES: ["weather.home"],
+            CONF_NAME: "MinDays On",
+            CONF_CATEGORY: "car",
+            CONF_SHOULD_WASH_MIN_DAYS: 14,
+            CONF_CUSTOMIZE_THRESHOLDS: True,
+        },
+    )
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "thresholds"
+    # The field was promoted off the thresholds step.
+    assert CONF_SHOULD_WASH_MIN_DAYS not in result["data_schema"].schema
+    with patch("custom_components.washwise.async_setup_entry", return_value=True):
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_FORECAST_TYPE: "daily",
+                CONF_DAYS: 2,
+                CONF_PRECIP_THRESHOLD: 1.0,
+                CONF_FREEZE_CHECK: True,
+                "bad_conditions": ["rainy", "pouring"],
+                "precip_weight": 40,
+                "freeze_weight": 30,
+                "condition_weight": 30,
+            },
+        )
+    assert result["type"] == FlowResultType.CREATE_ENTRY
+    assert result["data"][CONF_SHOULD_WASH_MIN_DAYS] == 14
+
+
+async def test_reconfigure_sets_should_wash_min_days(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """Reconfigure submitting min_days updates the stored value (true arm)."""
+    mock_config_entry.add_to_hass(hass)
+    with (
+        patch("custom_components.washwise.async_setup_entry", return_value=True),
+        patch("custom_components.washwise.async_unload_entry", return_value=True),
+    ):
+        result = await mock_config_entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.home"],
+                CONF_NAME: "Reconf MinDays",
+                CONF_CATEGORY: "car",
+                CONF_SHOULD_WASH_MIN_DAYS: 9,
+                CONF_CUSTOMIZE_THRESHOLDS: False,
+            },
+        )
+        await hass.async_block_till_done()
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    merged = {**mock_config_entry.data, **mock_config_entry.options}
+    assert merged.get(CONF_SHOULD_WASH_MIN_DAYS) == 9
+
+
 async def test_user_step_noncustomize_seeds_category_wind_default(
     hass: HomeAssistant,
 ) -> None:

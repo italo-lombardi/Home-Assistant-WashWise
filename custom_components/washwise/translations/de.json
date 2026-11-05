@@ -8,13 +8,15 @@
           "weather_entities": "Wetterquellen",
           "name": "Name",
           "category": "Kategorie",
+          "should_wash_min_days": "Mindestanzahl Tage seit letzter Wäsche",
           "customize_thresholds": "Schwellenwerte anpassen"
         },
         "data_description": {
           "weather_entities": "Wählen Sie eine oder mehrere HA-Wetterentitäten aus. Es wird die erste verfügbare Quelle aus dieser geordneten Liste verwendet; die nächste wird nur dann herangezogen, wenn die vorherige nicht verfügbar ist.",
           "name": "Anzeigename für diese WashWise-Instanz. Wird als Präfix für jede von diesem Eintrag erstellte Entität verwendet.",
           "category": "Was Sie waschen möchten. Jede Kategorie liefert sinnvolle Standard-Schwellenwerte und ein Standardsymbol mit. Wählen Sie „Benutzerdefiniert“, um mit neutralen Standardwerten zu starten.",
-          "customize_thresholds": "Aktivieren, um die Standardwerte der Kategorie im nächsten Schritt zu überschreiben. Deaktiviert lassen, um die voreingestellten Werte für die gewählte Kategorie zu übernehmen."
+          "customize_thresholds": "Aktivieren, um die Standardwerte der Kategorie im nächsten Schritt zu überschreiben. Deaktiviert lassen, um die voreingestellten Werte für die gewählte Kategorie zu übernehmen.",
+          "should_wash_min_days": "„Waschen empfohlen“ erst aktivieren, wenn seit der letzten erfassten Wäsche mindestens so viele ganze Tage vergangen sind. 0 deaktiviert die Sperre, sodass „Waschen empfohlen“ dem Wert „Waschen möglich“ entspricht. Ein nie gewaschener Eintrag gilt als überfällig."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Gewichtung Niederschlag",
           "freeze_weight": "Gewichtung Frost",
           "condition_weight": "Gewichtung Wetterlage",
-          "wind_threshold_kmh": "Max. Windgeschwindigkeit (km/h)",
-          "should_wash_min_days": "Mindestanzahl Tage seit letzter Wäsche"
+          "wind_threshold_kmh": "Max. Windgeschwindigkeit (km/h)"
         },
         "data_description": {
           "days": "Wie viele Vorhersagetage einschließlich heute berücksichtigt werden. Längere Zeiträume erfassen mehr Wetterereignisse, führen aber zu vorsichtigeren Bewertungen.",
@@ -41,8 +42,7 @@
           "precip_weight": "Wie stark Regen in der Vorhersage den Score (0–100) reduziert. Höhere Werte bestrafen Regentage stärker.",
           "freeze_weight": "Wie stark ein Frosttag den Score (0–100) reduziert. Auf 0 setzen, um Frost beim Score zu ignorieren, während die Bewertung weiterhin blockiert wird.",
           "condition_weight": "Wie stark schlechte Wetterlagen (Sturm, Hagel, Schnee) den Score (0–100) reduzieren. Der Schweregrad wird je Wetterlage festgelegt.",
-          "wind_threshold_kmh": "Leer lassen, um zu deaktivieren. Ein Vorhersagetag mit stärkerem Wind als diesem Wert blockiert den Waschvorgang.",
-          "should_wash_min_days": "„Waschen empfohlen“ erst aktivieren, wenn seit der letzten erfassten Wäsche mindestens so viele ganze Tage vergangen sind. 0 deaktiviert die Sperre, sodass „Waschen empfohlen“ dem Wert „Waschen möglich“ entspricht. Ein nie gewaschener Eintrag gilt als überfällig."
+          "wind_threshold_kmh": "Leer lassen, um zu deaktivieren. Ein Vorhersagetag mit stärkerem Wind als diesem Wert blockiert den Waschvorgang."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Wetterquellen",
           "name": "Name",
           "category": "Kategorie",
+          "should_wash_min_days": "Mindestanzahl Tage seit letzter Wäsche",
           "customize_thresholds": "Schwellenwerte anpassen"
         },
         "data_description": {
           "weather_entities": "Wählen Sie eine oder mehrere HA-Wetterentitäten aus. Es wird die erste verfügbare Quelle aus dieser geordneten Liste verwendet; die nächste wird nur dann herangezogen, wenn die vorherige nicht verfügbar ist.",
           "name": "Anzeigename für diese WashWise-Instanz. Wird als Präfix für jede von diesem Eintrag erstellte Entität verwendet.",
           "category": "Was Sie waschen möchten. Jede Kategorie liefert sinnvolle Standard-Schwellenwerte und ein Standardsymbol mit. Wählen Sie „Benutzerdefiniert“, um mit neutralen Standardwerten zu starten.",
-          "customize_thresholds": "Aktivieren, um die Standardwerte der Kategorie im nächsten Schritt zu überschreiben. Deaktiviert lassen, um die voreingestellten Werte für die gewählte Kategorie zu übernehmen."
+          "customize_thresholds": "Aktivieren, um die Standardwerte der Kategorie im nächsten Schritt zu überschreiben. Deaktiviert lassen, um die voreingestellten Werte für die gewählte Kategorie zu übernehmen.",
+          "should_wash_min_days": "„Waschen empfohlen“ erst aktivieren, wenn seit der letzten erfassten Wäsche mindestens so viele ganze Tage vergangen sind. 0 deaktiviert die Sperre, sodass „Waschen empfohlen“ dem Wert „Waschen möglich“ entspricht. Ein nie gewaschener Eintrag gilt als überfällig."
         }
       }
     },

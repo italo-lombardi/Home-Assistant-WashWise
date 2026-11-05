@@ -237,6 +237,9 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                     CONF_WEATHER_ENTITIES: weather_entities,
                     CONF_NAME: name,
                     CONF_CATEGORY: category,
+                    CONF_SHOULD_WASH_MIN_DAYS: int(
+                        user_input.get(CONF_SHOULD_WASH_MIN_DAYS, DEFAULT_SHOULD_WASH_MIN_DAYS)
+                    ),
                     CONF_CUSTOMIZE_THRESHOLDS: bool(
                         user_input.get(CONF_CUSTOMIZE_THRESHOLDS, False)
                     ),
@@ -262,6 +265,17 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                     selector.TextSelectorConfig()
                 ),
                 vol.Optional(CONF_CATEGORY, default=DEFAULT_CATEGORY): _category_selector(),
+                vol.Optional(
+                    CONF_SHOULD_WASH_MIN_DAYS, default=DEFAULT_SHOULD_WASH_MIN_DAYS
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0,
+                        max=365,
+                        step=1,
+                        mode=selector.NumberSelectorMode.BOX,
+                        unit_of_measurement="days",
+                    )
+                ),
                 vol.Optional(CONF_CUSTOMIZE_THRESHOLDS, default=False): selector.BooleanSelector(),
             }
         )
@@ -314,18 +328,6 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                         step=1,
                         mode=selector.NumberSelectorMode.BOX,
                         unit_of_measurement="slots",
-                    )
-                ),
-                vol.Optional(
-                    CONF_SHOULD_WASH_MIN_DAYS,
-                    default=self._data.get(CONF_SHOULD_WASH_MIN_DAYS, DEFAULT_SHOULD_WASH_MIN_DAYS),
-                ): selector.NumberSelector(
-                    selector.NumberSelectorConfig(
-                        min=0,
-                        max=365,
-                        step=1,
-                        mode=selector.NumberSelectorMode.BOX,
-                        unit_of_measurement="days",
                     )
                 ),
                 vol.Required(
@@ -488,6 +490,14 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                             user_input.get(CONF_CUSTOMIZE_THRESHOLDS, False)
                         ),
                     }
+                    # should_wash_min_days is pre-filled via suggested_value (not
+                    # a schema default), so an omitted field means "unchanged" —
+                    # only overwrite when the user actually submitted it, leaving
+                    # the inherited entry.data value otherwise (preserve on rename).
+                    if CONF_SHOULD_WASH_MIN_DAYS in user_input:
+                        new_data[CONF_SHOULD_WASH_MIN_DAYS] = int(
+                            user_input[CONF_SHOULD_WASH_MIN_DAYS]
+                        )
                     # Strip stale threshold keys when customize is off so coordinator
                     # falls through to the category preset. Safe to run before the
                     # customize/irrigation branches: customize=True will overwrite with
@@ -539,6 +549,22 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                     CONF_CATEGORY,
                     default=current.get(CONF_CATEGORY, DEFAULT_CATEGORY),
                 ): _category_selector(),
+                vol.Optional(
+                    CONF_SHOULD_WASH_MIN_DAYS,
+                    description={
+                        "suggested_value": current.get(
+                            CONF_SHOULD_WASH_MIN_DAYS, DEFAULT_SHOULD_WASH_MIN_DAYS
+                        )
+                    },
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0,
+                        max=365,
+                        step=1,
+                        mode=selector.NumberSelectorMode.BOX,
+                        unit_of_measurement="days",
+                    )
+                ),
                 vol.Optional(
                     CONF_CUSTOMIZE_THRESHOLDS,
                     default=current.get(CONF_CUSTOMIZE_THRESHOLDS, False),

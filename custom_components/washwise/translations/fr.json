@@ -8,13 +8,15 @@
           "weather_entities": "Sources météo",
           "name": "Nom",
           "category": "Catégorie",
+          "should_wash_min_days": "Nombre minimal de jours depuis le dernier lavage",
           "customize_thresholds": "Personnaliser les seuils"
         },
         "data_description": {
           "weather_entities": "Sélectionnez une ou plusieurs entités météo HA. La première source disponible de cette liste ordonnée est utilisée ; la suivante n'est essayée que si la précédente est indisponible.",
           "name": "Nom d'affichage de cette instance WashWise. Sert de préfixe à chaque entité créée par cette entrée.",
           "category": "Ce que vous lavez. Chaque catégorie est livrée avec des seuils par défaut adaptés et une icône par défaut. Choisissez Personnalisé pour partir de valeurs par défaut neutres.",
-          "customize_thresholds": "Activez cette option pour remplacer les valeurs par défaut de la catégorie sur l'écran suivant. Laissez désactivée pour utiliser les valeurs prédéfinies de la catégorie choisie."
+          "customize_thresholds": "Activez cette option pour remplacer les valeurs par défaut de la catégorie sur l'écran suivant. Laissez désactivée pour utiliser les valeurs prédéfinies de la catégorie choisie.",
+          "should_wash_min_days": "N'active « Lavage recommandé » que lorsqu'au moins ce nombre de jours entiers se sont écoulés depuis le dernier lavage enregistré. 0 désactive ce filtre, de sorte que « Lavage recommandé » reflète « Lavage possible ». Une entrée jamais lavée est considérée comme en retard."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Poids du score de précipitations",
           "freeze_weight": "Poids du score de gel",
           "condition_weight": "Poids du score des conditions",
-          "wind_threshold_kmh": "Vitesse maximale du vent (km/h)",
-          "should_wash_min_days": "Nombre minimal de jours depuis le dernier lavage"
+          "wind_threshold_kmh": "Vitesse maximale du vent (km/h)"
         },
         "data_description": {
           "days": "Nombre de jours de prévision à anticiper, aujourd'hui inclus. Des horizons plus longs détectent plus d'aléas mais produisent des verdicts plus prudents.",
@@ -41,8 +42,7 @@
           "precip_weight": "Nombre de points retirés du score de 0 à 100 en fonction de la pluie prévue. Une valeur plus élevée pénalise plus fortement les jours pluvieux.",
           "freeze_weight": "Nombre de points retirés du score de 0 à 100 par un jour de gel. Mettez 0 pour ignorer le gel dans le calcul du score tout en bloquant le verdict.",
           "condition_weight": "Nombre de points retirés du score de 0 à 100 par les mauvaises conditions météo (orages, grêle, neige). La sévérité dépend de la condition.",
-          "wind_threshold_kmh": "Laissez vide pour désactiver. Un jour de prévision plus venteux que cette valeur bloque le lavage.",
-          "should_wash_min_days": "N'active « Lavage recommandé » que lorsqu'au moins ce nombre de jours entiers se sont écoulés depuis le dernier lavage enregistré. 0 désactive ce filtre, de sorte que « Lavage recommandé » reflète « Lavage possible ». Une entrée jamais lavée est considérée comme en retard."
+          "wind_threshold_kmh": "Laissez vide pour désactiver. Un jour de prévision plus venteux que cette valeur bloque le lavage."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Sources météo",
           "name": "Nom",
           "category": "Catégorie",
+          "should_wash_min_days": "Nombre minimal de jours depuis le dernier lavage",
           "customize_thresholds": "Personnaliser les seuils"
         },
         "data_description": {
           "weather_entities": "Sélectionnez une ou plusieurs entités météo HA. La première source disponible de cette liste ordonnée est utilisée ; la suivante n'est essayée que si la précédente est indisponible.",
           "name": "Nom d'affichage de cette instance WashWise. Sert de préfixe à chaque entité créée par cette entrée.",
           "category": "Ce que vous lavez. Chaque catégorie est livrée avec des seuils par défaut adaptés et une icône par défaut. Choisissez Personnalisé pour partir de valeurs par défaut neutres.",
-          "customize_thresholds": "Activez cette option pour remplacer les valeurs par défaut de la catégorie sur l'écran suivant. Laissez désactivée pour utiliser les valeurs prédéfinies de la catégorie choisie."
+          "customize_thresholds": "Activez cette option pour remplacer les valeurs par défaut de la catégorie sur l'écran suivant. Laissez désactivée pour utiliser les valeurs prédéfinies de la catégorie choisie.",
+          "should_wash_min_days": "N'active « Lavage recommandé » que lorsqu'au moins ce nombre de jours entiers se sont écoulés depuis le dernier lavage enregistré. 0 désactive ce filtre, de sorte que « Lavage recommandé » reflète « Lavage possible ». Une entrée jamais lavée est considérée comme en retard."
         }
       }
     },
