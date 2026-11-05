@@ -8,13 +8,15 @@
           "weather_entities": "Orų šaltiniai",
           "name": "Pavadinimas",
           "category": "Kategorija",
+          "should_wash_min_days": "Mažiausiai dienų nuo paskutinio skalbimo",
           "customize_thresholds": "Tinkinti ribines vertes"
         },
         "data_description": {
           "weather_entities": "Pasirinkite vieną ar daugiau HA orų objektų. Naudojamas pirmasis pasiekiamas šaltinis šiame sąraše; kitas bandomas tik jei ankstesnis nepasiekiamas.",
           "name": "Draugiškas šio WashWise egzemplioriaus pavadinimas. Naudojamas kaip prefiksas kiekvienam šio įrašo sukurtam objektui.",
           "category": "Ką plaunate. Kiekviena kategorija turi protingas numatytąsias ribines vertes ir numatytąją piktogramą. Pasirinkite Pasirinktinė, kad pradėtumėte nuo neutralių numatytųjų reikšmių.",
-          "customize_thresholds": "Įjunkite, kad kitame ekrane galėtumėte perrašyti kategorijos numatytąsias reikšmes. Išjunkite, jei norite naudoti pasirinktos kategorijos išankstines reikšmes."
+          "customize_thresholds": "Įjunkite, kad kitame ekrane galėtumėte perrašyti kategorijos numatytąsias reikšmes. Išjunkite, jei norite naudoti pasirinktos kategorijos išankstines reikšmes.",
+          "should_wash_min_days": "Įjungti „Reikia plauti“ tik tada, kai nuo paskutinio užfiksuoto skalbimo praėjo bent tiek pilnų dienų. 0 išjungia šį apribojimą, todėl „Reikia plauti“ atkartoja „Galima plauti“. Niekada neplautas įrašas laikomas pradelstu."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Kritulių balo svoris",
           "freeze_weight": "Šalnų balo svoris",
           "condition_weight": "Sąlygų balo svoris",
-          "wind_threshold_kmh": "Maks. vėjo greitis (km/h)",
-          "should_wash_min_days": "Mažiausiai dienų nuo paskutinio skalbimo"
+          "wind_threshold_kmh": "Maks. vėjo greitis (km/h)"
         },
         "data_description": {
           "days": "Analizuojamų prognozės intervalų skaičius. Naudojant dienos prognozę kiekvienas intervalas = 1 diena; naudojant valandinę — 1 valanda. Didesnės vertės aptinka daugiau orų, tačiau pateikia konservatyvesnes išvadas.",
@@ -41,8 +42,7 @@
           "precip_weight": "Kiek lietus prognozėje atima iš 0–100 balo. Didesnė vertė griežčiau baudžia lietingas dienas.",
           "freeze_weight": "Kiek šalnų diena atima iš 0–100 balo. Nustatykite 0, jei norite ignoruoti šalnas skaičiuojant balą, vis dar blokuojant verdiktą.",
           "condition_weight": "Kiek blogos orų sąlygos (audros, kruša, sniegas) atima iš 0–100 balo. Griežtumas priklauso nuo sąlygos.",
-          "wind_threshold_kmh": "Palikite tuščią, kad išjungtumėte. Prognozės diena, vėjuotesnė už šią vertę, blokuoja skalbimą.",
-          "should_wash_min_days": "Įjungti „Reikia plauti“ tik tada, kai nuo paskutinio užfiksuoto skalbimo praėjo bent tiek pilnų dienų. 0 išjungia šį apribojimą, todėl „Reikia plauti“ atkartoja „Galima plauti“. Niekada neplautas įrašas laikomas pradelstu."
+          "wind_threshold_kmh": "Palikite tuščią, kad išjungtumėte. Prognozės diena, vėjuotesnė už šią vertę, blokuoja skalbimą."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Orų šaltiniai",
           "name": "Pavadinimas",
           "category": "Kategorija",
+          "should_wash_min_days": "Mažiausiai dienų nuo paskutinio skalbimo",
           "customize_thresholds": "Tinkinti ribines vertes"
         },
         "data_description": {
           "weather_entities": "Pasirinkite vieną ar daugiau HA orų objektų. Naudojamas pirmasis pasiekiamas šaltinis šiame sąraše; kitas bandomas tik jei ankstesnis nepasiekiamas.",
           "name": "Draugiškas šio WashWise egzemplioriaus pavadinimas. Naudojamas kaip prefiksas kiekvienam šio įrašo sukurtam objektui.",
           "category": "Ką plaunate. Kiekviena kategorija turi protingas numatytąsias ribines vertes ir numatytąją piktogramą. Pasirinkite Pasirinktinė, kad pradėtumėte nuo neutralių numatytųjų reikšmių.",
-          "customize_thresholds": "Įjunkite, kad kitame ekrane galėtumėte perrašyti kategorijos numatytąsias reikšmes. Išjunkite, jei norite naudoti pasirinktos kategorijos išankstines reikšmes."
+          "customize_thresholds": "Įjunkite, kad kitame ekrane galėtumėte perrašyti kategorijos numatytąsias reikšmes. Išjunkite, jei norite naudoti pasirinktos kategorijos išankstines reikšmes.",
+          "should_wash_min_days": "Įjungti „Reikia plauti“ tik tada, kai nuo paskutinio užfiksuoto skalbimo praėjo bent tiek pilnų dienų. 0 išjungia šį apribojimą, todėl „Reikia plauti“ atkartoja „Galima plauti“. Niekada neplautas įrašas laikomas pradelstu."
         }
       }
     },

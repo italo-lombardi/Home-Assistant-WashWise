@@ -8,13 +8,15 @@
           "weather_entities": "Weerbronnen",
           "name": "Naam",
           "category": "Categorie",
+          "should_wash_min_days": "Minimaal aantal dagen sinds laatste wasbeurt",
           "customize_thresholds": "Drempelwaarden aanpassen"
         },
         "data_description": {
           "weather_entities": "Kies een of meer HA-weerentiteiten. De eerste beschikbare bron in deze geordende lijst wordt gebruikt; de volgende wordt alleen geprobeerd als de vorige niet beschikbaar is.",
           "name": "Weergavenaam voor deze WashWise-instantie. Wordt gebruikt als prefix voor elke entiteit die door deze configuratie wordt aangemaakt.",
           "category": "Wat je gaat wassen. Elke categorie heeft zinvolle standaarddrempels en een standaardpictogram. Kies Aangepast om met neutrale standaardwaarden te beginnen.",
-          "customize_thresholds": "Schakel in om de standaardwaarden van de categorie op het volgende scherm te overschrijven. Laat uit om de vooraf ingestelde waarden voor de gekozen categorie te gebruiken."
+          "customize_thresholds": "Schakel in om de standaardwaarden van de categorie op het volgende scherm te overschrijven. Laat uit om de vooraf ingestelde waarden voor de gekozen categorie te gebruiken.",
+          "should_wash_min_days": "Schakel 'Moet wassen' pas in zodra er ten minste zoveel hele dagen zijn verstreken sinds de laatst geregistreerde wasbeurt. 0 schakelt de drempel uit, zodat 'Moet wassen' gelijkloopt met 'Kan wassen'. Een nooit gewassen configuratie geldt als achterstallig."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Weging neerslagscore",
           "freeze_weight": "Weging vriesscore",
           "condition_weight": "Weging weerconditiescore",
-          "wind_threshold_kmh": "Max. windsnelheid (km/h)",
-          "should_wash_min_days": "Minimaal aantal dagen sinds laatste wasbeurt"
+          "wind_threshold_kmh": "Max. windsnelheid (km/h)"
         },
         "data_description": {
           "days": "Hoeveel voorspellingsdagen er vooruit worden gekeken, inclusief vandaag. Een grotere horizon vangt meer weer op, maar levert voorzichtigere oordelen op.",
@@ -41,8 +42,7 @@
           "precip_weight": "Hoeveel regen in de voorspelling van de score van 0–100 aftrekt. Een hogere waarde bestraft regenachtige dagen strenger.",
           "freeze_weight": "Hoeveel een vriesdag van de score van 0–100 aftrekt. Stel in op 0 om vriezen in de score te negeren, terwijl het oordeel nog steeds geblokkeerd wordt.",
           "condition_weight": "Hoeveel slechte weersomstandigheden (storm, hagel, sneeuw) van de score van 0–100 aftrekken. De ernst verschilt per conditie.",
-          "wind_threshold_kmh": "Laat leeg om uit te schakelen. Een voorspellingsdag met meer wind dan dit blokkeert het wassen.",
-          "should_wash_min_days": "Schakel 'Moet wassen' pas in zodra er ten minste zoveel hele dagen zijn verstreken sinds de laatst geregistreerde wasbeurt. 0 schakelt de drempel uit, zodat 'Moet wassen' gelijkloopt met 'Kan wassen'. Een nooit gewassen configuratie geldt als achterstallig."
+          "wind_threshold_kmh": "Laat leeg om uit te schakelen. Een voorspellingsdag met meer wind dan dit blokkeert het wassen."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Weerbronnen",
           "name": "Naam",
           "category": "Categorie",
+          "should_wash_min_days": "Minimaal aantal dagen sinds laatste wasbeurt",
           "customize_thresholds": "Drempelwaarden aanpassen"
         },
         "data_description": {
           "weather_entities": "Kies een of meer HA-weerentiteiten. De eerste beschikbare bron in deze geordende lijst wordt gebruikt; de volgende wordt alleen geprobeerd als de vorige niet beschikbaar is.",
           "name": "Weergavenaam voor deze WashWise-instantie. Wordt gebruikt als prefix voor elke entiteit die door deze configuratie wordt aangemaakt.",
           "category": "Wat je gaat wassen. Elke categorie heeft zinvolle standaarddrempels en een standaardpictogram. Kies Aangepast om met neutrale standaardwaarden te beginnen.",
-          "customize_thresholds": "Schakel in om de standaardwaarden van de categorie op het volgende scherm te overschrijven. Laat uit om de vooraf ingestelde waarden voor de gekozen categorie te gebruiken."
+          "customize_thresholds": "Schakel in om de standaardwaarden van de categorie op het volgende scherm te overschrijven. Laat uit om de vooraf ingestelde waarden voor de gekozen categorie te gebruiken.",
+          "should_wash_min_days": "Schakel 'Moet wassen' pas in zodra er ten minste zoveel hele dagen zijn verstreken sinds de laatst geregistreerde wasbeurt. 0 schakelt de drempel uit, zodat 'Moet wassen' gelijkloopt met 'Kan wassen'. Een nooit gewassen configuratie geldt als achterstallig."
         }
       }
     },

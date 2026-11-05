@@ -8,13 +8,15 @@
           "weather_entities": "Værkilder",
           "name": "Navn",
           "category": "Kategori",
+          "should_wash_min_days": "Minimum antall dager siden siste vask",
           "customize_thresholds": "Tilpass terskler"
         },
         "data_description": {
           "weather_entities": "Velg én eller flere værentiteter i HA. Den første tilgjengelige kilden i denne sorterte listen brukes; den neste prøves bare hvis den forrige er utilgjengelig.",
           "name": "Visningsnavn for denne WashWise-instansen. Brukes som prefiks på alle entitetene som opprettes av denne oppføringen.",
           "category": "Hva du vasker. Hver kategori leveres med fornuftige standardterskler og et standardikon. Velg Egendefinert for å starte fra nøytrale standardverdier.",
-          "customize_thresholds": "Slå på for å overstyre standardverdiene for kategorien på neste side. La være avslått for å bruke de forhåndsinnstilte verdiene for valgt kategori."
+          "customize_thresholds": "Slå på for å overstyre standardverdiene for kategorien på neste side. La være avslått for å bruke de forhåndsinnstilte verdiene for valgt kategori.",
+          "should_wash_min_days": "Slå på «Bør vaske» først når minst så mange hele dager har gått siden siste registrerte vask. 0 deaktiverer sperren, slik at «Bør vaske» speiler «Kan vaske». En oppføring som aldri er vasket, regnes som overmoden."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Nedbørsvekt",
           "freeze_weight": "Frostvekt",
           "condition_weight": "Værforholdsvekt",
-          "wind_threshold_kmh": "Maks vindhastighet (km/h)",
-          "should_wash_min_days": "Minimum antall dager siden siste vask"
+          "wind_threshold_kmh": "Maks vindhastighet (km/h)"
         },
         "data_description": {
           "days": "Hvor mange varseldager som skal undersøkes fremover, inkludert i dag. Lengre horisonter fanger opp mer vær, men gir mer forsiktige avgjørelser.",
@@ -41,8 +42,7 @@
           "precip_weight": "Hvor mye regn i værvarselet trekker fra poengsummen (0–100). Høyere verdi straffer regnværsdager hardere.",
           "freeze_weight": "Hvor mye en frostdag trekker fra poengsummen (0–100). Sett til 0 for å se bort fra frost i poengsummen, men fortsatt blokkere avgjørelsen.",
           "condition_weight": "Hvor mye dårlige værforhold (uvær, hagl, snø) trekker fra poengsummen (0–100). Alvorlighetsgrad varierer per værforhold.",
-          "wind_threshold_kmh": "La stå tom for å deaktivere. En varseldag med mer vind enn dette blokkerer vask.",
-          "should_wash_min_days": "Slå på «Bør vaske» først når minst så mange hele dager har gått siden siste registrerte vask. 0 deaktiverer sperren, slik at «Bør vaske» speiler «Kan vaske». En oppføring som aldri er vasket, regnes som overmoden."
+          "wind_threshold_kmh": "La stå tom for å deaktivere. En varseldag med mer vind enn dette blokkerer vask."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Værkilder",
           "name": "Navn",
           "category": "Kategori",
+          "should_wash_min_days": "Minimum antall dager siden siste vask",
           "customize_thresholds": "Tilpass terskler"
         },
         "data_description": {
           "weather_entities": "Velg én eller flere værentiteter i HA. Den første tilgjengelige kilden i denne sorterte listen brukes; den neste prøves bare hvis den forrige er utilgjengelig.",
           "name": "Visningsnavn for denne WashWise-instansen. Brukes som prefiks på alle entitetene som opprettes av denne oppføringen.",
           "category": "Hva du vasker. Hver kategori leveres med fornuftige standardterskler og et standardikon. Velg Egendefinert for å starte fra nøytrale standardverdier.",
-          "customize_thresholds": "Slå på for å overstyre standardverdiene for kategorien på neste side. La være avslått for å bruke de forhåndsinnstilte verdiene for valgt kategori."
+          "customize_thresholds": "Slå på for å overstyre standardverdiene for kategorien på neste side. La være avslått for å bruke de forhåndsinnstilte verdiene for valgt kategori.",
+          "should_wash_min_days": "Slå på «Bør vaske» først når minst så mange hele dager har gått siden siste registrerte vask. 0 deaktiverer sperren, slik at «Bør vaske» speiler «Kan vaske». En oppføring som aldri er vasket, regnes som overmoden."
         }
       }
     },

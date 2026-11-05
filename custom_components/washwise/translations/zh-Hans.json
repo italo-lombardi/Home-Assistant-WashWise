@@ -8,13 +8,15 @@
           "weather_entities": "天气来源",
           "name": "名称",
           "category": "类别",
+          "should_wash_min_days": "距上次清洗的最少天数",
           "customize_thresholds": "自定义阈值"
         },
         "data_description": {
           "weather_entities": "选择一个或多个 HA 天气实体。优先使用列表中第一个可用来源；仅当前一个不可用时才尝试下一个。",
           "name": "此 WashWise 实例的友好名称，用作该条目所创建的每个实体的前缀。",
           "category": "您要清洗的对象。每个类别都内置了合理的默认阈值和默认图标。选择\"自定义\"可从中性默认值开始。",
-          "customize_thresholds": "开启后可在下一页覆盖类别默认值；关闭则使用所选类别的预设值。"
+          "customize_thresholds": "开启后可在下一页覆盖类别默认值；关闭则使用所选类别的预设值。",
+          "should_wash_min_days": "只有距上次记录的清洗已过去至少这么多整天后，才开启“应当清洗”。设为 0 将禁用此限制，使“应当清洗”与“可以清洗”保持一致。从未清洗过的条目视为已逾期。"
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "降水评分权重",
           "freeze_weight": "结冰评分权重",
           "condition_weight": "天气状况评分权重",
-          "wind_threshold_kmh": "最大风速（km/h）",
-          "should_wash_min_days": "距上次清洗的最少天数"
+          "wind_threshold_kmh": "最大风速（km/h）"
         },
         "data_description": {
           "days": "要分析的预报时段数。使用逐日预报时每时段 = 1 天；使用逐小时预报时每时段 = 1 小时。值越大，覆盖天气范围越广，但判断结果越保守。",
@@ -41,8 +42,7 @@
           "precip_weight": "预报中的降雨量对 0–100 分评分的扣减幅度。值越高，对多雨天气的惩罚越重。",
           "freeze_weight": "结冰天气对 0–100 分评分的扣减幅度。设为 0 可在评分中忽略结冰，但仍会阻止清洗判断。",
           "condition_weight": "恶劣天气状况（风暴、冰雹、降雪）对 0–100 分评分的扣减幅度，严重程度按各状况单独计算。",
-          "wind_threshold_kmh": "留空则禁用。预报中风力超过此值的日期将阻止清洗。",
-          "should_wash_min_days": "只有距上次记录的清洗已过去至少这么多整天后，才开启“应当清洗”。设为 0 将禁用此限制，使“应当清洗”与“可以清洗”保持一致。从未清洗过的条目视为已逾期。"
+          "wind_threshold_kmh": "留空则禁用。预报中风力超过此值的日期将阻止清洗。"
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "天气来源",
           "name": "名称",
           "category": "类别",
+          "should_wash_min_days": "距上次清洗的最少天数",
           "customize_thresholds": "自定义阈值"
         },
         "data_description": {
           "weather_entities": "选择一个或多个 HA 天气实体。优先使用列表中第一个可用来源；仅当前一个不可用时才尝试下一个。",
           "name": "此 WashWise 实例的友好名称，用作该条目所创建的每个实体的前缀。",
           "category": "您要清洗的对象。每个类别都内置了合理的默认阈值和默认图标。选择\"自定义\"可从中性默认值开始。",
-          "customize_thresholds": "开启后可在下一页覆盖类别默认值；关闭则使用所选类别的预设值。"
+          "customize_thresholds": "开启后可在下一页覆盖类别默认值；关闭则使用所选类别的预设值。",
+          "should_wash_min_days": "只有距上次记录的清洗已过去至少这么多整天后，才开启“应当清洗”。设为 0 将禁用此限制，使“应当清洗”与“可以清洗”保持一致。从未清洗过的条目视为已逾期。"
         }
       }
     },

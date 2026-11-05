@@ -8,13 +8,15 @@
           "weather_entities": "Weather sources",
           "name": "Name",
           "category": "Category",
+          "should_wash_min_days": "Minimum days since last wash",
           "customize_thresholds": "Customize thresholds"
         },
         "data_description": {
           "weather_entities": "Pick one or more HA weather entities. The first available source in this ordered list is used; the next one is tried only if the previous one is unavailable.",
           "name": "Friendly name for this WashWise instance. Used to prefix every entity created by this entry.",
           "category": "What you are washing. Each category ships with sensible default thresholds and a default icon. Pick Custom to start from neutral defaults.",
-          "customize_thresholds": "Turn on to override the category defaults on the next screen. Leave off to use the preset values for the chosen category."
+          "customize_thresholds": "Turn on to override the category defaults on the next screen. Leave off to use the preset values for the chosen category.",
+          "should_wash_min_days": "Only turn on 'Should wash' once at least this many whole days have passed since the last recorded wash. 0 disables the gate so 'Should wash' mirrors 'Can wash'. A never-washed entry counts as overdue."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Precipitation score weight",
           "freeze_weight": "Freeze score weight",
           "condition_weight": "Condition score weight",
-          "wind_threshold_kmh": "Max wind speed (km/h)",
-          "should_wash_min_days": "Minimum days since last wash"
+          "wind_threshold_kmh": "Max wind speed (km/h)"
         },
         "data_description": {
           "days": "Number of forecast slots to analyse. With daily forecast each slot = 1 day; with hourly each slot = 1 hour. Larger values catch more weather but produce more conservative verdicts.",
@@ -41,8 +42,7 @@
           "precip_weight": "How much rain in the forecast subtracts from the 0–100 score. Higher value penalizes rainy days more aggressively.",
           "freeze_weight": "How much a freezing day subtracts from the 0–100 score. Set to 0 to ignore freeze in scoring while still blocking the verdict.",
           "condition_weight": "How much bad weather conditions (storms, hail, snow) subtract from the 0–100 score. Severity is per-condition.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing.",
-          "should_wash_min_days": "Only turn on 'Should wash' once at least this many whole days have passed since the last recorded wash. 0 disables the gate so 'Should wash' mirrors 'Can wash'. A never-washed entry counts as overdue."
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Weather sources",
           "name": "Name",
           "category": "Category",
+          "should_wash_min_days": "Minimum days since last wash",
           "customize_thresholds": "Customize thresholds"
         },
         "data_description": {
           "weather_entities": "Pick one or more HA weather entities. The first available source in this ordered list is used; the next one is tried only if the previous one is unavailable.",
           "name": "Friendly name for this WashWise instance. Used to prefix every entity created by this entry.",
           "category": "What you are washing. Each category ships with sensible default thresholds and a default icon. Pick Custom to start from neutral defaults.",
-          "customize_thresholds": "Turn on to override the category defaults on the next screen. Leave off to use the preset values for the chosen category."
+          "customize_thresholds": "Turn on to override the category defaults on the next screen. Leave off to use the preset values for the chosen category.",
+          "should_wash_min_days": "Only turn on 'Should wash' once at least this many whole days have passed since the last recorded wash. 0 disables the gate so 'Should wash' mirrors 'Can wash'. A never-washed entry counts as overdue."
         }
       }
     },

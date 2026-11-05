@@ -8,13 +8,15 @@
           "weather_entities": "Fonts meteorològiques",
           "name": "Nom",
           "category": "Categoria",
+          "should_wash_min_days": "Dies mínims des de l'últim rentat",
           "customize_thresholds": "Personalitza els llindars"
         },
         "data_description": {
           "weather_entities": "Tria una o més entitats meteorològiques de l'HA. S'utilitza la primera font disponible d'aquesta llista ordenada; la següent només es prova si l'anterior no està disponible.",
           "name": "Nom descriptiu per a aquesta instància de WashWise. S'utilitza com a prefix de totes les entitats creades per aquesta entrada.",
           "category": "Allò que vols rentar. Cada categoria inclou llindars predeterminats raonables i una icona per defecte. Tria Personalitzat per començar amb valors neutres.",
-          "customize_thresholds": "Activa-ho per substituir els valors predeterminats de la categoria a la pantalla següent. Deixa-ho desactivat per usar els valors predefinits de la categoria triada."
+          "customize_thresholds": "Activa-ho per substituir els valors predeterminats de la categoria a la pantalla següent. Deixa-ho desactivat per usar els valors predefinits de la categoria triada.",
+          "should_wash_min_days": "Activa «Cal rentar» només quan hagin passat almenys aquests dies sencers des de l'últim rentat registrat. El valor 0 desactiva aquest filtre, de manera que «Cal rentar» reflecteix «Es pot rentar». Una entrada que no s'ha rentat mai es considera endarrerida."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Pes de la puntuació de precipitació",
           "freeze_weight": "Pes de la puntuació de gelada",
           "condition_weight": "Pes de la puntuació de condicions",
-          "wind_threshold_kmh": "Velocitat màxima del vent (km/h)",
-          "should_wash_min_days": "Dies mínims des de l'últim rentat"
+          "wind_threshold_kmh": "Velocitat màxima del vent (km/h)"
         },
         "data_description": {
           "days": "Nombre d'intervals de previsió a analitzar. Amb previsió diària cada interval equival a 1 dia; amb previsió horària, a 1 hora. Valors més grans capten més fenòmens meteorològics però produeixen veredictes més conservadors.",
@@ -41,8 +42,7 @@
           "precip_weight": "Quant resta a la puntuació de 0–100 la pluja a la previsió. Un valor més alt penalitza els dies plujosos de forma més agressiva.",
           "freeze_weight": "Quant resta a la puntuació de 0–100 un dia de gelada. Posa'l a 0 per ignorar les gelades en la puntuació tot mantenint el bloqueig del veredicte.",
           "condition_weight": "Quant resten a la puntuació de 0–100 les condicions meteorològiques adverses (tempestes, calamarsa, neu). La gravetat és per condició.",
-          "wind_threshold_kmh": "Deixa-ho buit per desactivar-ho. Un dia de previsió amb més vent que aquest valor bloqueja el rentat.",
-          "should_wash_min_days": "Activa «Cal rentar» només quan hagin passat almenys aquests dies sencers des de l'últim rentat registrat. El valor 0 desactiva aquest filtre, de manera que «Cal rentar» reflecteix «Es pot rentar». Una entrada que no s'ha rentat mai es considera endarrerida."
+          "wind_threshold_kmh": "Deixa-ho buit per desactivar-ho. Un dia de previsió amb més vent que aquest valor bloqueja el rentat."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Fonts meteorològiques",
           "name": "Nom",
           "category": "Categoria",
+          "should_wash_min_days": "Dies mínims des de l'últim rentat",
           "customize_thresholds": "Personalitza els llindars"
         },
         "data_description": {
           "weather_entities": "Tria una o més entitats meteorològiques de l'HA. S'utilitza la primera font disponible d'aquesta llista ordenada; la següent només es prova si l'anterior no està disponible.",
           "name": "Nom descriptiu per a aquesta instància de WashWise. S'utilitza com a prefix de totes les entitats creades per aquesta entrada.",
           "category": "Allò que vols rentar. Cada categoria inclou llindars predeterminats raonables i una icona per defecte. Tria Personalitzat per començar amb valors neutres.",
-          "customize_thresholds": "Activa-ho per substituir els valors predeterminats de la categoria a la pantalla següent. Deixa-ho desactivat per usar els valors predefinits de la categoria triada."
+          "customize_thresholds": "Activa-ho per substituir els valors predeterminats de la categoria a la pantalla següent. Deixa-ho desactivat per usar els valors predefinits de la categoria triada.",
+          "should_wash_min_days": "Activa «Cal rentar» només quan hagin passat almenys aquests dies sencers des de l'últim rentat registrat. El valor 0 desactiva aquest filtre, de manera que «Cal rentar» reflecteix «Es pot rentar». Una entrada que no s'ha rentat mai es considera endarrerida."
         }
       }
     },

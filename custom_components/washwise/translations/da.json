@@ -8,13 +8,15 @@
           "weather_entities": "Vejrkilder",
           "name": "Navn",
           "category": "Kategori",
+          "should_wash_min_days": "Minimum antal dage siden sidste vask",
           "customize_thresholds": "Tilpas tærskler"
         },
         "data_description": {
           "weather_entities": "Vælg en eller flere HA-vejrentiteter. Den første tilgængelige kilde i den angivne rækkefølge bruges; den næste prøves kun, hvis den foregående er utilgængelig.",
           "name": "Vist navn for denne WashWise-instans. Bruges som præfiks for alle entiteter, der oprettes af denne post.",
           "category": "Hvad du vasker. Hver kategori leveres med fornuftige standardtærskler og et standardikon. Vælg Brugerdefineret for at starte med neutrale standardværdier.",
-          "customize_thresholds": "Slå til for at tilsidesætte kategoriens standardværdier på næste skærm. Lad stå slået fra for at bruge de forudindstillede værdier for den valgte kategori."
+          "customize_thresholds": "Slå til for at tilsidesætte kategoriens standardværdier på næste skærm. Lad stå slået fra for at bruge de forudindstillede værdier for den valgte kategori.",
+          "should_wash_min_days": "Slå kun 'Bør vaske' til, når mindst så mange hele dage er gået siden den senest registrerede vask. 0 deaktiverer spærringen, så 'Bør vaske' følger 'Kan vaske'. En post, der aldrig er vasket, tæller som forfalden."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Vægt for nedbør",
           "freeze_weight": "Vægt for frost",
           "condition_weight": "Vægt for vejrforhold",
-          "wind_threshold_kmh": "Maksimal vindhastighed (km/h)",
-          "should_wash_min_days": "Minimum antal dage siden sidste vask"
+          "wind_threshold_kmh": "Maksimal vindhastighed (km/h)"
         },
         "data_description": {
           "days": "Hvor mange prognosedage der skal kigges frem, inklusive i dag. En længere horisont fanger mere vejr, men giver mere konservative vurderinger.",
@@ -41,8 +42,7 @@
           "precip_weight": "Hvor meget regn i prognosen trækker fra 0–100-scoren. Højere værdi straffer regnvejrsdage hårdere.",
           "freeze_weight": "Hvor meget en frostdag trækker fra 0–100-scoren. Sæt til 0 for at se bort fra frost i scoringen, men stadig blokere vurderingen.",
           "condition_weight": "Hvor meget dårlige vejrforhold (storm, hagl, sne) trækker fra 0–100-scoren. Alvorligheden afhænger af det enkelte forhold.",
-          "wind_threshold_kmh": "Lad stå tom for at deaktivere. En prognosedag med mere vind end dette blokerer vask.",
-          "should_wash_min_days": "Slå kun 'Bør vaske' til, når mindst så mange hele dage er gået siden den senest registrerede vask. 0 deaktiverer spærringen, så 'Bør vaske' følger 'Kan vaske'. En post, der aldrig er vasket, tæller som forfalden."
+          "wind_threshold_kmh": "Lad stå tom for at deaktivere. En prognosedag med mere vind end dette blokerer vask."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Vejrkilder",
           "name": "Navn",
           "category": "Kategori",
+          "should_wash_min_days": "Minimum antal dage siden sidste vask",
           "customize_thresholds": "Tilpas tærskler"
         },
         "data_description": {
           "weather_entities": "Vælg en eller flere HA-vejrentiteter. Den første tilgængelige kilde i den angivne rækkefølge bruges; den næste prøves kun, hvis den foregående er utilgængelig.",
           "name": "Vist navn for denne WashWise-instans. Bruges som præfiks for alle entiteter, der oprettes af denne post.",
           "category": "Hvad du vasker. Hver kategori leveres med fornuftige standardtærskler og et standardikon. Vælg Brugerdefineret for at starte med neutrale standardværdier.",
-          "customize_thresholds": "Slå til for at tilsidesætte kategoriens standardværdier på næste skærm. Lad stå slået fra for at bruge de forudindstillede værdier for den valgte kategori."
+          "customize_thresholds": "Slå til for at tilsidesætte kategoriens standardværdier på næste skærm. Lad stå slået fra for at bruge de forudindstillede værdier for den valgte kategori.",
+          "should_wash_min_days": "Slå kun 'Bør vaske' til, når mindst så mange hele dage er gået siden den senest registrerede vask. 0 deaktiverer spærringen, så 'Bør vaske' følger 'Kan vaske'. En post, der aldrig er vasket, tæller som forfalden."
         }
       }
     },

@@ -8,13 +8,15 @@
           "weather_entities": "Zdroje počasia",
           "name": "Názov",
           "category": "Kategória",
+          "should_wash_min_days": "Minimálny počet dní od posledného umytia",
           "customize_thresholds": "Prispôsobiť prahové hodnoty"
         },
         "data_description": {
           "weather_entities": "Vyberte jednu alebo viac entít počasia z HA. Použije sa prvý dostupný zdroj v tomto zoradenom zozname; ďalší sa skúsi iba vtedy, ak predchádzajúci nie je dostupný.",
           "name": "Priateľský názov tejto inštancie WashWise. Používa sa ako predpona každej entity vytvorenej týmto zápisom.",
           "category": "Čo umývate. Každá kategória má rozumné predvolené prahové hodnoty a predvolenú ikonu. Vyberte Vlastná, ak chcete začať od neutrálnych predvolených hodnôt.",
-          "customize_thresholds": "Zapnite, ak chcete na ďalšej obrazovke prepísať predvolené hodnoty kategórie. Nechajte vypnuté, aby ste použili prednastavené hodnoty zvolenej kategórie."
+          "customize_thresholds": "Zapnite, ak chcete na ďalšej obrazovke prepísať predvolené hodnoty kategórie. Nechajte vypnuté, aby ste použili prednastavené hodnoty zvolenej kategórie.",
+          "should_wash_min_days": "Zapnúť „Treba umyť“ až vtedy, keď od posledného zaznamenaného umytia uplynul aspoň tento počet celých dní. Hodnota 0 vypne túto podmienku, takže „Treba umyť“ zrkadlí „Možno umyť“. Záznam, ktorý nebol nikdy umytý, sa počíta ako po termíne."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Váha skóre zrážok",
           "freeze_weight": "Váha skóre mrazu",
           "condition_weight": "Váha skóre podmienok počasia",
-          "wind_threshold_kmh": "Max. rýchlosť vetra (km/h)",
-          "should_wash_min_days": "Minimálny počet dní od posledného umytia"
+          "wind_threshold_kmh": "Max. rýchlosť vetra (km/h)"
         },
         "data_description": {
           "days": "Počet úsekov predpovede na analýzu. Pri dennej predpovedi každý úsek = 1 deň; pri hodinovej každý úsek = 1 hodina. Väčšie hodnoty zachytia viac počasia, ale dávajú konzervatívnejšie verdikty.",
@@ -41,8 +42,7 @@
           "precip_weight": "O koľko dážď v predpovedi znižuje skóre 0–100. Vyššia hodnota prísnejšie penalizuje daždivé dni.",
           "freeze_weight": "O koľko mrazivý deň znižuje skóre 0–100. Nastavte na 0, ak chcete ignorovať mráz pri skórovaní, ale stále blokovať verdikt.",
           "condition_weight": "O koľko zlé poveternostné podmienky (búrky, krúpy, sneh) znižujú skóre 0–100. Závažnosť je individuálna pre každú podmienku.",
-          "wind_threshold_kmh": "Nechajte prázdne, ak chcete zakázať. Deň predpovede s vetrom silnejším ako táto hodnota blokuje umývanie.",
-          "should_wash_min_days": "Zapnúť „Treba umyť“ až vtedy, keď od posledného zaznamenaného umytia uplynul aspoň tento počet celých dní. Hodnota 0 vypne túto podmienku, takže „Treba umyť“ zrkadlí „Možno umyť“. Záznam, ktorý nebol nikdy umytý, sa počíta ako po termíne."
+          "wind_threshold_kmh": "Nechajte prázdne, ak chcete zakázať. Deň predpovede s vetrom silnejším ako táto hodnota blokuje umývanie."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Zdroje počasia",
           "name": "Názov",
           "category": "Kategória",
+          "should_wash_min_days": "Minimálny počet dní od posledného umytia",
           "customize_thresholds": "Prispôsobiť prahové hodnoty"
         },
         "data_description": {
           "weather_entities": "Vyberte jednu alebo viac entít počasia z HA. Použije sa prvý dostupný zdroj v tomto zoradenom zozname; ďalší sa skúsi iba vtedy, ak predchádzajúci nie je dostupný.",
           "name": "Priateľský názov tejto inštancie WashWise. Používa sa ako predpona každej entity vytvorenej týmto zápisom.",
           "category": "Čo umývate. Každá kategória má rozumné predvolené prahové hodnoty a predvolenú ikonu. Vyberte Vlastná, ak chcete začať od neutrálnych predvolených hodnôt.",
-          "customize_thresholds": "Zapnite, ak chcete na ďalšej obrazovke prepísať predvolené hodnoty kategórie. Nechajte vypnuté, aby ste použili prednastavené hodnoty zvolenej kategórie."
+          "customize_thresholds": "Zapnite, ak chcete na ďalšej obrazovke prepísať predvolené hodnoty kategórie. Nechajte vypnuté, aby ste použili prednastavené hodnoty zvolenej kategórie.",
+          "should_wash_min_days": "Zapnúť „Treba umyť“ až vtedy, keď od posledného zaznamenaného umytia uplynul aspoň tento počet celých dní. Hodnota 0 vypne túto podmienku, takže „Treba umyť“ zrkadlí „Možno umyť“. Záznam, ktorý nebol nikdy umytý, sa počíta ako po termíne."
         }
       }
     },

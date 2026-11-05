@@ -8,13 +8,15 @@
           "weather_entities": "Sorgenti meteo",
           "name": "Nome",
           "category": "Categoria",
+          "should_wash_min_days": "Giorni minimi dall'ultimo lavaggio",
           "customize_thresholds": "Personalizza le soglie"
         },
         "data_description": {
           "weather_entities": "Scegli una o più entità meteo di HA. Viene usata la prima sorgente disponibile in questo elenco ordinato; la successiva viene tentata solo se la precedente non è disponibile.",
           "name": "Nome descrittivo per questa istanza WashWise. Usato come prefisso per ogni entità creata da questa configurazione.",
           "category": "Cosa stai lavando. Ogni categoria include soglie predefinite ragionevoli e un'icona predefinita. Scegli Personalizzata per partire da valori neutri.",
-          "customize_thresholds": "Attiva per sovrascrivere i valori predefiniti della categoria nella schermata successiva. Lascia disattivato per usare i valori preimpostati della categoria scelta."
+          "customize_thresholds": "Attiva per sovrascrivere i valori predefiniti della categoria nella schermata successiva. Lascia disattivato per usare i valori preimpostati della categoria scelta.",
+          "should_wash_min_days": "Attiva 'Da lavare' solo quando sono trascorsi almeno questi giorni interi dall'ultimo lavaggio registrato. 0 disabilita il vincolo, così 'Da lavare' rispecchia 'Si può lavare'. Una voce mai lavata è considerata in ritardo."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Peso del punteggio precipitazione",
           "freeze_weight": "Peso del punteggio gelo",
           "condition_weight": "Peso del punteggio condizioni",
-          "wind_threshold_kmh": "Velocità max del vento (km/h)",
-          "should_wash_min_days": "Giorni minimi dall'ultimo lavaggio"
+          "wind_threshold_kmh": "Velocità max del vento (km/h)"
         },
         "data_description": {
           "days": "Quanti giorni di previsione considerare in avanti, incluso oggi. Orizzonti più ampi rilevano più condizioni meteo ma producono verdetti più conservativi.",
@@ -41,8 +42,7 @@
           "precip_weight": "Quanto la pioggia nelle previsioni sottrae dal punteggio 0–100. Un valore più alto penalizza più severamente le giornate piovose.",
           "freeze_weight": "Quanto un giorno di gelo sottrae dal punteggio 0–100. Imposta a 0 per ignorare il gelo nel punteggio pur continuando a bloccare il verdetto.",
           "condition_weight": "Quanto le condizioni meteo avverse (temporali, grandine, neve) sottraggono dal punteggio 0–100. La gravità è specifica per ogni condizione.",
-          "wind_threshold_kmh": "Lascia vuoto per disabilitare. Un giorno di previsione più ventoso di questo valore blocca il lavaggio.",
-          "should_wash_min_days": "Attiva 'Da lavare' solo quando sono trascorsi almeno questi giorni interi dall'ultimo lavaggio registrato. 0 disabilita il vincolo, così 'Da lavare' rispecchia 'Si può lavare'. Una voce mai lavata è considerata in ritardo."
+          "wind_threshold_kmh": "Lascia vuoto per disabilitare. Un giorno di previsione più ventoso di questo valore blocca il lavaggio."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Sorgenti meteo",
           "name": "Nome",
           "category": "Categoria",
+          "should_wash_min_days": "Giorni minimi dall'ultimo lavaggio",
           "customize_thresholds": "Personalizza le soglie"
         },
         "data_description": {
           "weather_entities": "Scegli una o più entità meteo di HA. Viene usata la prima sorgente disponibile in questo elenco ordinato; la successiva viene tentata solo se la precedente non è disponibile.",
           "name": "Nome descrittivo per questa istanza WashWise. Usato come prefisso per ogni entità creata da questa configurazione.",
           "category": "Cosa stai lavando. Ogni categoria include soglie predefinite ragionevoli e un'icona predefinita. Scegli Personalizzata per partire da valori neutri.",
-          "customize_thresholds": "Attiva per sovrascrivere i valori predefiniti della categoria nella schermata successiva. Lascia disattivato per usare i valori preimpostati della categoria scelta."
+          "customize_thresholds": "Attiva per sovrascrivere i valori predefiniti della categoria nella schermata successiva. Lascia disattivato per usare i valori preimpostati della categoria scelta.",
+          "should_wash_min_days": "Attiva 'Da lavare' solo quando sono trascorsi almeno questi giorni interi dall'ultimo lavaggio registrato. 0 disabilita il vincolo, così 'Da lavare' rispecchia 'Si può lavare'. Una voce mai lavata è considerata in ritardo."
         }
       }
     },

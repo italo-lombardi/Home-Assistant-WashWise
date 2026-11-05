@@ -8,13 +8,15 @@
           "weather_entities": "Hava durumu kaynakları",
           "name": "Ad",
           "category": "Kategori",
+          "should_wash_min_days": "Son yıkamadan bu yana en az gün sayısı",
           "customize_thresholds": "Eşik değerlerini özelleştir"
         },
         "data_description": {
           "weather_entities": "Bir veya daha fazla HA hava durumu varlığı seçin. Bu sıralı listedeki ilk kullanılabilir kaynak kullanılır; önceki kullanılamıyorsa bir sonraki denenir.",
           "name": "Bu WashWise örneği için kolay okunur ad. Bu giriş tarafından oluşturulan her varlığa önek olarak eklenir.",
           "category": "Neyi yıkadığınız. Her kategori makul varsayılan eşik değerleri ve varsayılan bir simgeyle gelir. Tarafsız varsayılanlarla başlamak için Özel'i seçin.",
-          "customize_thresholds": "Bir sonraki ekranda kategori varsayılanlarını geçersiz kılmak için açın. Seçilen kategori için önceden ayarlanmış değerleri kullanmak üzere kapalı bırakın."
+          "customize_thresholds": "Bir sonraki ekranda kategori varsayılanlarını geçersiz kılmak için açın. Seçilen kategori için önceden ayarlanmış değerleri kullanmak üzere kapalı bırakın.",
+          "should_wash_min_days": "'Yıkamalı' seçeneğini yalnızca son kayıtlı yıkamadan bu yana en az bu kadar tam gün geçtiğinde açın. 0 değeri bu kapıyı devre dışı bırakır, böylece 'Yıkamalı', 'Yıkayabilir' ile aynı olur. Hiç yıkanmamış bir giriş gecikmiş sayılır."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Yağış puan ağırlığı",
           "freeze_weight": "Donma puan ağırlığı",
           "condition_weight": "Koşul puan ağırlığı",
-          "wind_threshold_kmh": "Maks. rüzgar hızı (km/h)",
-          "should_wash_min_days": "Son yıkamadan bu yana en az gün sayısı"
+          "wind_threshold_kmh": "Maks. rüzgar hızı (km/h)"
         },
         "data_description": {
           "days": "Analiz edilecek tahmin dilimi sayısı. Günlük tahminle her dilim = 1 gün; saatlik tahminle her dilim = 1 saat. Daha büyük değerler daha fazla hava durumunu yakalar ancak daha ihtiyatlı sonuçlar üretir.",
@@ -41,8 +42,7 @@
           "precip_weight": "Tahmindeki yağışın 0–100 puanından ne kadar çıkarıldığı. Daha yüksek değer, yağışlı günleri daha agresif şekilde cezalandırır.",
           "freeze_weight": "Donma gününün 0–100 puanından ne kadar çıkarıldığı. Sonucu yine engellerken puanlamada donmayı yok saymak için 0 olarak ayarlayın.",
           "condition_weight": "Kötü hava koşullarının (fırtına, dolu, kar) 0–100 puanından ne kadar çıkarıldığı. Şiddet koşula göre değişir.",
-          "wind_threshold_kmh": "Devre dışı bırakmak için boş bırakın. Bundan daha rüzgarlı bir tahmin günü yıkamayı engeller.",
-          "should_wash_min_days": "'Yıkamalı' seçeneğini yalnızca son kayıtlı yıkamadan bu yana en az bu kadar tam gün geçtiğinde açın. 0 değeri bu kapıyı devre dışı bırakır, böylece 'Yıkamalı', 'Yıkayabilir' ile aynı olur. Hiç yıkanmamış bir giriş gecikmiş sayılır."
+          "wind_threshold_kmh": "Devre dışı bırakmak için boş bırakın. Bundan daha rüzgarlı bir tahmin günü yıkamayı engeller."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Hava durumu kaynakları",
           "name": "Ad",
           "category": "Kategori",
+          "should_wash_min_days": "Son yıkamadan bu yana en az gün sayısı",
           "customize_thresholds": "Eşik değerlerini özelleştir"
         },
         "data_description": {
           "weather_entities": "Bir veya daha fazla HA hava durumu varlığı seçin. Bu sıralı listedeki ilk kullanılabilir kaynak kullanılır; önceki kullanılamıyorsa bir sonraki denenir.",
           "name": "Bu WashWise örneği için kolay okunur ad. Bu giriş tarafından oluşturulan her varlığa önek olarak eklenir.",
           "category": "Neyi yıkadığınız. Her kategori makul varsayılan eşik değerleri ve varsayılan bir simgeyle gelir. Tarafsız varsayılanlarla başlamak için Özel'i seçin.",
-          "customize_thresholds": "Bir sonraki ekranda kategori varsayılanlarını geçersiz kılmak için açın. Seçilen kategori için önceden ayarlanmış değerleri kullanmak üzere kapalı bırakın."
+          "customize_thresholds": "Bir sonraki ekranda kategori varsayılanlarını geçersiz kılmak için açın. Seçilen kategori için önceden ayarlanmış değerleri kullanmak üzere kapalı bırakın.",
+          "should_wash_min_days": "'Yıkamalı' seçeneğini yalnızca son kayıtlı yıkamadan bu yana en az bu kadar tam gün geçtiğinde açın. 0 değeri bu kapıyı devre dışı bırakır, böylece 'Yıkamalı', 'Yıkayabilir' ile aynı olur. Hiç yıkanmamış bir giriş gecikmiş sayılır."
         }
       }
     },

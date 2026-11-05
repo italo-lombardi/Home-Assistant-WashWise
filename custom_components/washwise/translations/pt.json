@@ -8,13 +8,15 @@
           "weather_entities": "Fontes meteorológicas",
           "name": "Nome",
           "category": "Categoria",
+          "should_wash_min_days": "Dias mínimos desde a última lavagem",
           "customize_thresholds": "Personalizar limites"
         },
         "data_description": {
           "weather_entities": "Escolha uma ou mais entidades meteorológicas do HA. A primeira fonte disponível desta lista ordenada é usada; a próxima só é tentada se a anterior estiver indisponível.",
           "name": "Nome amigável para esta instância do WashWise. Usado como prefixo de cada entidade criada por esta entrada.",
           "category": "O que você está lavando. Cada categoria vem com limites padrão sensatos e um ícone padrão. Escolha Personalizado para começar com valores neutros.",
-          "customize_thresholds": "Ative para substituir os valores padrão da categoria na próxima tela. Deixe desativado para usar os valores predefinidos da categoria escolhida."
+          "customize_thresholds": "Ative para substituir os valores padrão da categoria na próxima tela. Deixe desativado para usar os valores predefinidos da categoria escolhida.",
+          "should_wash_min_days": "Só ativar 'Deve lavar' depois de terem passado pelo menos este número de dias completos desde a última lavagem registada. 0 desativa a restrição, por isso 'Deve lavar' reflete 'Pode lavar'. Uma entrada nunca lavada conta como em atraso."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Peso da pontuação de precipitação",
           "freeze_weight": "Peso da pontuação de congelamento",
           "condition_weight": "Peso da pontuação de condições",
-          "wind_threshold_kmh": "Velocidade máxima do vento (km/h)",
-          "should_wash_min_days": "Dias mínimos desde a última lavagem"
+          "wind_threshold_kmh": "Velocidade máxima do vento (km/h)"
         },
         "data_description": {
           "days": "Quantos dias de previsão considerar à frente, incluindo hoje. Horizontes maiores capturam mais variações do tempo, mas produzem vereditos mais conservadores.",
@@ -41,8 +42,7 @@
           "precip_weight": "Quanto a chuva na previsão subtrai da pontuação de 0–100. Valores mais altos penalizam dias chuvosos com mais intensidade.",
           "freeze_weight": "Quanto um dia de congelamento subtrai da pontuação de 0–100. Defina como 0 para ignorar o congelamento na pontuação enquanto continua bloqueando o veredito.",
           "condition_weight": "Quanto as condições meteorológicas ruins (tempestades, granizo, neve) subtraem da pontuação de 0–100. A severidade é por condição.",
-          "wind_threshold_kmh": "Deixe em branco para desativar. Um dia de previsão com vento mais forte do que este bloqueia a lavagem.",
-          "should_wash_min_days": "Só ativar 'Deve lavar' depois de terem passado pelo menos este número de dias completos desde a última lavagem registada. 0 desativa a restrição, por isso 'Deve lavar' reflete 'Pode lavar'. Uma entrada nunca lavada conta como em atraso."
+          "wind_threshold_kmh": "Deixe em branco para desativar. Um dia de previsão com vento mais forte do que este bloqueia a lavagem."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Fontes meteorológicas",
           "name": "Nome",
           "category": "Categoria",
+          "should_wash_min_days": "Dias mínimos desde a última lavagem",
           "customize_thresholds": "Personalizar limites"
         },
         "data_description": {
           "weather_entities": "Escolha uma ou mais entidades meteorológicas do HA. A primeira fonte disponível desta lista ordenada é usada; a próxima só é tentada se a anterior estiver indisponível.",
           "name": "Nome amigável para esta instância do WashWise. Usado como prefixo de cada entidade criada por esta entrada.",
           "category": "O que você está lavando. Cada categoria vem com limites padrão sensatos e um ícone padrão. Escolha Personalizado para começar com valores neutros.",
-          "customize_thresholds": "Ative para substituir os valores padrão da categoria na próxima tela. Deixe desativado para usar os valores predefinidos da categoria escolhida."
+          "customize_thresholds": "Ative para substituir os valores padrão da categoria na próxima tela. Deixe desativado para usar os valores predefinidos da categoria escolhida.",
+          "should_wash_min_days": "Só ativar 'Deve lavar' depois de terem passado pelo menos este número de dias completos desde a última lavagem registada. 0 desativa a restrição, por isso 'Deve lavar' reflete 'Pode lavar'. Uma entrada nunca lavada conta como em atraso."
         }
       }
     },

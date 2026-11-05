@@ -8,13 +8,15 @@
           "weather_entities": "天氣來源",
           "name": "名稱",
           "category": "類別",
+          "should_wash_min_days": "距上次清洗的最少天數",
           "customize_thresholds": "自訂臨界值"
         },
         "data_description": {
           "weather_entities": "選擇一個或多個 HA 天氣實體。此有序清單中第一個可用的來源將被使用；只有在前一個無法使用時才會嘗試下一個。",
           "name": "此 WashWise 實例的友善名稱，用於為此項目建立的每個實體加上前綴。",
           "category": "您要清洗的對象。每個類別都附帶合理的預設臨界值與預設圖示。選擇「自訂」可從中立的預設值開始。",
-          "customize_thresholds": "開啟後可在下一個畫面覆蓋類別預設值。關閉則使用所選類別的預設值。"
+          "customize_thresholds": "開啟後可在下一個畫面覆蓋類別預設值。關閉則使用所選類別的預設值。",
+          "should_wash_min_days": "只有在距上次記錄的清洗已經過至少這麼多整天後，才會開啟「建議清洗」。設為 0 會停用此限制，使「建議清洗」與「可以清洗」一致。從未清洗過的項目視為已逾期。"
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "降水分數權重",
           "freeze_weight": "結凍分數權重",
           "condition_weight": "天氣狀況分數權重",
-          "wind_threshold_kmh": "最大風速（km/h）",
-          "should_wash_min_days": "距上次清洗的最少天數"
+          "wind_threshold_kmh": "最大風速（km/h）"
         },
         "data_description": {
           "days": "要分析的預報時段數。使用每日預報時，每個時段 = 1 天；使用每小時預報時，每個時段 = 1 小時。數值越大涵蓋的天氣越多，但判斷結果會較為保守。",
@@ -41,8 +42,7 @@
           "precip_weight": "預報中的降雨量從 0–100 分中扣除的程度。數值越高，對多雨日的扣分越重。",
           "freeze_weight": "結凍日從 0–100 分中扣除的程度。設為 0 可在計分時忽略結凍，同時仍封鎖判斷結果。",
           "condition_weight": "惡劣天氣狀況（暴風雨、冰雹、降雪）從 0–100 分中扣除的程度。嚴重程度依天氣狀況而定。",
-          "wind_threshold_kmh": "留空以停用。預報風速超過此值的日子將封鎖清洗。",
-          "should_wash_min_days": "只有在距上次記錄的清洗已經過至少這麼多整天後，才會開啟「建議清洗」。設為 0 會停用此限制，使「建議清洗」與「可以清洗」一致。從未清洗過的項目視為已逾期。"
+          "wind_threshold_kmh": "留空以停用。預報風速超過此值的日子將封鎖清洗。"
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "天氣來源",
           "name": "名稱",
           "category": "類別",
+          "should_wash_min_days": "距上次清洗的最少天數",
           "customize_thresholds": "自訂臨界值"
         },
         "data_description": {
           "weather_entities": "選擇一個或多個 HA 天氣實體。此有序清單中第一個可用的來源將被使用；只有在前一個無法使用時才會嘗試下一個。",
           "name": "此 WashWise 實例的友善名稱，用於為此項目建立的每個實體加上前綴。",
           "category": "您要清洗的對象。每個類別都附帶合理的預設臨界值與預設圖示。選擇「自訂」可從中立的預設值開始。",
-          "customize_thresholds": "開啟後可在下一個畫面覆蓋類別預設值。關閉則使用所選類別的預設值。"
+          "customize_thresholds": "開啟後可在下一個畫面覆蓋類別預設值。關閉則使用所選類別的預設值。",
+          "should_wash_min_days": "只有在距上次記錄的清洗已經過至少這麼多整天後，才會開啟「建議清洗」。設為 0 會停用此限制，使「建議清洗」與「可以清洗」一致。從未清洗過的項目視為已逾期。"
         }
       }
     },

@@ -8,13 +8,15 @@
           "weather_entities": "Vremenski izvori",
           "name": "Naziv",
           "category": "Kategorija",
+          "should_wash_min_days": "Minimalan broj dana od posljednjeg pranja",
           "customize_thresholds": "Prilagodi pragove"
         },
         "data_description": {
           "weather_entities": "Odaberi jedan ili više HA vremenskih entiteta. Koristi se prvi dostupni izvor s ovog popisa; sljedeći se isprobava samo ako prethodni nije dostupan.",
           "name": "Prijateljski naziv za ovu WashWise instancu. Koristi se kao prefiks svakog entiteta koji stvori ovaj unos.",
           "category": "Što pereš. Svaka kategorija dolazi s razumnim zadanim pragovima i zadanom ikonom. Odaberi Prilagođeno za početak s neutralnim zadanim vrijednostima.",
-          "customize_thresholds": "Uključi za nadjačavanje zadanih vrijednosti kategorije na sljedećem zaslonu. Ostavi isključeno za korištenje unaprijed postavljenih vrijednosti odabrane kategorije."
+          "customize_thresholds": "Uključi za nadjačavanje zadanih vrijednosti kategorije na sljedećem zaslonu. Ostavi isključeno za korištenje unaprijed postavljenih vrijednosti odabrane kategorije.",
+          "should_wash_min_days": "Uključi 'Trebalo bi oprati' tek kada prođe barem ovoliko cijelih dana od posljednjeg zabilježenog pranja. 0 onemogućuje uvjet pa 'Trebalo bi oprati' prati 'Može se prati'. Nikad oprani unos smatra se zakašnjelim."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Težina rezultata za oborine",
           "freeze_weight": "Težina rezultata za smrzavanje",
           "condition_weight": "Težina rezultata za vremenske uvjete",
-          "wind_threshold_kmh": "Maksimalna brzina vjetra (km/h)",
-          "should_wash_min_days": "Minimalan broj dana od posljednjeg pranja"
+          "wind_threshold_kmh": "Maksimalna brzina vjetra (km/h)"
         },
         "data_description": {
           "days": "Broj vremenskih okvira prognoze za analizu. S dnevnom prognozom svaki okvir = 1 dan; s satnom svaki okvir = 1 sat. Veće vrijednosti hvataju više vremena, ali daju konzervativnije presude.",
@@ -41,8 +42,7 @@
           "precip_weight": "Koliko oborine u prognozi oduzimaju od rezultata 0–100. Viša vrijednost agresivnije kažnjava kišne dane.",
           "freeze_weight": "Koliko dan smrzavanja oduzima od rezultata 0–100. Postavi na 0 da se smrzavanje ignorira u bodovanju, ali i dalje blokira presudu.",
           "condition_weight": "Koliko loši vremenski uvjeti (oluje, tuča, snijeg) oduzimaju od rezultata 0–100. Ozbiljnost je po uvjetu.",
-          "wind_threshold_kmh": "Ostavi prazno za onemogućavanje. Dan prognoze vjetrovitiji od ovoga blokira pranje.",
-          "should_wash_min_days": "Uključi 'Trebalo bi oprati' tek kada prođe barem ovoliko cijelih dana od posljednjeg zabilježenog pranja. 0 onemogućuje uvjet pa 'Trebalo bi oprati' prati 'Može se prati'. Nikad oprani unos smatra se zakašnjelim."
+          "wind_threshold_kmh": "Ostavi prazno za onemogućavanje. Dan prognoze vjetrovitiji od ovoga blokira pranje."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Vremenski izvori",
           "name": "Naziv",
           "category": "Kategorija",
+          "should_wash_min_days": "Minimalan broj dana od posljednjeg pranja",
           "customize_thresholds": "Prilagodi pragove"
         },
         "data_description": {
           "weather_entities": "Odaberi jedan ili više HA vremenskih entiteta. Koristi se prvi dostupni izvor s ovog popisa; sljedeći se isprobava samo ako prethodni nije dostupan.",
           "name": "Prijateljski naziv za ovu WashWise instancu. Koristi se kao prefiks svakog entiteta koji stvori ovaj unos.",
           "category": "Što pereš. Svaka kategorija dolazi s razumnim zadanim pragovima i zadanom ikonom. Odaberi Prilagođeno za početak s neutralnim zadanim vrijednostima.",
-          "customize_thresholds": "Uključi za nadjačavanje zadanih vrijednosti kategorije na sljedećem zaslonu. Ostavi isključeno za korištenje unaprijed postavljenih vrijednosti odabrane kategorije."
+          "customize_thresholds": "Uključi za nadjačavanje zadanih vrijednosti kategorije na sljedećem zaslonu. Ostavi isključeno za korištenje unaprijed postavljenih vrijednosti odabrane kategorije.",
+          "should_wash_min_days": "Uključi 'Trebalo bi oprati' tek kada prođe barem ovoliko cijelih dana od posljednjeg zabilježenog pranja. 0 onemogućuje uvjet pa 'Trebalo bi oprati' prati 'Može se prati'. Nikad oprani unos smatra se zakašnjelim."
         }
       }
     },

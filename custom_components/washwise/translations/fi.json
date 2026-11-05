@@ -8,13 +8,15 @@
           "weather_entities": "Säätietolähteet",
           "name": "Nimi",
           "category": "Kategoria",
+          "should_wash_min_days": "Vähimmäispäivät edellisestä pesusta",
           "customize_thresholds": "Mukauta kynnysarvoja"
         },
         "data_description": {
           "weather_entities": "Valitse yksi tai useampi HA:n sääentiteetti. Ensimmäistä saatavilla olevaa lähdettä tässä järjestyksessä käytetään; seuraavaa kokeillaan vain jos edellinen ei ole saatavilla.",
           "name": "Tämän WashWise-instanssin kutsumanimi. Käytetään etuliitteenä kaikissa tämän merkinnän luomissa entiteeteissä.",
           "category": "Mitä olet pesemässä. Jokaisella kategorialla on valmiit järkevät oletuskynnysarvot ja oletuskuvake. Valitse Mukautettu aloittaaksesi neutraaleista oletusarvoista.",
-          "customize_thresholds": "Kytke päälle ohittaaksesi kategorian oletusarvot seuraavalla näytöllä. Jätä pois päältä käyttääksesi valitun kategorian esiasettuja arvoja."
+          "customize_thresholds": "Kytke päälle ohittaaksesi kategorian oletusarvot seuraavalla näytöllä. Jätä pois päältä käyttääksesi valitun kategorian esiasettuja arvoja.",
+          "should_wash_min_days": "Kytke 'Pitäisi pestä' päälle vasta kun viimeisimmästä kirjatusta pesusta on kulunut vähintään näin monta täyttä päivää. 0 poistaa portin käytöstä, jolloin 'Pitäisi pestä' seuraa 'Voi pestä' -tilaa. Koskaan pesemätön merkintä lasketaan myöhässä olevaksi."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Sateen pistepainotus",
           "freeze_weight": "Jäätymisen pistepainotus",
           "condition_weight": "Sääolosuhteen pistepainotus",
-          "wind_threshold_kmh": "Tuulen enimmäisnopeus (km/h)",
-          "should_wash_min_days": "Vähimmäispäivät edellisestä pesusta"
+          "wind_threshold_kmh": "Tuulen enimmäisnopeus (km/h)"
         },
         "data_description": {
           "days": "Analysoitavien ennustevälien lukumäärä. Päivittäisessä ennusteessa yksi väli = 1 päivä; tuntikohtaisessa yksi väli = 1 tunti. Suuremmat arvot kattavat enemmän säätä mutta antavat varovaisempia tuloksia.",
@@ -41,8 +42,7 @@
           "precip_weight": "Kuinka paljon ennusteen sade vähentää 0–100-pisteitä. Suurempi arvo rankaisee sateisista päivistä aggressiivisemmin.",
           "freeze_weight": "Kuinka paljon jäätymispäivä vähentää 0–100-pisteitä. Aseta 0 ohittaaksesi jäätyminen pisteytyksessä samalla kun se edelleen estää tuloksen.",
           "condition_weight": "Kuinka paljon huonot sääolosuhteet (myrskyt, rakeet, lumi) vähentävät 0–100-pisteitä. Vakavuus on olosuhdekohtainen.",
-          "wind_threshold_kmh": "Jätä tyhjäksi poistaaksesi käytöstä. Ennustepäivä, joka on tätä tuulisempi, estää pesun.",
-          "should_wash_min_days": "Kytke 'Pitäisi pestä' päälle vasta kun viimeisimmästä kirjatusta pesusta on kulunut vähintään näin monta täyttä päivää. 0 poistaa portin käytöstä, jolloin 'Pitäisi pestä' seuraa 'Voi pestä' -tilaa. Koskaan pesemätön merkintä lasketaan myöhässä olevaksi."
+          "wind_threshold_kmh": "Jätä tyhjäksi poistaaksesi käytöstä. Ennustepäivä, joka on tätä tuulisempi, estää pesun."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Säätietolähteet",
           "name": "Nimi",
           "category": "Kategoria",
+          "should_wash_min_days": "Vähimmäispäivät edellisestä pesusta",
           "customize_thresholds": "Mukauta kynnysarvoja"
         },
         "data_description": {
           "weather_entities": "Valitse yksi tai useampi HA:n sääentiteetti. Ensimmäistä saatavilla olevaa lähdettä tässä järjestyksessä käytetään; seuraavaa kokeillaan vain jos edellinen ei ole saatavilla.",
           "name": "Tämän WashWise-instanssin kutsumanimi. Käytetään etuliitteenä kaikissa tämän merkinnän luomissa entiteeteissä.",
           "category": "Mitä olet pesemässä. Jokaisella kategorialla on valmiit järkevät oletuskynnysarvot ja oletuskuvake. Valitse Mukautettu aloittaaksesi neutraaleista oletusarvoista.",
-          "customize_thresholds": "Kytke päälle ohittaaksesi kategorian oletusarvot seuraavalla näytöllä. Jätä pois päältä käyttääksesi valitun kategorian esiasettuja arvoja."
+          "customize_thresholds": "Kytke päälle ohittaaksesi kategorian oletusarvot seuraavalla näytöllä. Jätä pois päältä käyttääksesi valitun kategorian esiasettuja arvoja.",
+          "should_wash_min_days": "Kytke 'Pitäisi pestä' päälle vasta kun viimeisimmästä kirjatusta pesusta on kulunut vähintään näin monta täyttä päivää. 0 poistaa portin käytöstä, jolloin 'Pitäisi pestä' seuraa 'Voi pestä' -tilaa. Koskaan pesemätön merkintä lasketaan myöhässä olevaksi."
         }
       }
     },

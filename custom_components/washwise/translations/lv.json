@@ -8,13 +8,15 @@
           "weather_entities": "Laika avoti",
           "name": "Nosaukums",
           "category": "Kategorija",
+          "should_wash_min_days": "Minimālais dienu skaits kopš pēdējās mazgāšanas",
           "customize_thresholds": "Pielāgot sliekšņus"
         },
         "data_description": {
           "weather_entities": "Izvēlieties vienu vai vairākus HA laika objektus. Tiek izmantots pirmais pieejamais avots no šī sakārtotā saraksta; nākamais tiek mēģināts tikai tad, ja iepriekšējais nav pieejams.",
           "name": "Draudzīgs nosaukums šim WashWise gadījumam. Tiek izmantots kā prefikss katram šī ieraksta izveidotajam objektam.",
           "category": "Ko jūs mazgājat. Katrai kategorijai ir saprātīgi noklusētie sliekšņi un noklusētā ikona. Izvēlieties Pielāgotu, lai sāktu no neitrāliem noklusējumiem.",
-          "customize_thresholds": "Ieslēdziet, lai nākamajā ekrānā ignorētu kategorijas noklusējumus. Atstājiet izslēgtu, lai izmantotu izvēlētās kategorijas iepriekš iestatītās vērtības."
+          "customize_thresholds": "Ieslēdziet, lai nākamajā ekrānā ignorētu kategorijas noklusējumus. Atstājiet izslēgtu, lai izmantotu izvēlētās kategorijas iepriekš iestatītās vērtības.",
+          "should_wash_min_days": "Ieslēdziet “Vajadzētu mazgāt” tikai tad, kad kopš pēdējās reģistrētās mazgāšanas ir pagājis vismaz šis pilno dienu skaits. 0 atspējo šo nosacījumu, tādēļ “Vajadzētu mazgāt” atbilst “Var mazgāt”. Ieraksts, kas nekad nav mazgāts, tiek uzskatīts par nokavētu."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Nokrišņu punktu svars",
           "freeze_weight": "Sasalšanas punktu svars",
           "condition_weight": "Laika apstākļu punktu svars",
-          "wind_threshold_kmh": "Maks. vēja ātrums (km/h)",
-          "should_wash_min_days": "Minimālais dienu skaits kopš pēdējās mazgāšanas"
+          "wind_threshold_kmh": "Maks. vēja ātrums (km/h)"
         },
         "data_description": {
           "days": "Analizējamo prognozes slotu skaits. Ar dienas prognozi katrs slots = 1 diena; ar stundas prognozi katrs slots = 1 stunda. Lielākas vērtības uztver vairāk laika, bet sniedz konservatīvākus secinājumus.",
@@ -41,8 +42,7 @@
           "precip_weight": "Cik daudz lietus prognozē atņem no 0–100 punktu skaita. Augstāka vērtība agresīvāk soda lietainas dienas.",
           "freeze_weight": "Cik daudz sasalšanas diena atņem no 0–100 punktu skaita. Iestatiet uz 0, lai ignorētu sasalšanu punktu skaitā, saglabājot verdikta bloķēšanu.",
           "condition_weight": "Cik daudz slikti laika apstākļi (vētras, krusa, sniegs) atņem no 0–100 punktu skaita. Smagums ir atkarīgs no katra apstākļa.",
-          "wind_threshold_kmh": "Atstājiet tukšu, lai atspējotu. Prognozes diena ar stiprāku vēju par šo bloķē mazgāšanu.",
-          "should_wash_min_days": "Ieslēdziet “Vajadzētu mazgāt” tikai tad, kad kopš pēdējās reģistrētās mazgāšanas ir pagājis vismaz šis pilno dienu skaits. 0 atspējo šo nosacījumu, tādēļ “Vajadzētu mazgāt” atbilst “Var mazgāt”. Ieraksts, kas nekad nav mazgāts, tiek uzskatīts par nokavētu."
+          "wind_threshold_kmh": "Atstājiet tukšu, lai atspējotu. Prognozes diena ar stiprāku vēju par šo bloķē mazgāšanu."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Laika avoti",
           "name": "Nosaukums",
           "category": "Kategorija",
+          "should_wash_min_days": "Minimālais dienu skaits kopš pēdējās mazgāšanas",
           "customize_thresholds": "Pielāgot sliekšņus"
         },
         "data_description": {
           "weather_entities": "Izvēlieties vienu vai vairākus HA laika objektus. Tiek izmantots pirmais pieejamais avots no šī sakārtotā saraksta; nākamais tiek mēģināts tikai tad, ja iepriekšējais nav pieejams.",
           "name": "Draudzīgs nosaukums šim WashWise gadījumam. Tiek izmantots kā prefikss katram šī ieraksta izveidotajam objektam.",
           "category": "Ko jūs mazgājat. Katrai kategorijai ir saprātīgi noklusētie sliekšņi un noklusētā ikona. Izvēlieties Pielāgotu, lai sāktu no neitrāliem noklusējumiem.",
-          "customize_thresholds": "Ieslēdziet, lai nākamajā ekrānā ignorētu kategorijas noklusējumus. Atstājiet izslēgtu, lai izmantotu izvēlētās kategorijas iepriekš iestatītās vērtības."
+          "customize_thresholds": "Ieslēdziet, lai nākamajā ekrānā ignorētu kategorijas noklusējumus. Atstājiet izslēgtu, lai izmantotu izvēlētās kategorijas iepriekš iestatītās vērtības.",
+          "should_wash_min_days": "Ieslēdziet “Vajadzētu mazgāt” tikai tad, kad kopš pēdējās reģistrētās mazgāšanas ir pagājis vismaz šis pilno dienu skaits. 0 atspējo šo nosacījumu, tādēļ “Vajadzētu mazgāt” atbilst “Var mazgāt”. Ieraksts, kas nekad nav mazgāts, tiek uzskatīts par nokavētu."
         }
       }
     },

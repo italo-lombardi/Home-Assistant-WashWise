@@ -8,13 +8,15 @@
           "weather_entities": "Időjárás-források",
           "name": "Név",
           "category": "Kategória",
+          "should_wash_min_days": "Minimum napok száma az utolsó mosás óta",
           "customize_thresholds": "Küszöbértékek testreszabása"
         },
         "data_description": {
           "weather_entities": "Válassz egy vagy több HA időjárás-entitást. A lista első elérhető forrása lesz használva; ha az nem érhető el, a következőre vált.",
           "name": "Ez a WashWise-példány barátságos neve. Minden ehhez a bejegyzéshez létrehozott entitás előtageként jelenik meg.",
           "category": "Amit mosol. Minden kategóriához észszerű alapértelmezett küszöbértékek és alapértelmezett ikon tartozik. Válaszd az Egyéni lehetőséget a semleges alapértelmezettekből indulva.",
-          "customize_thresholds": "Kapcsold be, ha felül szeretnéd írni a kategória alapértelmezettjeit a következő képernyőn. Hagyd kikapcsolva a választott kategória előre beállított értékeinek használatához."
+          "customize_thresholds": "Kapcsold be, ha felül szeretnéd írni a kategória alapértelmezettjeit a következő képernyőn. Hagyd kikapcsolva a választott kategória előre beállított értékeinek használatához.",
+          "should_wash_min_days": "Az „Érdemes mosni” csak akkor kapcsol be, ha legalább ennyi teljes nap telt el az utoljára rögzített mosás óta. A 0 letiltja a feltételt, így az „Érdemes mosni” a „Lehet mosni” állapotát tükrözi. A sosem mosott bejegyzés esedékesnek számít."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Csapadék pontszám súlya",
           "freeze_weight": "Fagyás pontszám súlya",
           "condition_weight": "Időjárási állapot pontszám súlya",
-          "wind_threshold_kmh": "Max. szélsebesség (km/h)",
-          "should_wash_min_days": "Minimum napok száma az utolsó mosás óta"
+          "wind_threshold_kmh": "Max. szélsebesség (km/h)"
         },
         "data_description": {
           "days": "Az elemzendő előrejelzési időrések száma. Napi előrejelzésnél minden időrés = 1 nap; óránkéntnél = 1 óra. Nagyobb értékek több időjárást fognak be, de konzervatívabb verdikteket adnak.",
@@ -41,8 +42,7 @@
           "precip_weight": "Mennyivel von le az előrejelzésben szereplő eső a 0–100-as pontszámból. Magasabb érték agresszívabban bünteti az esős napokat.",
           "freeze_weight": "Mennyivel von le egy fagyos nap a 0–100-as pontszámból. Állítsd 0-ra, ha a fagyást figyelmen kívül akarod hagyni a pontozásnál, miközben a verdikt blokkolása megmarad.",
           "condition_weight": "Mennyivel vonnak le a rossz időjárási körülmények (vihar, jégeső, hó) a 0–100-as pontszámból. A mérték állapotonként eltérő.",
-          "wind_threshold_kmh": "Hagyd üresen a letiltáshoz. Ha egy előrejelzési nap ennél szelesebb, a mosás le van tiltva.",
-          "should_wash_min_days": "Az „Érdemes mosni” csak akkor kapcsol be, ha legalább ennyi teljes nap telt el az utoljára rögzített mosás óta. A 0 letiltja a feltételt, így az „Érdemes mosni” a „Lehet mosni” állapotát tükrözi. A sosem mosott bejegyzés esedékesnek számít."
+          "wind_threshold_kmh": "Hagyd üresen a letiltáshoz. Ha egy előrejelzési nap ennél szelesebb, a mosás le van tiltva."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Időjárás-források",
           "name": "Név",
           "category": "Kategória",
+          "should_wash_min_days": "Minimum napok száma az utolsó mosás óta",
           "customize_thresholds": "Küszöbértékek testreszabása"
         },
         "data_description": {
           "weather_entities": "Válassz egy vagy több HA időjárás-entitást. A lista első elérhető forrása lesz használva; ha az nem érhető el, a következőre vált.",
           "name": "Ez a WashWise-példány barátságos neve. Minden ehhez a bejegyzéshez létrehozott entitás előtageként jelenik meg.",
           "category": "Amit mosol. Minden kategóriához észszerű alapértelmezett küszöbértékek és alapértelmezett ikon tartozik. Válaszd az Egyéni lehetőséget a semleges alapértelmezettekből indulva.",
-          "customize_thresholds": "Kapcsold be, ha felül szeretnéd írni a kategória alapértelmezettjeit a következő képernyőn. Hagyd kikapcsolva a választott kategória előre beállított értékeinek használatához."
+          "customize_thresholds": "Kapcsold be, ha felül szeretnéd írni a kategória alapértelmezettjeit a következő képernyőn. Hagyd kikapcsolva a választott kategória előre beállított értékeinek használatához.",
+          "should_wash_min_days": "Az „Érdemes mosni” csak akkor kapcsol be, ha legalább ennyi teljes nap telt el az utoljára rögzített mosás óta. A 0 letiltja a feltételt, így az „Érdemes mosni” a „Lehet mosni” állapotát tükrözi. A sosem mosott bejegyzés esedékesnek számít."
         }
       }
     },

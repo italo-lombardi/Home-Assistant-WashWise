@@ -8,13 +8,15 @@
           "weather_entities": "Väderkällor",
           "name": "Namn",
           "category": "Kategori",
+          "should_wash_min_days": "Minsta antal dagar sedan senaste tvätt",
           "customize_thresholds": "Anpassa tröskelvärden"
         },
         "data_description": {
           "weather_entities": "Välj en eller flera väderentiteter i HA. Den första tillgängliga källan i listan används; nästa testas bara om den föregående är otillgänglig.",
           "name": "Visningsnamn för den här WashWise-instansen. Används som prefix för alla entiteter som skapas av posten.",
           "category": "Vad du tvättar. Varje kategori har rimliga standardtröskelvärden och en standardikon. Välj Anpassad om du vill utgå från neutrala standardvärden.",
-          "customize_thresholds": "Slå på för att åsidosätta kategorins standardvärden i nästa steg. Lämna avstängt för att använda förinställda värden för vald kategori."
+          "customize_thresholds": "Slå på för att åsidosätta kategorins standardvärden i nästa steg. Lämna avstängt för att använda förinställda värden för vald kategori.",
+          "should_wash_min_days": "Slå bara på 'Bör tvätta' när minst så här många hela dagar har gått sedan den senast registrerade tvätten. 0 inaktiverar spärren så att 'Bör tvätta' speglar 'Kan tvätta'. En post som aldrig tvättats räknas som försenad."
         }
       },
       "thresholds": {
@@ -29,8 +31,7 @@
           "precip_weight": "Vikt för nederbörd",
           "freeze_weight": "Vikt för frost",
           "condition_weight": "Vikt för väderförhållanden",
-          "wind_threshold_kmh": "Max vindhastighet (km/h)",
-          "should_wash_min_days": "Minsta antal dagar sedan senaste tvätt"
+          "wind_threshold_kmh": "Max vindhastighet (km/h)"
         },
         "data_description": {
           "days": "Hur många prognosdagar som ska beaktas, inklusive idag. En längre horisont fångar upp mer väder men ger en mer försiktig bedömning.",
@@ -41,8 +42,7 @@
           "precip_weight": "Hur mycket regn i prognosen drar av från poängen 0–100. Ett högre värde bestraffar regniga dagar hårdare.",
           "freeze_weight": "Hur mycket en frostdag drar av från poängen 0–100. Sätt till 0 för att ignorera frost i poängsättningen men ändå låta bedömningen blockera.",
           "condition_weight": "Hur mycket dåligt väder (åska, hagel, snö) drar av från poängen 0–100. Hur allvarligt det är beror på respektive förhållande.",
-          "wind_threshold_kmh": "Lämna tomt för att inaktivera. En prognosdag som är blåsigare än så blockerar tvätt.",
-          "should_wash_min_days": "Slå bara på 'Bör tvätta' när minst så här många hela dagar har gått sedan den senast registrerade tvätten. 0 inaktiverar spärren så att 'Bör tvätta' speglar 'Kan tvätta'. En post som aldrig tvättats räknas som försenad."
+          "wind_threshold_kmh": "Lämna tomt för att inaktivera. En prognosdag som är blåsigare än så blockerar tvätt."
         }
       },
       "irrigation": {
@@ -66,13 +66,15 @@
           "weather_entities": "Väderkällor",
           "name": "Namn",
           "category": "Kategori",
+          "should_wash_min_days": "Minsta antal dagar sedan senaste tvätt",
           "customize_thresholds": "Anpassa tröskelvärden"
         },
         "data_description": {
           "weather_entities": "Välj en eller flera väderentiteter i HA. Den första tillgängliga källan i listan används; nästa testas bara om den föregående är otillgänglig.",
           "name": "Visningsnamn för den här WashWise-instansen. Används som prefix för alla entiteter som skapas av posten.",
           "category": "Vad du tvättar. Varje kategori har rimliga standardtröskelvärden och en standardikon. Välj Anpassad om du vill utgå från neutrala standardvärden.",
-          "customize_thresholds": "Slå på för att åsidosätta kategorins standardvärden i nästa steg. Lämna avstängt för att använda förinställda värden för vald kategori."
+          "customize_thresholds": "Slå på för att åsidosätta kategorins standardvärden i nästa steg. Lämna avstängt för att använda förinställda värden för vald kategori.",
+          "should_wash_min_days": "Slå bara på 'Bör tvätta' när minst så här många hela dagar har gått sedan den senast registrerade tvätten. 0 inaktiverar spärren så att 'Bör tvätta' speglar 'Kan tvätta'. En post som aldrig tvättats räknas som försenad."
         }
       }
     },
