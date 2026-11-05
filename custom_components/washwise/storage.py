@@ -69,6 +69,16 @@ class WashWiseStore:
         """Return the number of ``Store.async_load()`` calls made so far."""
         return self._disk_read_count
 
+    @property
+    def cached_data(self) -> StoredData | None:
+        """The in-memory ``StoredData`` snapshot, or ``None`` before first load.
+
+        A public, synchronous accessor for the cached state so callers on a
+        sync path (e.g. event-payload building) can read it without awaiting
+        ``load()`` or reaching into the private ``_data`` attribute.
+        """
+        return self._data
+
     async def load(self) -> StoredData:
         """Return cached :class:`StoredData`, hitting disk only when cold."""
         if self._data is not None:

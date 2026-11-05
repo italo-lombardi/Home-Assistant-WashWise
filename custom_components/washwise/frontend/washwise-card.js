@@ -133,6 +133,7 @@ const cardStyles = css`
   .ww-badge.ok { background: var(--ww-accent); }
   .ww-badge.bad { background: var(--ww-bad); }
   .ww-badge.warn { background: #e8a33d; }
+  .ww-badge.snoozed { background: var(--ww-fg-muted); }
   .ww-badge.unknown { background: var(--ww-fg-muted); }
 
   .ww-row {
@@ -567,10 +568,13 @@ class WashWiseCard extends LitElement {
     super.connectedCallback?.();
     this._mountedAt = Date.now();
     if (this._loadingTimer) clearTimeout(this._loadingTimer);
+    // Grace window: while this is pending, a missing entity renders the loading
+    // skeleton rather than an error, covering the state-restore race on a fresh
+    // HA boot. Generous so slow boots with many entities don't flash an error.
     this._loadingTimer = setTimeout(() => {
       this._loadingTimer = null;
       this.requestUpdate();
-    }, 4000);
+    }, 8000);
   }
 
   disconnectedCallback() {
@@ -632,8 +636,15 @@ class WashWiseCard extends LitElement {
     const cfg = this._mergedConfig();
     const stateObj = this.hass.states[cfg.entity];
     if (!stateObj) {
-      const sinceMount = Date.now() - this._mountedAt;
-      if (sinceMount < 4000) return this._renderSkeleton();
+      // Entity not in hass yet. This is almost always a transient load race
+      // (HA restores states gradually, especially on a fresh boot with many
+      // entities), not a real misconfiguration — so keep showing the loading
+      // animation during a grace window instead of flashing an error. Only
+      // after the window elapses (timer fired) do we surface the error. Before
+      // the card has mounted (_mountedAt === 0) we are always still loading.
+      if (this._mountedAt === 0 || this._loadingTimer !== null) {
+        return this._renderSkeleton();
+      }
       return html`
         <ha-card>
           <div class="ww-card">
@@ -663,11 +674,14 @@ class WashWiseCard extends LitElement {
     const friendly =
       cfg.name ?? _stripEntitySuffix(stateObj.attributes.friendly_name) ?? cfg.entity;
     const snoozed = stateObj.attributes.reason === "snoozed";
+    // A snooze is a paused state, not a weather verdict — show a dedicated
+    // Snoozed badge (both modes) instead of the misleading "No".
+    const headerVerdict = snoozed ? "snoozed" : verdict;
 
     return html`
       <ha-card style=${hostStyle}>
         <div class="ww-card">
-          ${this._renderHeader(friendly, verdict, isIrrigation, useShould)}
+          ${this._renderHeader(friendly, headerVerdict, isIrrigation, useShould)}
           ${cfg.show_score_gauge && !snoozed ? this._renderGauge(score, verdict) : nothing}
           ${cfg.show_reason ? this._renderReason(stateObj, isIrrigation) : nothing}
           ${cfg.show_last_washed ? this._renderLastWashed() : nothing}
@@ -675,7 +689,7 @@ class WashWiseCard extends LitElement {
           ${cfg.show_forecast_strip
             ? this._renderForecastStrip(stateObj)
             : nothing}
-          ${cfg.show_diagnostics && !snoozed ? this._renderDiagnostics(stateObj, cfg.diagnostics_open) : nothing}
+          ${cfg.show_diagnostics ? this._renderDiagnostics(stateObj, cfg.diagnostics_open) : nothing}
           ${cfg.show_actions ? this._renderActions(stateObj, snoozed, isIrrigation) : nothing}
         </div>
       </ha-card>
@@ -687,7 +701,10 @@ class WashWiseCard extends LitElement {
   _renderHeader(title, verdict, isIrrigation = false, useShould = false) {
     let label;
     let symbol;
-    if (useShould) {
+    if (verdict === "snoozed") {
+      // Paused state, both modes — not a weather verdict.
+      [symbol, label] = ["🔕", "Snoozed"];
+    } else if (useShould) {
       // should_wash gate: ok = wash now, warn = weather fine but not due yet,
       // bad = weather blocks it.
       const map = {
@@ -741,23 +758,19 @@ class WashWiseCard extends LitElement {
         .replace(/_can_wash$/, "_snooze_remaining");
       const snoozeSensor = this.hass?.states[snoozeSensorId];
       const snoozeUntil = snoozeSensor?.attributes?.snooze_until;
-      let remaining = "—";
-      if (snoozeUntil) {
-        const secs = (new Date(snoozeUntil).getTime() - Date.now()) / 1000;
-        if (secs > 0) {
-          const weeks = Math.floor(secs / 604800);
-          const days  = Math.floor((secs % 604800) / 86400);
-          const hours = Math.floor((secs % 86400) / 3600);
-          const mins  = Math.floor((secs % 3600) / 60);
-          if (weeks > 0)      remaining = `${weeks}w ${days}d`;
-          else if (days > 0)  remaining = `${days}d ${hours}h`;
-          else if (hours > 0) remaining = `${hours}h ${mins}m`;
-          else                remaining = `${mins}m`;
-        }
-      }
+      // Live, self-ticking relative time via HA's native element (updates on
+      // its own ~every minute) instead of a value frozen at render time.
+      const remaining =
+        snoozeUntil && new Date(snoozeUntil).getTime() > Date.now()
+          ? html`<ha-relative-time
+              .hass=${this.hass}
+              .datetime=${snoozeUntil}
+              capitalize
+            ></ha-relative-time>`
+          : html`—`;
       return html`
         <div class="ww-row"><span>Reason:</span><strong>Snoozed</strong></div>
-        <div class="ww-row"><span>Remaining:</span><strong>${remaining}</strong></div>
+        <div class="ww-row"><span>Resumes:</span><strong>${remaining}</strong></div>
       `;
     }
     const reasonLabel = isIrrigation

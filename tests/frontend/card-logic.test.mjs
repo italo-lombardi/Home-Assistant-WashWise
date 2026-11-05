@@ -170,9 +170,10 @@ test("shouldUpdate: false when nothing watched changed", () => {
 
 // ── _renderReason: snooze remaining formatting ────────────────────────────────
 
-// The snooze branch computes remaining time from (snooze_until - Date.now())
-// and formats it coarsely (w/d, d/h, h/m, or m). Pin Date.now() via a fixed
-// snooze_until offset so the arithmetic is deterministic.
+// The snooze branch renders HA's native <ha-relative-time> bound to
+// snooze_until (live, self-ticking) when the snooze is still in the future,
+// else an em-dash. Pin Date.now() via a fixed snooze_until offset so the
+// future-vs-elapsed guard is deterministic.
 
 function renderSnooze(remainingSeconds) {
   const NOW = 1_700_000_000_000; // fixed epoch ms
@@ -195,25 +196,21 @@ function renderSnooze(remainingSeconds) {
   }
 }
 
-test("_renderReason snooze: weeks+days format for multi-week remaining", () => {
-  // 2w 3d = (2*7+3)*86400 = 1_468_800 s
-  assert.match(renderSnooze(2 * 604800 + 3 * 86400), /2w 3d/);
+test("_renderReason snooze: active snooze renders a live ha-relative-time to snooze_until", () => {
+  // renderSnooze builds snooze_until = NOW + seconds and returns the __html.
+  const NOW = 1_700_000_000_000;
+  const until = new Date(NOW + 3600 * 1000).toISOString();
+  const html = renderSnooze(3600);
+  assert.match(html, /ha-relative-time/, "uses HA's native self-ticking element");
+  assert.match(html, new RegExp(until.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), "bound to snooze_until");
+  assert.match(html, /Resumes:/);
+  assert.doesNotMatch(html, /\dh \d+m|\dw \d+d/, "no frozen manual format");
 });
 
-test("_renderReason snooze: days+hours format", () => {
-  assert.match(renderSnooze(3 * 86400 + 5 * 3600), /3d 5h/);
-});
-
-test("_renderReason snooze: hours+minutes format", () => {
-  assert.match(renderSnooze(5 * 3600 + 20 * 60), /5h 20m/);
-});
-
-test("_renderReason snooze: minutes-only format", () => {
-  assert.match(renderSnooze(45 * 60), /45m/);
-});
-
-test("_renderReason snooze: already elapsed shows em-dash", () => {
-  assert.match(renderSnooze(-10), /—/);
+test("_renderReason snooze: elapsed → em-dash, no relative-time element", () => {
+  const html = renderSnooze(-10);
+  assert.match(html, /—/);
+  assert.doesNotMatch(html, /ha-relative-time/);
 });
 
 // ── _renderReason: non-snooze reason labels ───────────────────────────────────
@@ -821,6 +818,14 @@ test("_renderHeader: can_wash mode unchanged (OK/No), irrigation (Irrigate/Skip)
   assert.match(irr("bad"), /🌧️<span>Skip</);
 });
 
+test("_renderHeader: snoozed verdict → muted Snoozed badge in both modes", () => {
+  for (const [isIrr, useShould] of [[false, false], [true, false], [false, true]]) {
+    const html = Card.prototype._renderHeader.call({}, "T", "snoozed", isIrr, useShould).__html;
+    assert.match(html, /ww-badge snoozed[\s\S]*?🔕<span>Snoozed</, `snoozed badge (irr=${isIrr} should=${useShould})`);
+    assert.doesNotMatch(html, />No<|>Skip</, "snoozed must not read as a weather No/Skip");
+  }
+});
+
 test("_renderDiagnostics: min_days rows show when min_days>0, hidden when 0/absent", () => {
   const h = (attrs) =>
     Card.prototype._renderDiagnostics.call(
@@ -837,4 +842,76 @@ test("_renderDiagnostics: min_days rows show when min_days>0, hidden when 0/abse
   assert.doesNotMatch(h({ min_days: 0, days_since_last_wash: 5 }), /Min days between washes|Days since last wash/);
   // min_days absent → neither row
   assert.doesNotMatch(h({ days_since_last_wash: 5 }), /Min days between washes|Days since last wash/);
+});
+
+// ── render(): missing-entity loading gate (no error flash during load) ────────
+
+function renderMissing({ mountedAt, loadingTimer }) {
+  const self = {
+    _config: { entity: "binary_sensor.x_can_wash" },
+    _mergedConfig: Card.prototype._mergedConfig,
+    _renderSkeleton: Card.prototype._renderSkeleton,
+    _applyHostAttributes: () => {},
+    _hostStyle: () => ({}),
+    hass: { states: {} }, // entity absent
+    _mountedAt: mountedAt,
+    _loadingTimer: loadingTimer,
+  };
+  return Card.prototype.render.call(self).__html;
+}
+
+test("render: entity missing + not yet mounted → skeleton, never the error", () => {
+  const html = renderMissing({ mountedAt: 0, loadingTimer: null });
+  assert.match(html, /aria-busy="true"/, "shows loading skeleton");
+  assert.doesNotMatch(html, /not found/, "no error flash before mount");
+});
+
+test("render: entity missing + loading timer pending → skeleton (grace window)", () => {
+  const html = renderMissing({ mountedAt: 123, loadingTimer: 99 });
+  assert.match(html, /aria-busy="true"/);
+  assert.doesNotMatch(html, /not found/);
+});
+
+test("render: entity missing + mounted + grace elapsed → error surfaces", () => {
+  const html = renderMissing({ mountedAt: 123, loadingTimer: null });
+  assert.match(html, /Entity binary_sensor\.x_can_wash not found/);
+});
+
+// ── render(): diagnostics respects only its toggle, not snooze ────────────────
+
+function renderWith({ snoozed, show_diagnostics }) {
+  const stateObj = {
+    entity_id: "binary_sensor.x_can_wash",
+    attributes: {
+      friendly_name: "X Can wash",
+      reason: snoozed ? "snoozed" : "clear",
+      score: 80,
+      days_analyzed: 3,
+    },
+  };
+  const self = {
+    _config: { entity: "binary_sensor.x_can_wash", show_diagnostics, show_score_gauge: false,
+               show_reason: false, show_forecast_strip: false },
+    _mergedConfig: Card.prototype._mergedConfig,
+    _applyHostAttributes: () => {},
+    _hostStyle: () => ({}),
+    _renderHeader: () => ({ __html: "" }),
+    _renderDiagnostics: Card.prototype._renderDiagnostics,
+    _verdict: Card.prototype._verdict,
+    _shouldWashStateObj: () => null,
+    _score: Card.prototype._score,
+    hass: { states: { "binary_sensor.x_can_wash": stateObj } },
+    _mountedAt: 1, _loadingTimer: null,
+  };
+  return Card.prototype.render.call(self).__html;
+}
+
+test("render: diagnostics shown while snoozed when show_diagnostics is on (toggle-independent)", () => {
+  assert.match(renderWith({ snoozed: true, show_diagnostics: true }), /ww-diag-row|Days analyzed/,
+    "snooze must not hide the diagnostics section");
+});
+
+test("render: diagnostics hidden when its toggle is off, snoozed or not", () => {
+  assert.doesNotMatch(renderWith({ snoozed: false, show_diagnostics: false }), /ww-diag-row/);
+  assert.doesNotMatch(renderWith({ snoozed: true, show_diagnostics: false }), /ww-diag-row/);
 });

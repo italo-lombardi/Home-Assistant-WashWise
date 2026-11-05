@@ -8,6 +8,11 @@ All notable changes to this project will be documented in this file.
 - **`should_wash` binary sensor** — ON when the weather allows a wash **and** at least *Minimum days since last wash* have passed since the last wash. New threshold defaults to **0** (disabled → mirrors `can_wash`), so existing setups are unchanged.
 - **Named automation triggers** — `should_wash` on/off, `can_wash` on/off, and `verdict changed`, discoverable in the automation editor with an optional per-entry scope. See [docs/AUTOMATION_EXAMPLES.md](docs/AUTOMATION_EXAMPLES.md).
 - **Card `verdict_source` option** — set to `should_wash` for a three-way badge (Wash now / Not yet / No) plus washing-days diagnostics. Defaults to `can_wash`.
+- **Card snooze display** — a snoozed entry shows a dedicated *Snoozed* badge (both modes) with a live "Resumes" countdown that ticks on its own.
+
+### Fixed
+- **Card no longer flashes "Entity not found" while loading** — a missing entity during Home Assistant's state-restore now keeps showing the loading animation until the entity appears (or a grace window elapses), instead of briefly showing an error.
+- **Snooze no longer hides the diagnostics section** — the diagnostics block now follows only its own `show_diagnostics` toggle, independent of snooze state.
 
 ### Changed
 - **Minimum Home Assistant version raised to 2025.11.0** — required by the named-trigger platform.

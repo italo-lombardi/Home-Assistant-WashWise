@@ -149,6 +149,11 @@ class _StubStore:
         self.health_calls: list[tuple[str, bool, str | None]] = []
         self.failover_calls: list[tuple[str | None, str]] = []
 
+    @property
+    def cached_data(self) -> StoredData:
+        """Mirror the real store's public cached snapshot accessor."""
+        return self.data
+
     async def load(self) -> StoredData:
         return self.data
 
