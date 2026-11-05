@@ -16,6 +16,7 @@ All notable changes to this project will be documented in this file.
 - **Diagnostics stay populated while snoozed** — a snooze now carries the last real forecast, so the diagnostics block and forecast strip keep showing weather data instead of truncating to a near-empty section.
 - **Solar-panel / garden-irrigation Wash Status no longer shows "unknown"** — for these inverted categories a positive verdict (rain/snow expected) now renders a proper *Yes — …* state instead of an empty "unknown".
 - **Dry freezing day no longer triggers a solar/irrigation "wash now"** — a cold, dry day is no longer treated as a cleaning/watering signal for inverted categories.
+- **Reconfigure no longer resets *Minimum days since last wash*** — the should-wash gate is now preserved across a non-customize reconfigure (e.g. a rename) instead of silently resetting to 0.
 
 ### Changed
 - **Minimum Home Assistant version raised to 2025.11.0** — required by the named-trigger platform.
