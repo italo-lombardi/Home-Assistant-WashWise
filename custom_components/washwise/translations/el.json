@@ -328,6 +328,11 @@
         "state": {
           "ok_clear": "Ναι — Καθαρός καιρός",
           "ok_dirty_now": "Ναι — Η επιφάνεια είναι βρώμικη — πλύσιμο τώρα",
+          "ok_rain": "Yes — Rain expected",
+          "ok_freeze": "Yes — Freeze expected",
+          "ok_snow": "Yes — Snow expected",
+          "ok_wind": "Yes — Wind expected",
+          "ok_bad_condition": "Yes — Bad weather expected",
           "unknown_clear": "Άγνωστο",
           "no_rain": "Όχι — Βροχή",
           "no_freeze": "Όχι — Παγετός",

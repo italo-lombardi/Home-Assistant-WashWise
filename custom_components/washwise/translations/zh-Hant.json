@@ -328,6 +328,11 @@
         "state": {
           "ok_clear": "是——晴朗",
           "ok_dirty_now": "是——表面已髒——立即清洗",
+          "ok_rain": "Yes — Rain expected",
+          "ok_freeze": "Yes — Freeze expected",
+          "ok_snow": "Yes — Snow expected",
+          "ok_wind": "Yes — Wind expected",
+          "ok_bad_condition": "Yes — Bad weather expected",
           "unknown_clear": "未知",
           "no_rain": "否——降雨",
           "no_freeze": "否——結凍",

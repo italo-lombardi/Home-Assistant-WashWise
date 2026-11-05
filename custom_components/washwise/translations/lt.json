@@ -328,6 +328,11 @@
         "state": {
           "ok_clear": "Taip — Aišku",
           "ok_dirty_now": "Taip — Paviršius nešvarus — plaukite dabar",
+          "ok_rain": "Yes — Rain expected",
+          "ok_freeze": "Yes — Freeze expected",
+          "ok_snow": "Yes — Snow expected",
+          "ok_wind": "Yes — Wind expected",
+          "ok_bad_condition": "Yes — Bad weather expected",
           "unknown_clear": "Nežinoma",
           "no_rain": "Ne — Lietus",
           "no_freeze": "Ne — Šalna",

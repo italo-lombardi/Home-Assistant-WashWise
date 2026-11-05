@@ -328,6 +328,11 @@
         "state": {
           "ok_clear": "Áno — Bez prekážok",
           "ok_dirty_now": "Áno — Povrch špinavý — umyte teraz",
+          "ok_rain": "Yes — Rain expected",
+          "ok_freeze": "Yes — Freeze expected",
+          "ok_snow": "Yes — Snow expected",
+          "ok_wind": "Yes — Wind expected",
+          "ok_bad_condition": "Yes — Bad weather expected",
           "unknown_clear": "Neznámy",
           "no_rain": "Nie — Dážď",
           "no_freeze": "Nie — Mráz",

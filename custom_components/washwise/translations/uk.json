@@ -328,6 +328,11 @@
         "state": {
           "ok_clear": "Так — Ясно",
           "ok_dirty_now": "Так — Поверхня забруднена — мийте зараз",
+          "ok_rain": "Yes — Rain expected",
+          "ok_freeze": "Yes — Freeze expected",
+          "ok_snow": "Yes — Snow expected",
+          "ok_wind": "Yes — Wind expected",
+          "ok_bad_condition": "Yes — Bad weather expected",
           "unknown_clear": "Невідомо",
           "no_rain": "Ні — Дощ",
           "no_freeze": "Ні — Заморозки",

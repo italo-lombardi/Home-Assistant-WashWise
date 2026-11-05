@@ -328,6 +328,11 @@
         "state": {
           "ok_clear": "Kyllä — Selkeä",
           "ok_dirty_now": "Kyllä — Pinta likainen — pese nyt",
+          "ok_rain": "Yes — Rain expected",
+          "ok_freeze": "Yes — Freeze expected",
+          "ok_snow": "Yes — Snow expected",
+          "ok_wind": "Yes — Wind expected",
+          "ok_bad_condition": "Yes — Bad weather expected",
           "unknown_clear": "Tuntematon",
           "no_rain": "Ei — Sade",
           "no_freeze": "Ei — Jäätyminen",

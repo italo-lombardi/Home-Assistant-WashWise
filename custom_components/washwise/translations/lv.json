@@ -328,6 +328,11 @@
         "state": {
           "ok_clear": "Jā — Skaidrs",
           "ok_dirty_now": "Jā — Virsma netīra — mazgājiet tagad",
+          "ok_rain": "Yes — Rain expected",
+          "ok_freeze": "Yes — Freeze expected",
+          "ok_snow": "Yes — Snow expected",
+          "ok_wind": "Yes — Wind expected",
+          "ok_bad_condition": "Yes — Bad weather expected",
           "unknown_clear": "Nezināms",
           "no_rain": "Nē — Lietus",
           "no_freeze": "Nē — Sasalšana",

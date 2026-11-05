@@ -328,6 +328,11 @@
         "state": {
           "ok_clear": "Tak — Brak przeszkód",
           "ok_dirty_now": "Tak — Brudna powierzchnia — myj teraz",
+          "ok_rain": "Yes — Rain expected",
+          "ok_freeze": "Yes — Freeze expected",
+          "ok_snow": "Yes — Snow expected",
+          "ok_wind": "Yes — Wind expected",
+          "ok_bad_condition": "Yes — Bad weather expected",
           "unknown_clear": "Nieznany",
           "no_rain": "Nie — Deszcz",
           "no_freeze": "Nie — Mróz",

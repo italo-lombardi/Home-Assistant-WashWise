@@ -328,6 +328,11 @@
         "state": {
           "ok_clear": "Evet — Açık",
           "ok_dirty_now": "Evet — Yüzey kirli — şimdi yıkayın",
+          "ok_rain": "Yes — Rain expected",
+          "ok_freeze": "Yes — Freeze expected",
+          "ok_snow": "Yes — Snow expected",
+          "ok_wind": "Yes — Wind expected",
+          "ok_bad_condition": "Yes — Bad weather expected",
           "unknown_clear": "Bilinmiyor",
           "no_rain": "Hayır — Yağmur",
           "no_freeze": "Hayır — Donma",

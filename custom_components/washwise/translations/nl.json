@@ -328,6 +328,11 @@
         "state": {
           "ok_clear": "Ja — Geen belemmering",
           "ok_dirty_now": "Ja — Vies oppervlak — nu wassen",
+          "ok_rain": "Yes — Rain expected",
+          "ok_freeze": "Yes — Freeze expected",
+          "ok_snow": "Yes — Snow expected",
+          "ok_wind": "Yes — Wind expected",
+          "ok_bad_condition": "Yes — Bad weather expected",
           "unknown_clear": "Onbekend",
           "no_rain": "Nee — Regen",
           "no_freeze": "Nee — Vorst",

@@ -252,6 +252,11 @@ class WashStatusSensor(WashWiseSensorBase):
     _attr_options: ClassVar[list[str]] = [
         "ok_clear",
         "ok_dirty_now",
+        "ok_rain",
+        "ok_freeze",
+        "ok_snow",
+        "ok_wind",
+        "ok_bad_condition",
         "unknown_clear",
         "no_rain",
         "no_freeze",
@@ -270,9 +275,19 @@ class WashStatusSensor(WashWiseSensorBase):
     # the reserved ``unavailable`` state. ``unavailable``/``unknown`` are
     # deliberately omitted from ``_attr_options`` — HA reserves them as
     # state-machine values, not enum members.
+    # OK path: non-inverted categories reach here only with clear/dirty_now,
+    # but inverted categories (solar_panels, garden_irrigation) return
+    # can_wash=True with a weather reason (rain/snow/freeze/bad_condition means
+    # "good" for them — e.g. rain cleans panels / skip irrigation), so those
+    # must map to a real OK state rather than falling through to ``unknown``.
     _OK_REASONS: ClassVar[dict[str, str]] = {
         "clear": "ok_clear",
         "dirty_now": "ok_dirty_now",
+        "rain": "ok_rain",
+        "freeze": "ok_freeze",
+        "snow": "ok_snow",
+        "wind": "ok_wind",
+        "bad_condition": "ok_bad_condition",
     }
     _NO_REASONS: ClassVar[dict[str, str]] = {
         "clear": "unknown_clear",

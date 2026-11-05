@@ -429,13 +429,13 @@ def _walk_forecast(
             if first_blocker_reason is None:
                 first_blocker_reason = _reason_from_blockers(day_blockers, cond)
 
-        # Track rainy/blocked days for invert mode (includes freeze-blocked
-        # days so sub-zero conditions also suppress irrigation/solar-clean
-        # signals).
-        if (
-            (precip is not None and precip > precip_threshold)
-            or (cond is not None and cond in bad_conditions)
-            or freeze_blocker
+        # Track rainy/wet days: the positive signal for invert mode (rain or a
+        # wet bad-condition cleans panels / waters the garden). Freeze is NOT a
+        # wet signal — a dry sub-zero day must not enable the inverted verdict,
+        # so it is deliberately excluded here (it still penalises the score and
+        # blocks the non-inverted verdict via day_blockers above).
+        if (precip is not None and precip > precip_threshold) or (
+            cond is not None and cond in bad_conditions
         ):
             rainy_days.append(day.date)
 

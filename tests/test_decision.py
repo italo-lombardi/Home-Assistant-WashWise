@@ -271,6 +271,26 @@ def test_invert_mode_no_rain_returns_false() -> None:
     assert result.days_until_wash is None
 
 
+def test_invert_mode_dry_freezing_day_does_not_enable_wash() -> None:
+    """A dry sub-zero day is not a wet/cleaning signal, so invert stays False.
+
+    Regression: freeze-blocked days used to be appended to rainy_days, which in
+    invert mode is the positive trigger — a freezing dry day wrongly flipped
+    solar/irrigation to can_wash=True. Freeze must not enable the verdict.
+    """
+    cur = CurrentWeather(condition="sunny", temperature_c=2.0)
+    forecast = [
+        _day(0),  # sunny, mild
+        _day(1, condition="sunny", precip=0.0, tmin=-3.0, tmax=-1.0),  # dry + freezing
+        _day(2),
+    ]
+
+    result = compute(cur, forecast, _thresholds(), invert=True, now=NOW)
+
+    assert result.can_wash is False, "a dry freezing day must not enable the inverted verdict"
+    assert result.days_until_wash is None
+
+
 def test_invert_mode_bad_current_condition_short_circuits_to_wash() -> None:
     """Invert mode: bad current condition short-circuits to can_wash=True (panels dirty now)."""
     cur = CurrentWeather(condition="exceptional", temperature_c=28.0)
