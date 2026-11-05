@@ -29,7 +29,8 @@
           "precip_weight": "Yağış puan ağırlığı",
           "freeze_weight": "Donma puan ağırlığı",
           "condition_weight": "Koşul puan ağırlığı",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Maks. rüzgar hızı (km/h)",
+          "should_wash_min_days": "Son yıkamadan bu yana en az gün sayısı"
         },
         "data_description": {
           "days": "Analiz edilecek tahmin dilimi sayısı. Günlük tahminle her dilim = 1 gün; saatlik tahminle her dilim = 1 saat. Daha büyük değerler daha fazla hava durumunu yakalar ancak daha ihtiyatlı sonuçlar üretir.",
@@ -40,7 +41,8 @@
           "precip_weight": "Tahmindeki yağışın 0–100 puanından ne kadar çıkarıldığı. Daha yüksek değer, yağışlı günleri daha agresif şekilde cezalandırır.",
           "freeze_weight": "Donma gününün 0–100 puanından ne kadar çıkarıldığı. Sonucu yine engellerken puanlamada donmayı yok saymak için 0 olarak ayarlayın.",
           "condition_weight": "Kötü hava koşullarının (fırtına, dolu, kar) 0–100 puanından ne kadar çıkarıldığı. Şiddet koşula göre değişir.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Devre dışı bırakmak için boş bırakın. Bundan daha rüzgarlı bir tahmin günü yıkamayı engeller.",
+          "should_wash_min_days": "'Yıkamalı' seçeneğini yalnızca son kayıtlı yıkamadan bu yana en az bu kadar tam gün geçtiğinde açın. 0 değeri bu kapıyı devre dışı bırakır, böylece 'Yıkamalı', 'Yıkayabilir' ile aynı olur. Hiç yıkanmamış bir giriş gecikmiş sayılır."
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "Yağış eşiği (mm)",
           "freeze_check": "Dondurucu sıcaklıklarda engelle",
           "forecast_type": "Tahmin türü",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Maks. rüzgar hızı (km/h)",
+          "should_wash_min_days": "Son yıkamadan bu yana en az gün sayısı"
         },
         "data_description": {
           "days": "Analiz edilecek tahmin dilimi sayısı. Günlük tahminle her dilim = 1 gün; saatlik tahminle her dilim = 1 saat.",
           "precip_threshold_mm": "Gün başına bu değerin üzerindeki toplam yağış yıkamayı engeller.",
           "freeze_check": "Açıkken, sıcaklığı 0 °C'nin altına düşen bir tahmin günü yıkamayı engeller.",
           "forecast_type": "Günlük, gün başına bir giriş kullanır; saatlik, saat başına bir giriş kullanır. Saatlik daha doğrudur ancak kaynağın saatlik veri sunmasını gerektirir.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Devre dışı bırakmak için boş bırakın. Bundan daha rüzgarlı bir tahmin günü yıkamayı engeller.",
+          "should_wash_min_days": "'Yıkamalı' seçeneğini yalnızca son kayıtlı yıkamadan bu yana en az bu kadar tam gün geçtiğinde açın. 0 değeri bu kapıyı devre dışı bırakır, böylece 'Yıkamalı', 'Yıkayabilir' ile aynı olur. Hiç yıkanmamış bir giriş gecikmiş sayılır."
         }
       },
       "scoring": {
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "Sulama anahtarı durumu"
+      },
+      "should_wash": {
+        "name": "Yıkamalı"
       }
     },
     "sensor": {
@@ -307,11 +314,11 @@
           "rain": "Yağmur",
           "freeze": "Donma",
           "snow": "Kar",
-          "wind": "Wind",
+          "wind": "Rüzgar",
           "bad_condition": "Kötü hava",
           "bad_current_condition": "Kötü mevcut hava",
           "dirty_now": "Yüzey kirli — şimdi yıkayın",
-          "no_data": "No forecast data",
+          "no_data": "Tahmin verisi yok",
           "snoozed": "Ertelendi",
           "unavailable": "Kullanılamıyor"
         }
@@ -325,10 +332,10 @@
           "no_rain": "Hayır — Yağmur",
           "no_freeze": "Hayır — Donma",
           "no_snow": "Hayır — Kar",
-          "no_wind": "No — Wind",
+          "no_wind": "Hayır — Rüzgar",
           "no_bad_condition": "Hayır — Kötü hava",
           "no_bad_current_condition": "Hayır — Kötü mevcut hava",
-          "no_data": "No — No forecast data",
+          "no_data": "Hayır — Tahmin verisi yok",
           "snoozed": "Ertelendi"
         }
       },
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "Sulandı olarak işaretle"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "Yıkamalı açıldı",
+      "description": "Hava yıkamaya uygun ve sonuncusundan bu yana yeterince zaman geçti.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise girişi",
+          "description": "Bu tetikleyiciyi tek bir WashWise girişiyle sınırlayın. Herhangi bir giriş için tetiklenmesi amacıyla boş bırakın."
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "Yıkamalı kapandı",
+      "description": "'Yıkamalı' önerisi temizlendi.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise girişi",
+          "description": "Bu tetikleyiciyi tek bir WashWise girişiyle sınırlayın. Herhangi bir giriş için tetiklenmesi amacıyla boş bırakın."
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "Yıkayabilir açıldı",
+      "description": "Hava artık yıkamaya uygun.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise girişi",
+          "description": "Bu tetikleyiciyi tek bir WashWise girişiyle sınırlayın. Herhangi bir giriş için tetiklenmesi amacıyla boş bırakın."
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "Yıkayabilir kapandı",
+      "description": "Hava artık yıkamaya uygun değil.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise girişi",
+          "description": "Bu tetikleyiciyi tek bir WashWise girişiyle sınırlayın. Herhangi bir giriş için tetiklenmesi amacıyla boş bırakın."
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "Sonuç değişti",
+      "description": "Yıkama sonucu (yıkayabilir / yıkamalı / puan / neden) değişti.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise girişi",
+          "description": "Bu tetikleyiciyi tek bir WashWise girişiyle sınırlayın. Herhangi bir giriş için tetiklenmesi amacıyla boş bırakın."
+        }
       }
     }
   }

@@ -29,7 +29,8 @@
           "precip_weight": "Sateen pistepainotus",
           "freeze_weight": "Jäätymisen pistepainotus",
           "condition_weight": "Sääolosuhteen pistepainotus",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Tuulen enimmäisnopeus (km/h)",
+          "should_wash_min_days": "Vähimmäispäivät edellisestä pesusta"
         },
         "data_description": {
           "days": "Analysoitavien ennustevälien lukumäärä. Päivittäisessä ennusteessa yksi väli = 1 päivä; tuntikohtaisessa yksi väli = 1 tunti. Suuremmat arvot kattavat enemmän säätä mutta antavat varovaisempia tuloksia.",
@@ -40,7 +41,8 @@
           "precip_weight": "Kuinka paljon ennusteen sade vähentää 0–100-pisteitä. Suurempi arvo rankaisee sateisista päivistä aggressiivisemmin.",
           "freeze_weight": "Kuinka paljon jäätymispäivä vähentää 0–100-pisteitä. Aseta 0 ohittaaksesi jäätyminen pisteytyksessä samalla kun se edelleen estää tuloksen.",
           "condition_weight": "Kuinka paljon huonot sääolosuhteet (myrskyt, rakeet, lumi) vähentävät 0–100-pisteitä. Vakavuus on olosuhdekohtainen.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Jätä tyhjäksi poistaaksesi käytöstä. Ennustepäivä, joka on tätä tuulisempi, estää pesun.",
+          "should_wash_min_days": "Kytke 'Pitäisi pestä' päälle vasta kun viimeisimmästä kirjatusta pesusta on kulunut vähintään näin monta täyttä päivää. 0 poistaa portin käytöstä, jolloin 'Pitäisi pestä' seuraa 'Voi pestä' -tilaa. Koskaan pesemätön merkintä lasketaan myöhässä olevaksi."
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "Sateen kynnysarvo (mm)",
           "freeze_check": "Estä jäätymislämpötiloilla",
           "forecast_type": "Ennustetyyppi",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Tuulen enimmäisnopeus (km/h)",
+          "should_wash_min_days": "Vähimmäispäivät edellisestä pesusta"
         },
         "data_description": {
           "days": "Analysoitavien ennustevälien lukumäärä. Päivittäisessä ennusteessa yksi väli = 1 päivä; tuntikohtaisessa yksi väli = 1 tunti.",
           "precip_threshold_mm": "Päivittäinen kokonaissademäärä tämän arvon ylittäessä estää pesun.",
           "freeze_check": "Kun päällä, ennustepäivä jonka lämpötila laskee 0 °C:n alapuolelle estää pesun.",
           "forecast_type": "Päivittäinen käyttää yhtä merkintää päivää kohti; Tuntikohtainen käyttää yhtä merkintää tuntia kohti. Tuntikohtainen on tarkempi, mutta edellyttää että lähde tarjoaa tuntikohtaista dataa.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Jätä tyhjäksi poistaaksesi käytöstä. Ennustepäivä, joka on tätä tuulisempi, estää pesun.",
+          "should_wash_min_days": "Kytke 'Pitäisi pestä' päälle vasta kun viimeisimmästä kirjatusta pesusta on kulunut vähintään näin monta täyttä päivää. 0 poistaa portin käytöstä, jolloin 'Pitäisi pestä' seuraa 'Voi pestä' -tilaa. Koskaan pesemätön merkintä lasketaan myöhässä olevaksi."
         }
       },
       "scoring": {
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "Kastelukytkimen tila"
+      },
+      "should_wash": {
+        "name": "Pitäisi pestä"
       }
     },
     "sensor": {
@@ -307,11 +314,11 @@
           "rain": "Sade",
           "freeze": "Jäätyminen",
           "snow": "Lumi",
-          "wind": "Wind",
+          "wind": "Tuuli",
           "bad_condition": "Huono sää",
           "bad_current_condition": "Huono nykyinen sää",
           "dirty_now": "Pinta likainen — pese nyt",
-          "no_data": "No forecast data",
+          "no_data": "Ei ennustetietoja",
           "snoozed": "Torkussa",
           "unavailable": "Ei saatavilla"
         }
@@ -325,10 +332,10 @@
           "no_rain": "Ei — Sade",
           "no_freeze": "Ei — Jäätyminen",
           "no_snow": "Ei — Lumi",
-          "no_wind": "No — Wind",
+          "no_wind": "Ei — Tuuli",
           "no_bad_condition": "Ei — Huono sää",
           "no_bad_current_condition": "Ei — Huono nykyinen sää",
-          "no_data": "No — No forecast data",
+          "no_data": "Ei — Ei ennustetietoja",
           "snoozed": "Torkussa"
         }
       },
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "Merkitse kastelluksi"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "Pitäisi pestä kytkeytyi päälle",
+      "description": "Sää sallii pesun ja edellisestä pesusta on kulunut riittävästi aikaa.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-merkintä",
+          "description": "Rajaa tämä liipaisin yhteen WashWise-merkintään. Jätä tyhjäksi laukaistaksesi minkä tahansa merkinnän kohdalla."
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "Pitäisi pestä kytkeytyi pois päältä",
+      "description": "'Pitäisi pestä' -suositus poistui.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-merkintä",
+          "description": "Rajaa tämä liipaisin yhteen WashWise-merkintään. Jätä tyhjäksi laukaistaksesi minkä tahansa merkinnän kohdalla."
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "Voi pestä kytkeytyi päälle",
+      "description": "Sää sallii nyt pesun.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-merkintä",
+          "description": "Rajaa tämä liipaisin yhteen WashWise-merkintään. Jätä tyhjäksi laukaistaksesi minkä tahansa merkinnän kohdalla."
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "Voi pestä kytkeytyi pois päältä",
+      "description": "Sää ei enää salli pesua.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-merkintä",
+          "description": "Rajaa tämä liipaisin yhteen WashWise-merkintään. Jätä tyhjäksi laukaistaksesi minkä tahansa merkinnän kohdalla."
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "Tulos muuttui",
+      "description": "Pesun tulos (voi pestä / pitäisi pestä / pisteet / syy) muuttui.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-merkintä",
+          "description": "Rajaa tämä liipaisin yhteen WashWise-merkintään. Jätä tyhjäksi laukaistaksesi minkä tahansa merkinnän kohdalla."
+        }
       }
     }
   }

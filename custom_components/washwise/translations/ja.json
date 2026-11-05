@@ -29,7 +29,8 @@
           "precip_weight": "降水量スコアの重み",
           "freeze_weight": "凍結スコアの重み",
           "condition_weight": "気象状況スコアの重み",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "最大風速 (km/h)",
+          "should_wash_min_days": "最後の洗浄からの最小日数"
         },
         "data_description": {
           "days": "分析する予報スロット数。日次予報では1スロット＝1日、時間次予報では1スロット＝1時間です。大きな値ほど多くの気象をキャッチできますが、より保守的な判定になります。",
@@ -40,7 +41,8 @@
           "precip_weight": "予報の雨量が0〜100スコアからどれだけ減点されるか。値が高いほど雨の日をより積極的に減点します。",
           "freeze_weight": "氷点下の日が0〜100スコアからどれだけ減点されるか。判定をブロックしたまま凍結をスコアリングから除外するには0を設定してください。",
           "condition_weight": "悪天候（嵐、ひょう、雪）が0〜100スコアからどれだけ減点されるか。重大度は状況ごとに異なります。",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "無効にするには空欄のままにします。これより風が強い予報日は洗浄がブロックされます。",
+          "should_wash_min_days": "最後に記録された洗浄から少なくともこの日数（丸一日単位）が経過した場合にのみ「洗浄推奨」をオンにします。0 を指定するとこの条件が無効になり、「洗浄推奨」は「洗浄可能」と同じ動作になります。一度も洗浄していないエントリは期限超過として扱われます。"
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "降水量しきい値（mm）",
           "freeze_check": "氷点下の気温でブロック",
           "forecast_type": "予報タイプ",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "最大風速 (km/h)",
+          "should_wash_min_days": "最後の洗浄からの最小日数"
         },
         "data_description": {
           "days": "分析する予報スロット数。日次予報では1スロット＝1日、時間次予報では1スロット＝1時間です。",
           "precip_threshold_mm": "この値を超える1日あたりの総降水量があると洗浄がブロックされます。",
           "freeze_check": "オンにすると、気温が0°Cを下回る予報日は洗浄がブロックされます。",
           "forecast_type": "日次は1日1エントリ、時間次は1時間1エントリを使用します。時間次はより正確ですが、ソースが時間次データを提供している必要があります。",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "無効にするには空欄のままにします。これより風が強い予報日は洗浄がブロックされます。",
+          "should_wash_min_days": "最後に記録された洗浄から少なくともこの日数（丸一日単位）が経過した場合にのみ「洗浄推奨」をオンにします。0 を指定するとこの条件が無効になり、「洗浄推奨」は「洗浄可能」と同じ動作になります。一度も洗浄していないエントリは期限超過として扱われます。"
         }
       },
       "scoring": {
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "灌漑スイッチの状態"
+      },
+      "should_wash": {
+        "name": "洗浄推奨"
       }
     },
     "sensor": {
@@ -307,11 +314,11 @@
           "rain": "雨",
           "freeze": "凍結",
           "snow": "雪",
-          "wind": "Wind",
+          "wind": "風",
           "bad_condition": "悪天候",
           "bad_current_condition": "現在の悪天候",
           "dirty_now": "表面が汚れています — 今すぐ洗浄",
-          "no_data": "No forecast data",
+          "no_data": "予報データなし",
           "snoozed": "スヌーズ中",
           "unavailable": "利用不可"
         }
@@ -325,10 +332,10 @@
           "no_rain": "不可 — 雨",
           "no_freeze": "不可 — 凍結",
           "no_snow": "不可 — 雪",
-          "no_wind": "No — Wind",
+          "no_wind": "不可 — 風",
           "no_bad_condition": "不可 — 悪天候",
           "no_bad_current_condition": "不可 — 現在の悪天候",
-          "no_data": "No — No forecast data",
+          "no_data": "不可 — 予報データなし",
           "snoozed": "スヌーズ中"
         }
       },
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "灌漑済みとしてマーク"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "洗浄推奨がオンになったとき",
+      "description": "天候が洗浄に適しており、前回の洗浄から十分な時間が経過しています。",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise エントリ",
+          "description": "このトリガーを単一の WashWise エントリに限定します。空欄のままにすると、すべてのエントリで発火します。"
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "洗浄推奨がオフになったとき",
+      "description": "「洗浄推奨」の推奨が解除されました。",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise エントリ",
+          "description": "このトリガーを単一の WashWise エントリに限定します。空欄のままにすると、すべてのエントリで発火します。"
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "洗浄可能がオンになったとき",
+      "description": "天候が洗浄に適した状態になりました。",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise エントリ",
+          "description": "このトリガーを単一の WashWise エントリに限定します。空欄のままにすると、すべてのエントリで発火します。"
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "洗浄可能がオフになったとき",
+      "description": "天候が洗浄に適さない状態になりました。",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise エントリ",
+          "description": "このトリガーを単一の WashWise エントリに限定します。空欄のままにすると、すべてのエントリで発火します。"
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "判定が変化したとき",
+      "description": "洗浄判定（洗浄可能 / 洗浄推奨 / スコア / 理由）が変化しました。",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise エントリ",
+          "description": "このトリガーを単一の WashWise エントリに限定します。空欄のままにすると、すべてのエントリで発火します。"
+        }
       }
     }
   }

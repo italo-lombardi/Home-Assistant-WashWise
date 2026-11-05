@@ -163,6 +163,7 @@ async def async_setup_entry(
 
     entities: list[BinarySensorEntity] = [
         WashWiseCanWashBinarySensor(coordinator, entry),
+        WashWiseShouldWashBinarySensor(coordinator, entry),
         WashWiseFreezeRiskBinarySensor(coordinator, entry),
     ]
     for i in range(int(thresholds.get("days", 0) or 0)):
@@ -238,11 +239,48 @@ class WashWiseCanWashBinarySensor(_WashWiseBinarySensorBase):
             "score": int(decision.score),
             "reason": decision.reason,
             "active_weather_entity": self.coordinator.active_weather_entity,
+            # should_wash gate inputs, surfaced here too so the card's
+            # diagnostics can show the "washing days" setting while sourcing the
+            # can_wash verdict. ``min_days`` of 0 means the gate is disabled.
+            "min_days": self.coordinator._resolve_should_wash_min_days(),
+            "days_since_last_wash": self.coordinator._days_since_last_wash(),
             # Aggregate diagnostics derived from the per-day forecast summary so
             # dashboards (and the card's diagnostics block) can show totals and
             # extremes without re-walking the forecast. All ``None`` when the
             # forecast is empty (no-data verdict) — callers omit absent values.
             **_forecast_aggregates(summary),
+        }
+
+
+class WashWiseShouldWashBinarySensor(_WashWiseBinarySensorBase):
+    """Stricter verdict: ON when weather allows AND it's been long enough.
+
+    ``should_wash = can_wash AND (never-washed OR days-since >= min_days)``.
+    With the default ``min_days`` of 0 the gate is inert and this mirrors
+    ``can_wash``.
+    """
+
+    _attr_translation_key = "should_wash"
+    _attr_icon = "mdi:calendar-clock"
+
+    def __init__(self, coordinator: WashWiseCoordinator, entry: ConfigEntry) -> None:
+        """Initialise with key ``should_wash``."""
+        super().__init__(coordinator, entry, "should_wash")
+
+    @property
+    def is_on(self) -> bool | None:
+        """Return the derived should-wash gate from the coordinator."""
+        return self.coordinator.should_wash
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Surface the gate's inputs for dashboards / templates."""
+        decision = self.coordinator.data
+        return {
+            "can_wash": bool(decision.can_wash) if decision is not None else None,
+            "days_since_last_wash": self.coordinator._days_since_last_wash(),
+            "min_days": self.coordinator._resolve_should_wash_min_days(),
+            "reason": decision.reason if decision is not None else None,
         }
 
 
@@ -305,6 +343,7 @@ __all__ = [
     "WashWiseCanWashBinarySensor",
     "WashWiseDayOkBinarySensor",
     "WashWiseFreezeRiskBinarySensor",
+    "WashWiseShouldWashBinarySensor",
     "async_setup_entry",
 ]
 

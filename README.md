@@ -3,7 +3,7 @@
 <a href="https://github.com/italo-lombardi/Home-Assistant-WashWise/releases"><img src="https://img.shields.io/github/v/release/italo-lombardi/Home-Assistant-WashWise" alt="GitHub Release"></a>
 <a href="https://github.com/hacs/integration"><img src="https://img.shields.io/badge/HACS-Custom-41BDF5.svg" alt="HACS Custom"></a>
 <a href="https://github.com/italo-lombardi/Home-Assistant-WashWise"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fanalytics.home-assistant.io%2Fcustom_integrations.json&query=%24.washwise.total&label=installs&color=41BDF5" alt="HACS Installs"></a>
-<a href="https://www.home-assistant.io/"><img src="https://img.shields.io/badge/Home%20Assistant-2024.10%2B-blue.svg" alt="Home Assistant"></a>
+<a href="https://www.home-assistant.io/"><img src="https://img.shields.io/badge/Home%20Assistant-2025.11%2B-blue.svg" alt="Home Assistant"></a>
 <a href="https://github.com/italo-lombardi/Home-Assistant-WashWise/blob/main/LICENSE"><img src="https://img.shields.io/github/license/italo-lombardi/Home-Assistant-WashWise?logo=gnu&logoColor=white" alt="License"></a>
 <img src="https://img.shields.io/badge/coverage-100%25-brightgreen" alt="Test Coverage">
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=flat&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/italolombardi)
@@ -22,17 +22,21 @@ Decide whether to wash your car (or motorcycle, boat, solar panels, patio…) �
 |:---------:|:--------------:|
 | ![Card OK](assets/screenshots/card-can-wash.png) | ![Card snoozed](assets/screenshots/card-snoozed.png) |
 
-| Controls & Sensors | Diagnostics |
-|:-----------------:|:-----------:|
-| ![Controls and sensors](assets/screenshots/device-controls-sensors.png) | ![Diagnostics](assets/screenshots/device-diagnostics.png) |
+| Card — OK with diagnostics | Controls & Sensors |
+|:--------------------------:|:-----------------:|
+| ![Card OK with diagnostics](assets/screenshots/card-can-wash-diagnostics.png) | ![Controls and sensors](assets/screenshots/device-controls-sensors.png) |
 
-| Config flow — step 1 | Config flow — thresholds |
-|:--------------------:|:------------------------:|
-| ![Config step 1](assets/screenshots/config-flow-step1.png) | ![Thresholds](assets/screenshots/config-flow-optional-thresholds.png) |
+| Diagnostics | Config flow — step 1 |
+|:-----------:|:--------------------:|
+| ![Diagnostics](assets/screenshots/device-diagnostics.png) | ![Config step 1](assets/screenshots/config-flow-step1.png) |
 
-| Card editor | Actions |
-|:-----------:|:-------:|
-| ![Card editor](assets/screenshots/card-configuration.png) | ![Actions](assets/screenshots/actions.png) |
+| Config flow — thresholds | Card editor |
+|:------------------------:|:-----------:|
+| ![Thresholds](assets/screenshots/config-flow-optional-thresholds.png) | ![Card editor](assets/screenshots/card-configuration.png) |
+
+| Actions | Automation triggers |
+|:-------:|:-------------------:|
+| ![Actions](assets/screenshots/actions.png) | ![Automation triggers](assets/screenshots/automation-triggers.png) |
 
 ---
 
@@ -153,7 +157,8 @@ All entities live under a single **WashWise \<name\>** device per config entry.
 
 | Entity | Description |
 |--------|-------------|
-| `binary_sensor.washwise_<name>_can_wash` | Primary verdict. Attributes: `forecast_summary`, `decision_details`, `days_analyzed`, `score`, `reason`, `active_weather_entity`. |
+| `binary_sensor.washwise_<name>_can_wash` | Primary verdict. Attributes: `forecast_summary`, `decision_details`, `days_analyzed`, `score`, `reason`, `active_weather_entity`, `min_days`, `days_since_last_wash`. |
+| `binary_sensor.washwise_<name>_should_wash` | Stricter verdict: ON when `can_wash` is ON **and** at least *Minimum days since last wash* have passed since the last recorded wash (0 = mirror `can_wash`; never-washed counts as overdue). Attributes: `can_wash`, `days_since_last_wash`, `min_days`, `reason`. |
 | `binary_sensor.washwise_<name>_day_N_ok` | Per-day verdict for each day in the horizon (max 7). |
 | `binary_sensor.washwise_<name>_freeze_risk` | Diagnostic: ON when the forecast crosses 0 °C. |
 | `binary_sensor.washwise_<name>_irrigation_suppressed` | *Garden irrigation only.* Primary: ON when irrigation should be skipped (rain forecast or gauge threshold met). |
@@ -229,6 +234,22 @@ All services require an `entry_id` field targeting the WashWise config entry (vi
 
 ---
 
+## Automation triggers
+
+WashWise surfaces its bus events as named triggers in the automation editor (**Settings → Automations → Create → Add trigger → WashWise**). Each has an optional **WashWise entry** field that scopes it to one config entry, or fires for every entry when left blank.
+
+| Trigger | Fires when |
+|---------|-----------|
+| `washwise.can_wash_on` | The weather starts allowing a wash (`can_wash` → on). |
+| `washwise.can_wash_off` | The weather stops allowing a wash (`can_wash` → off). |
+| `washwise.should_wash_on` | Weather allows a wash **and** enough days have passed since the last one (`should_wash` → on). |
+| `washwise.should_wash_off` | The `should_wash` recommendation clears. |
+| `washwise.verdict_changed` | Any user-visible change: `can_wash`, `should_wash`, `score`, `reason`, or `days_until_wash`. |
+
+The raw `washwise_*` bus events keep firing, so existing `platform: event` automations are unaffected. See **[docs/AUTOMATION_EXAMPLES.md](docs/AUTOMATION_EXAMPLES.md)** for ready-to-use automations.
+
+---
+
 ## Lovelace card
 
 The custom card auto-registers when the integration loads. Add it to a dashboard with:
@@ -245,6 +266,7 @@ type: custom:washwise-card
 entity: binary_sensor.washwise_daily_driver_can_wash
 name: My Honda Civic          # optional title override
 theme: auto                   # auto | light | dark
+verdict_source: can_wash      # can_wash | should_wash — which verdict the badge follows
 accent_color: "#2e7d32"
 bad_color: "#c62828"
 show_score_gauge: true
@@ -260,7 +282,14 @@ compact_mode: false
 All options are configurable via the visual card editor. The diagnostics panel
 surfaces the verdict reason, score, days-until-wash, days-analysed, blocking-day
 count, total precipitation, peak wind, freeze risk, worst condition, min/max
-temperature, and the active weather source (whichever values are available).
+temperature, and the active weather source (whichever values are available). When
+a *Minimum days since last wash* is set, it also shows that threshold and the days
+since the last recorded wash.
+
+Set `verdict_source: should_wash` to make the badge follow the stricter
+*should wash* gate instead of *can wash*. In that mode the badge is three-way:
+**Wash now** (weather allows it and it's been long enough), **Not yet** (weather
+is fine but the surface was washed recently), or **No** (weather blocks it).
 
 ---
 

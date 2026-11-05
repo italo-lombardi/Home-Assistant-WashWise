@@ -36,11 +36,16 @@ from custom_components.washwise.const import (
     CONF_FORECAST_TYPE,
     CONF_NAME,
     CONF_SCAN_INTERVAL_MINUTES,
+    CONF_SHOULD_WASH_MIN_DAYS,
     CONF_WEATHER_ENTITIES,
     CONF_WIND_THRESHOLD,
     DEFAULT_CATEGORY,
     DEFAULT_FORECAST_TYPE,
     DOMAIN,
+    EVENT_CAN_WASH_OFF,
+    EVENT_CAN_WASH_ON,
+    EVENT_SHOULD_WASH_OFF,
+    EVENT_SHOULD_WASH_ON,
     EVENT_VERDICT_CHANGED,
     SCAN_INTERVAL,
     STALE_PROVIDER_TTL_DAYS,
@@ -747,6 +752,46 @@ async def test_mark_washed_falls_back_to_refresh_when_no_data(hass: HomeAssistan
 
 
 @freeze_time(FROZEN_NOW)
+async def test_mark_washed_recomputes_should_wash_gate(hass: HomeAssistant) -> None:
+    """mark_washed drops the should_wash gate (days_since resets to 0 < min_days).
+
+    Regression: the synchronous mark_washed push used to re-emit the cached
+    decision verbatim without recomputing ``should_wash``, so after washing a
+    surface whose gate was ON (overdue), the gate stayed stale ON until the next
+    poll and the ``should_wash_off`` edge event never fired. Marking washed must
+    recompute the gate from the now-updated wash log and fire the off edge.
+    """
+    off_events: list[Any] = []
+    hass.bus.async_listen(EVENT_SHOULD_WASH_OFF, off_events.append)
+
+    entry = _make_entry(
+        ["weather.primary"],
+        customize=True,
+        options={CONF_SHOULD_WASH_MIN_DAYS: 7},
+    )
+    entry.add_to_hass(hass)
+    coord, stub = _build_coordinator(hass, entry)
+    _seed_wash(stub, days_ago=10)  # overdue → gate ON
+
+    with contextlib.ExitStack() as stack:
+        for p in _sunny_patch():
+            stack.enter_context(p)
+        decision = await coord._async_update_data()
+    coord.async_set_updated_data(decision)
+    await hass.async_block_till_done()
+    assert coord.should_wash is True
+
+    # Washing now resets days_since to 0 (< 7) → gate must flip OFF.
+    await coord.async_mark_washed()
+    await hass.async_block_till_done()
+
+    assert coord.should_wash is False
+    assert len(off_events) == 1
+    assert off_events[0].data["should_wash"] is False
+    assert off_events[0].data["entry_id"] == entry.entry_id
+
+
+@freeze_time(FROZEN_NOW)
 async def test_snooze_pushes_snoozed_decision_without_fetch(hass: HomeAssistant) -> None:
     """snooze builds and pushes the snoozed verdict synchronously."""
     entry = _make_entry(["weather.primary"])
@@ -804,7 +849,7 @@ async def test_set_decision_advances_last_update_timestamp(hass: HomeAssistant) 
     stale = datetime(2026, 1, 1, 0, 0, 0, tzinfo=UTC)
     coord.last_update_success_time = stale
 
-    coord._set_decision(_decision(True, "clear", 90))
+    coord._set_decision(_decision(True, "clear", 90), True)
 
     assert coord.last_update_success_time == FROZEN_NOW, "last_update must advance to now"
     assert coord.last_update_success_time != stale
@@ -1200,26 +1245,28 @@ async def test_set_decision_fires_event_on_flip(hass: HomeAssistant) -> None:
     # First decision does NOT fire: no prior verdict to have changed from, and
     # _last_decision is not restored across restarts, so first-fire would make
     # every HA restart re-fire even on an unchanged verdict.
-    coord._set_decision(_decision(True, "clear", 100))
+    coord._set_decision(_decision(True, "clear", 100), True)
     await hass.async_block_till_done()
     assert len(events) == 0
 
     # Identical verdict -> still no event.
-    coord._set_decision(_decision(True, "clear", 100))
+    coord._set_decision(_decision(True, "clear", 100), True)
     await hass.async_block_till_done()
     assert len(events) == 0
 
     # Flip to can_wash=False -> fires with previous_can_wash=True.
-    coord._set_decision(_decision(False, "rain", 20))
+    coord._set_decision(_decision(False, "rain", 20), False)
     await hass.async_block_till_done()
     assert len(events) == 1
     assert events[0].data["can_wash"] is False
     assert events[0].data["previous_can_wash"] is True
+    assert events[0].data["should_wash"] is False
+    assert events[0].data["previous_should_wash"] is True
     assert events[0].data["reason"] == "rain"
     assert events[0].data["entry_id"] == entry.entry_id
 
     # Same verdict, score-only change -> still fires (score is user-visible).
-    coord._set_decision(_decision(False, "rain", 35))
+    coord._set_decision(_decision(False, "rain", 35), False)
     await hass.async_block_till_done()
     assert len(events) == 2
 
@@ -1826,3 +1873,265 @@ async def test_stale_filter_skipped_for_horizon_zero(hass: HomeAssistant) -> Non
     healthy_calls = [c for c in stub.health_calls if c[0] == "weather.primary" and c[1] is True]
     assert healthy_calls, "solar_panels provider should be marked healthy"
     assert "stale_forecast" not in [c[2] for c in stub.health_calls]
+
+
+# ---------------------------------------------------------------------------
+# should_wash gate
+# ---------------------------------------------------------------------------
+
+
+def _sunny_patch():
+    """Context managers that make the provider return clear weather (can_wash)."""
+    return (
+        patch(
+            "custom_components.washwise.coordinator.weather_source.is_available",
+            new=AsyncMock(return_value=True),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_current",
+            new=AsyncMock(return_value=_sunny_current()),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_forecast",
+            new=AsyncMock(return_value=_clear_forecast(3)),
+        ),
+    )
+
+
+def _rainy_patch():
+    """Context managers that make the provider return rain now (can_wash False)."""
+    return (
+        patch(
+            "custom_components.washwise.coordinator.weather_source.is_available",
+            new=AsyncMock(return_value=True),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_current",
+            new=AsyncMock(return_value=_rainy_current()),
+        ),
+        patch(
+            "custom_components.washwise.coordinator.weather_source.get_forecast",
+            new=AsyncMock(return_value=_rainy_forecast(3)),
+        ),
+    )
+
+
+def _seed_wash(stub: _StubStore, days_ago: int) -> None:
+    """Seed the stub store with a single wash entry ``days_ago`` days back."""
+    ts = (FROZEN_NOW - timedelta(days=days_ago)).isoformat()
+    stub.data = StoredData(wash_log=[WashEntry(timestamp=ts, source="manual")])
+
+
+@freeze_time(FROZEN_NOW)
+async def test_should_wash_mirrors_can_wash_when_min_days_zero(hass: HomeAssistant) -> None:
+    """Default min_days=0 → should_wash tracks can_wash exactly."""
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+    with contextlib.ExitStack() as stack:
+        for p in _sunny_patch():
+            stack.enter_context(p)
+        decision = await coord._async_update_data()
+    assert decision.can_wash is True
+    assert coord.should_wash is True
+
+
+@freeze_time(FROZEN_NOW)
+async def test_should_wash_false_when_cannot_wash(hass: HomeAssistant) -> None:
+    """can_wash False → should_wash False regardless of min_days."""
+    entry = _make_entry(
+        ["weather.primary"],
+        customize=True,
+        options={CONF_SHOULD_WASH_MIN_DAYS: 7},
+    )
+    entry.add_to_hass(hass)
+    coord, stub = _build_coordinator(hass, entry)
+    _seed_wash(stub, days_ago=30)
+    with contextlib.ExitStack() as stack:
+        for p in _rainy_patch():
+            stack.enter_context(p)
+        decision = await coord._async_update_data()
+    assert decision.can_wash is False
+    assert coord.should_wash is False
+
+
+@freeze_time(FROZEN_NOW)
+async def test_should_wash_blocked_when_recently_washed(hass: HomeAssistant) -> None:
+    """can_wash True but washed 2 days ago, min_days=7 → should_wash False."""
+    entry = _make_entry(
+        ["weather.primary"],
+        customize=True,
+        options={CONF_SHOULD_WASH_MIN_DAYS: 7},
+    )
+    entry.add_to_hass(hass)
+    coord, stub = _build_coordinator(hass, entry)
+    _seed_wash(stub, days_ago=2)
+    with contextlib.ExitStack() as stack:
+        for p in _sunny_patch():
+            stack.enter_context(p)
+        decision = await coord._async_update_data()
+    assert decision.can_wash is True
+    assert coord.should_wash is False
+
+
+@freeze_time(FROZEN_NOW)
+async def test_should_wash_true_when_overdue(hass: HomeAssistant) -> None:
+    """can_wash True and washed 10 days ago, min_days=7 → should_wash True."""
+    entry = _make_entry(
+        ["weather.primary"],
+        customize=True,
+        options={CONF_SHOULD_WASH_MIN_DAYS: 7},
+    )
+    entry.add_to_hass(hass)
+    coord, stub = _build_coordinator(hass, entry)
+    _seed_wash(stub, days_ago=10)
+    with contextlib.ExitStack() as stack:
+        for p in _sunny_patch():
+            stack.enter_context(p)
+        await coord._async_update_data()
+    assert coord.should_wash is True
+
+
+@freeze_time(FROZEN_NOW)
+async def test_should_wash_true_when_never_washed(hass: HomeAssistant) -> None:
+    """Empty wash log counts as overdue → should_wash True when can_wash True."""
+    entry = _make_entry(
+        ["weather.primary"],
+        customize=True,
+        options={CONF_SHOULD_WASH_MIN_DAYS: 7},
+    )
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+    with contextlib.ExitStack() as stack:
+        for p in _sunny_patch():
+            stack.enter_context(p)
+        await coord._async_update_data()
+    assert coord.should_wash is True
+
+
+@freeze_time(FROZEN_NOW)
+async def test_should_wash_false_when_snoozed(hass: HomeAssistant) -> None:
+    """An active snooze forces should_wash False."""
+    until = FROZEN_NOW + timedelta(hours=1)
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, stub = _build_coordinator(hass, entry)
+    await stub.set_snooze(until)
+    decision = await coord._async_update_data()
+    assert decision.reason == "snoozed"
+    assert coord.should_wash is False
+
+
+@freeze_time(FROZEN_NOW)
+async def test_should_wash_edge_events_fire(hass: HomeAssistant) -> None:
+    """should_wash_on / _off fire on the gate's edges, not on the first verdict."""
+    on_events: list[Any] = []
+    off_events: list[Any] = []
+    hass.bus.async_listen(EVENT_SHOULD_WASH_ON, on_events.append)
+    hass.bus.async_listen(EVENT_SHOULD_WASH_OFF, off_events.append)
+
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+
+    # First verdict: should_wash True, but prev is None → no event.
+    with contextlib.ExitStack() as stack:
+        for p in _sunny_patch():
+            stack.enter_context(p)
+        await coord._async_update_data()
+    await hass.async_block_till_done()
+    assert on_events == []
+    assert off_events == []
+
+    # Flip to can_wash False → should_wash False → off event fires.
+    with contextlib.ExitStack() as stack:
+        for p in _rainy_patch():
+            stack.enter_context(p)
+        await coord._async_update_data()
+    await hass.async_block_till_done()
+    assert len(off_events) == 1
+    assert off_events[0].data["should_wash"] is False
+    assert off_events[0].data["can_wash"] is False
+    assert off_events[0].data["entry_id"] == entry.entry_id
+
+    # Flip back to clear → on event fires.
+    with contextlib.ExitStack() as stack:
+        for p in _sunny_patch():
+            stack.enter_context(p)
+        await coord._async_update_data()
+    await hass.async_block_till_done()
+    assert len(on_events) == 1
+    assert on_events[0].data["should_wash"] is True
+
+
+@freeze_time(FROZEN_NOW)
+async def test_can_wash_edge_events_fire(hass: HomeAssistant) -> None:
+    """can_wash_on / _off fire on the can_wash edge, not on the first verdict."""
+    on_events: list[Any] = []
+    off_events: list[Any] = []
+    hass.bus.async_listen(EVENT_CAN_WASH_ON, on_events.append)
+    hass.bus.async_listen(EVENT_CAN_WASH_OFF, off_events.append)
+
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+
+    # First verdict: can_wash True, but prev is None → no event.
+    with contextlib.ExitStack() as stack:
+        for p in _sunny_patch():
+            stack.enter_context(p)
+        await coord._async_update_data()
+    await hass.async_block_till_done()
+    assert on_events == []
+    assert off_events == []
+
+    # Flip to can_wash False → off event fires.
+    with contextlib.ExitStack() as stack:
+        for p in _rainy_patch():
+            stack.enter_context(p)
+        await coord._async_update_data()
+    await hass.async_block_till_done()
+    assert len(off_events) == 1
+    assert off_events[0].data["can_wash"] is False
+    assert off_events[0].data["previous_can_wash"] is True
+    assert off_events[0].data["entry_id"] == entry.entry_id
+
+    # Flip back to clear → on event fires.
+    with contextlib.ExitStack() as stack:
+        for p in _sunny_patch():
+            stack.enter_context(p)
+        await coord._async_update_data()
+    await hass.async_block_till_done()
+    assert len(on_events) == 1
+    assert on_events[0].data["can_wash"] is True
+    assert on_events[0].data["previous_can_wash"] is False
+
+
+@freeze_time(FROZEN_NOW)
+async def test_resolve_min_days_invalid_falls_back_to_default(hass: HomeAssistant) -> None:
+    """A non-numeric min_days option degrades to the default (0)."""
+    entry = _make_entry(["weather.primary"], options={CONF_SHOULD_WASH_MIN_DAYS: "not-a-number"})
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+    assert coord._resolve_should_wash_min_days() == 0
+
+
+@freeze_time(FROZEN_NOW)
+async def test_days_since_handles_garbage_timestamp(hass: HomeAssistant) -> None:
+    """A malformed wash-log timestamp yields None rather than raising."""
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, stub = _build_coordinator(hass, entry)
+    stub.data = StoredData(wash_log=[WashEntry(timestamp="garbage", source="manual")])
+    assert coord._days_since_last_wash(stub.data) is None
+
+
+@freeze_time(FROZEN_NOW)
+async def test_days_since_treats_naive_timestamp_as_utc(hass: HomeAssistant) -> None:
+    """A naive (tz-less) ISO timestamp is interpreted as UTC, not rejected."""
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, stub = _build_coordinator(hass, entry)
+    naive = (FROZEN_NOW - timedelta(days=4)).replace(tzinfo=None).isoformat()
+    stub.data = StoredData(wash_log=[WashEntry(timestamp=naive, source="manual")])
+    assert coord._days_since_last_wash(stub.data) == 4

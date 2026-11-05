@@ -43,6 +43,7 @@ from .const import (
     CONF_RAIN_GAUGE_ENTITY,
     CONF_RAIN_GAUGE_THRESHOLD_MM,
     CONF_SCAN_INTERVAL_MINUTES,
+    CONF_SHOULD_WASH_MIN_DAYS,
     CONF_TEMPERATURE_UNIT,
     CONF_WEATHER_ENTITIES,
     CONF_WIND_THRESHOLD,
@@ -52,8 +53,13 @@ from .const import (
     DEFAULT_FREEZE_WEIGHT,
     DEFAULT_PRECIP_WEIGHT,
     DEFAULT_RAIN_GAUGE_THRESHOLD_MM,
+    DEFAULT_SHOULD_WASH_MIN_DAYS,
     DEFAULT_TEMPERATURE_UNIT,
     DOMAIN,
+    EVENT_CAN_WASH_OFF,
+    EVENT_CAN_WASH_ON,
+    EVENT_SHOULD_WASH_OFF,
+    EVENT_SHOULD_WASH_ON,
     EVENT_VERDICT_CHANGED,
     SCAN_INTERVAL,
     TEMPERATURE_UNIT_AUTO,
@@ -67,19 +73,22 @@ from .storage import WashWiseStore
 _LOGGER = logging.getLogger(__name__)
 
 
-def _verdict_fingerprint(decision: Decision) -> tuple[Any, ...]:
+def _verdict_fingerprint(decision: Decision, should_wash: bool | None) -> tuple[Any, ...]:
     """The user-visible subset of a Decision used to detect a verdict flip.
 
     Deliberately NOT the full dataclass ``__eq__``: ``forecast_summary`` /
     ``blocking_days`` churn on every poll as dates roll forward, which would
-    fire ``washwise_verdict_changed`` constantly. Only these four fields are
+    fire ``washwise_verdict_changed`` constantly. Only these fields are
     surfaced to users (card + sensors), so only they define a "change".
+    ``should_wash`` is derived state (not on ``Decision``) but is user-visible
+    via its binary sensor, so a flip in it alone is a real verdict change.
     """
     return (
         decision.can_wash,
         decision.reason,
         decision.score,
         decision.days_until_wash,
+        should_wash,
     )
 
 
@@ -105,6 +114,9 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         self._enabled: bool = True
         self._active_weather_entity: str | None = None
         self._last_decision: Decision | None = None
+        # Derived ``should_wash`` gate (can_wash AND days-since >= min_days).
+        # Not part of the Decision dataclass — it depends on the wash log.
+        self._should_wash: bool | None = None
         # Last weather-derived (non-snoozed) verdict, used to restore the card
         # instantly on clear_snooze without waiting for a forecast fetch.
         self._last_real_decision: Decision | None = None
@@ -251,11 +263,20 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         re-fetches the forecast over the network, adding seconds of lag before
         the card reflects the tap. The store write above is already applied, so
         the sensors re-render immediately with the new timestamp.
+
+        The ``should_wash`` gate, however, DOES depend on the wash log: a wash
+        resets ``days_since_last_wash`` to 0, which can drop the gate below its
+        ``should_wash_min_days`` threshold. So recompute the gate from the
+        now-updated store and route through ``_set_decision`` — this re-renders
+        the should_wash sensor immediately and fires the ``should_wash_off`` edge
+        event, instead of leaving the gate stale until the next poll.
         """
         ts = timestamp if timestamp is not None else dt_util.utcnow()
         entry = WashEntry(timestamp=ts.isoformat(), source="manual")
         await self._store.append_wash(entry)
         if self.data is not None:
+            stored = await self._store.load()
+            self._set_decision(self.data, self._compute_should_wash(self.data, stored))
             self.async_set_updated_data(self.data)
         else:
             await self.async_request_refresh()
@@ -277,7 +298,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
             forecast_summary=[],
             days_analyzed=0,
         )
-        self._set_decision(snooze_decision)
+        self._set_decision(snooze_decision, False)
         self.async_set_updated_data(snooze_decision)
 
     async def async_clear_snooze(self) -> None:
@@ -289,7 +310,9 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         """
         await self._store.set_snooze(None)
         if self._last_real_decision is not None:
-            self._set_decision(self._last_real_decision)
+            restored = self._last_real_decision
+            stored = await self._store.load()
+            self._set_decision(restored, self._compute_should_wash(restored, stored))
             self.async_set_updated_data(self._last_real_decision)
         await self.async_request_refresh()
 
@@ -344,7 +367,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
                     forecast_summary=[],
                     days_analyzed=0,
                 )
-                self._set_decision(snooze_decision)
+                self._set_decision(snooze_decision, False)
                 return snooze_decision
 
         # Step 4: walk the provider chain.
@@ -447,7 +470,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
             # event, so an automation reacting to the event sees the updated
             # switch state rather than the previous tick's.
             await self._async_handle_irrigation(decision)
-            self._set_decision(decision)
+            self._set_decision(decision, self._compute_should_wash(decision, data))
             self._update_count += 1
             if self._update_count % 50 == 0:
                 await self._store.gc_stale_health()
@@ -469,15 +492,17 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
     # ------------------------------------------------------------------
 
     @callback
-    def _set_decision(self, decision: Decision) -> Decision:
-        """Store the new decision and fire the verdict-changed event on a flip.
+    def _set_decision(self, decision: Decision, should_wash: bool | None) -> Decision:
+        """Store the new decision and fire verdict/should_wash events on a flip.
 
         Called from every path that produces a verdict (snooze short-circuit
         and the normal provider walk). Fires ``washwise_verdict_changed`` on
         the HA bus only when the user-visible outcome actually changes —
-        ``can_wash``, ``reason``, ``score``, or ``days_until_wash``. Entering/
-        leaving snooze or a no-data state is a real change and fires; an idle
-        re-poll with an identical verdict does not.
+        ``can_wash``, ``reason``, ``score``, ``days_until_wash``, or the derived
+        ``should_wash`` gate. Entering/leaving snooze or a no-data state is a
+        real change and fires; an idle re-poll with an identical verdict does
+        not. On a ``should_wash`` edge specifically, also fires the dedicated
+        ``washwise_should_wash_on`` / ``_off`` edge event.
 
         The FIRST decision after construction (``prev is None``) never fires:
         there is no prior verdict to have "changed" from, and ``_last_decision``
@@ -486,7 +511,9 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         listening automation) even when the verdict is unchanged.
         """
         prev = self._last_decision
+        prev_should_wash = self._should_wash
         self._last_decision = decision
+        self._should_wash = should_wash
         # Advance the last-update timestamp on every verdict. The base
         # DataUpdateCoordinator (unlike TimestampDataUpdateCoordinator) never
         # touches last_update_success_time, so without this it stays frozen at
@@ -496,16 +523,52 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         # the synchronous mark_washed/snooze/clear pushes).
         with contextlib.suppress(Exception):  # pragma: no cover - HA without setter
             self.last_update_success_time = dt_util.utcnow()  # type: ignore[attr-defined]
-        changed = prev is not None and _verdict_fingerprint(prev) != _verdict_fingerprint(decision)
+        if prev is None:
+            return decision
+        changed = _verdict_fingerprint(prev, prev_should_wash) != _verdict_fingerprint(
+            decision, should_wash
+        )
+        category = self.entry.data.get(CONF_CATEGORY, DEFAULT_CATEGORY)
         if changed:
             self.hass.bus.async_fire(
                 EVENT_VERDICT_CHANGED,
                 {
                     "entry_id": self.entry.entry_id,
                     "title": self.entry.title,
-                    "category": self.entry.data.get(CONF_CATEGORY, DEFAULT_CATEGORY),
+                    "category": category,
                     "can_wash": decision.can_wash,
-                    "previous_can_wash": prev.can_wash if prev is not None else None,
+                    "previous_can_wash": prev.can_wash,
+                    "should_wash": should_wash,
+                    "previous_should_wash": prev_should_wash,
+                    "score": decision.score,
+                    "reason": decision.reason,
+                    "days_until_wash": decision.days_until_wash,
+                },
+            )
+        # Fire the dedicated should_wash edge event on a gate flip.
+        if should_wash is not None and should_wash != prev_should_wash:
+            self.hass.bus.async_fire(
+                EVENT_SHOULD_WASH_ON if should_wash else EVENT_SHOULD_WASH_OFF,
+                {
+                    "entry_id": self.entry.entry_id,
+                    "title": self.entry.title,
+                    "category": category,
+                    "should_wash": should_wash,
+                    "can_wash": decision.can_wash,
+                    "days_since_last_wash": self._days_since_last_wash(),
+                    "reason": decision.reason,
+                },
+            )
+        # Fire the dedicated can_wash edge event on a can_wash flip.
+        if decision.can_wash != prev.can_wash:
+            self.hass.bus.async_fire(
+                EVENT_CAN_WASH_ON if decision.can_wash else EVENT_CAN_WASH_OFF,
+                {
+                    "entry_id": self.entry.entry_id,
+                    "title": self.entry.title,
+                    "category": category,
+                    "can_wash": decision.can_wash,
+                    "previous_can_wash": prev.can_wash,
                     "score": decision.score,
                     "reason": decision.reason,
                     "days_until_wash": decision.days_until_wash,
@@ -665,6 +728,68 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
                 thresholds["wind_threshold_kmh"] = float(stored_wind)
 
         return thresholds, invert
+
+    @property
+    def should_wash(self) -> bool | None:
+        """Derived gate: ON when weather allows AND it's been long enough.
+
+        ``None`` before the first verdict. Computed in ``_async_update_data``
+        from ``can_wash`` and the days-since-last-wash gate; the binary sensor
+        reads this.
+        """
+        return self._should_wash
+
+    def _resolve_should_wash_min_days(self) -> int:
+        """Minimum whole days since the last wash before ``should_wash`` fires.
+
+        Options win over entry.data, mirroring ``_resolve_thresholds``. Default
+        0 disables the gate so ``should_wash`` tracks ``can_wash``.
+        """
+        options = self.entry.options or {}
+        data = self.entry.data or {}
+        raw = options.get(
+            CONF_SHOULD_WASH_MIN_DAYS,
+            data.get(CONF_SHOULD_WASH_MIN_DAYS, DEFAULT_SHOULD_WASH_MIN_DAYS),
+        )
+        try:
+            return max(0, int(raw))
+        except (TypeError, ValueError):
+            return DEFAULT_SHOULD_WASH_MIN_DAYS
+
+    def _days_since_last_wash(self, stored: Any = None) -> int | None:
+        """Whole days since the last recorded wash, or ``None`` if never washed.
+
+        Reads the newest ``wash_log`` entry. ``stored`` defaults to the store's
+        cached snapshot so the synchronous event-fire path can call it without
+        awaiting.
+        """
+        if stored is None:
+            stored = getattr(self._store, "_data", None)
+        wash_log = getattr(stored, "wash_log", None) or []
+        if not wash_log:
+            return None
+        try:
+            ts = datetime.fromisoformat(wash_log[-1].timestamp)
+        except (ValueError, TypeError, AttributeError):
+            return None
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=UTC)
+        return max(0, (datetime.now(UTC) - ts).days)
+
+    def _compute_should_wash(self, decision: Decision, stored: Any) -> bool:
+        """``can_wash`` AND (never-washed OR days-since >= configured minimum).
+
+        Never-washed (empty log → days-since ``None``) counts as overdue → the
+        days-side is True, so a fresh install with no wash history behaves like
+        ``can_wash``.
+        """
+        if not decision.can_wash:
+            return False
+        min_days = self._resolve_should_wash_min_days()
+        if min_days <= 0:
+            return True
+        days_since = self._days_since_last_wash(stored)
+        return days_since is None or days_since >= min_days
 
     @staticmethod
     def _resolve_scan_interval(entry: ConfigEntry) -> timedelta:

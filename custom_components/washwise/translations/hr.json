@@ -29,7 +29,8 @@
           "precip_weight": "Težina rezultata za oborine",
           "freeze_weight": "Težina rezultata za smrzavanje",
           "condition_weight": "Težina rezultata za vremenske uvjete",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Maksimalna brzina vjetra (km/h)",
+          "should_wash_min_days": "Minimalan broj dana od posljednjeg pranja"
         },
         "data_description": {
           "days": "Broj vremenskih okvira prognoze za analizu. S dnevnom prognozom svaki okvir = 1 dan; s satnom svaki okvir = 1 sat. Veće vrijednosti hvataju više vremena, ali daju konzervativnije presude.",
@@ -40,7 +41,8 @@
           "precip_weight": "Koliko oborine u prognozi oduzimaju od rezultata 0–100. Viša vrijednost agresivnije kažnjava kišne dane.",
           "freeze_weight": "Koliko dan smrzavanja oduzima od rezultata 0–100. Postavi na 0 da se smrzavanje ignorira u bodovanju, ali i dalje blokira presudu.",
           "condition_weight": "Koliko loši vremenski uvjeti (oluje, tuča, snijeg) oduzimaju od rezultata 0–100. Ozbiljnost je po uvjetu.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Ostavi prazno za onemogućavanje. Dan prognoze vjetrovitiji od ovoga blokira pranje.",
+          "should_wash_min_days": "Uključi 'Trebalo bi oprati' tek kada prođe barem ovoliko cijelih dana od posljednjeg zabilježenog pranja. 0 onemogućuje uvjet pa 'Trebalo bi oprati' prati 'Može se prati'. Nikad oprani unos smatra se zakašnjelim."
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "Prag oborina (mm)",
           "freeze_check": "Blokira pri temperaturama smrzavanja",
           "forecast_type": "Vrsta prognoze",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Maksimalna brzina vjetra (km/h)",
+          "should_wash_min_days": "Minimalan broj dana od posljednjeg pranja"
         },
         "data_description": {
           "days": "Broj vremenskih okvira prognoze za analizu. S dnevnom prognozom svaki okvir = 1 dan; s satnom svaki okvir = 1 sat.",
           "precip_threshold_mm": "Ukupne oborine po danu iznad ove vrijednosti blokiraju pranje.",
           "freeze_check": "Kad je uključeno, dan prognoze čija temperatura prelazi 0 °C blokira pranje.",
           "forecast_type": "Dnevno koristi jedan unos po danu; Satno koristi jedan unos po satu. Satno je preciznije, ali zahtijeva da izvor pruža satne podatke.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Ostavi prazno za onemogućavanje. Dan prognoze vjetrovitiji od ovoga blokira pranje.",
+          "should_wash_min_days": "Uključi 'Trebalo bi oprati' tek kada prođe barem ovoliko cijelih dana od posljednjeg zabilježenog pranja. 0 onemogućuje uvjet pa 'Trebalo bi oprati' prati 'Može se prati'. Nikad oprani unos smatra se zakašnjelim."
         }
       },
       "scoring": {
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "Stanje prekidača navodnjavanja"
+      },
+      "should_wash": {
+        "name": "Trebalo bi oprati"
       }
     },
     "sensor": {
@@ -307,11 +314,11 @@
           "rain": "Kiša",
           "freeze": "Smrzavanje",
           "snow": "Snijeg",
-          "wind": "Wind",
+          "wind": "Vjetar",
           "bad_condition": "Loše vrijeme",
           "bad_current_condition": "Loši trenutni vremenski uvjeti",
           "dirty_now": "Površina prljava — operi odmah",
-          "no_data": "No forecast data",
+          "no_data": "Nema podataka prognoze",
           "snoozed": "Odgođeno",
           "unavailable": "Nedostupno"
         }
@@ -325,10 +332,10 @@
           "no_rain": "Ne — Kiša",
           "no_freeze": "Ne — Smrzavanje",
           "no_snow": "Ne — Snijeg",
-          "no_wind": "No — Wind",
+          "no_wind": "Ne — Vjetar",
           "no_bad_condition": "Ne — Loše vrijeme",
           "no_bad_current_condition": "Ne — Loši trenutni vremenski uvjeti",
-          "no_data": "No — No forecast data",
+          "no_data": "Ne — Nema podataka prognoze",
           "snoozed": "Odgođeno"
         }
       },
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "Označi kao navodnjavano"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "'Trebalo bi oprati' uključeno",
+      "description": "Vrijeme dopušta pranje i prošlo je dovoljno vremena od posljednjeg.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise unos",
+          "description": "Ograniči ovaj okidač na jedan WashWise unos. Ostavi prazno da se aktivira za bilo koji unos."
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "'Trebalo bi oprati' isključeno",
+      "description": "Preporuka 'Trebalo bi oprati' poništena je.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise unos",
+          "description": "Ograniči ovaj okidač na jedan WashWise unos. Ostavi prazno da se aktivira za bilo koji unos."
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "'Može se prati' uključeno",
+      "description": "Vrijeme sada dopušta pranje.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise unos",
+          "description": "Ograniči ovaj okidač na jedan WashWise unos. Ostavi prazno da se aktivira za bilo koji unos."
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "'Može se prati' isključeno",
+      "description": "Vrijeme više ne dopušta pranje.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise unos",
+          "description": "Ograniči ovaj okidač na jedan WashWise unos. Ostavi prazno da se aktivira za bilo koji unos."
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "Presuda promijenjena",
+      "description": "Presuda o pranju (može se prati / trebalo bi oprati / rezultat / razlog) promijenjena je.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise unos",
+          "description": "Ograniči ovaj okidač na jedan WashWise unos. Ostavi prazno da se aktivira za bilo koji unos."
+        }
       }
     }
   }

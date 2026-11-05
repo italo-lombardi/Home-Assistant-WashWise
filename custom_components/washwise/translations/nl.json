@@ -29,7 +29,8 @@
           "precip_weight": "Weging neerslagscore",
           "freeze_weight": "Weging vriesscore",
           "condition_weight": "Weging weerconditiescore",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Max. windsnelheid (km/h)",
+          "should_wash_min_days": "Minimaal aantal dagen sinds laatste wasbeurt"
         },
         "data_description": {
           "days": "Hoeveel voorspellingsdagen er vooruit worden gekeken, inclusief vandaag. Een grotere horizon vangt meer weer op, maar levert voorzichtigere oordelen op.",
@@ -40,7 +41,8 @@
           "precip_weight": "Hoeveel regen in de voorspelling van de score van 0–100 aftrekt. Een hogere waarde bestraft regenachtige dagen strenger.",
           "freeze_weight": "Hoeveel een vriesdag van de score van 0–100 aftrekt. Stel in op 0 om vriezen in de score te negeren, terwijl het oordeel nog steeds geblokkeerd wordt.",
           "condition_weight": "Hoeveel slechte weersomstandigheden (storm, hagel, sneeuw) van de score van 0–100 aftrekken. De ernst verschilt per conditie.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Laat leeg om uit te schakelen. Een voorspellingsdag met meer wind dan dit blokkeert het wassen.",
+          "should_wash_min_days": "Schakel 'Moet wassen' pas in zodra er ten minste zoveel hele dagen zijn verstreken sinds de laatst geregistreerde wasbeurt. 0 schakelt de drempel uit, zodat 'Moet wassen' gelijkloopt met 'Kan wassen'. Een nooit gewassen configuratie geldt als achterstallig."
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "Neerslagdrempel (mm)",
           "freeze_check": "Blokkeren bij vriestemperaturen",
           "forecast_type": "Type voorspelling",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Max. windsnelheid (km/h)",
+          "should_wash_min_days": "Minimaal aantal dagen sinds laatste wasbeurt"
         },
         "data_description": {
           "days": "Hoeveel voorspellingsdagen er vooruit worden gekeken, inclusief vandaag.",
           "precip_threshold_mm": "Wanneer de totale neerslag per dag boven deze waarde uitkomt, wordt de wasbeurt geblokkeerd.",
           "freeze_check": "Wanneer ingeschakeld, blokkeert een voorspellingsdag waarop de temperatuur onder 0 °C zakt de wasbeurt.",
           "forecast_type": "Dagelijks gebruikt één invoer per dag; Per uur aggregeert uurwaarden wanneer dat ondersteund wordt.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Laat leeg om uit te schakelen. Een voorspellingsdag met meer wind dan dit blokkeert het wassen.",
+          "should_wash_min_days": "Schakel 'Moet wassen' pas in zodra er ten minste zoveel hele dagen zijn verstreken sinds de laatst geregistreerde wasbeurt. 0 schakelt de drempel uit, zodat 'Moet wassen' gelijkloopt met 'Kan wassen'. Een nooit gewassen configuratie geldt als achterstallig."
         }
       },
       "scoring": {
@@ -242,7 +246,7 @@
         "boat": "Boot",
         "rv_camper": "Camper",
         "windows_house": "Ramen van het huis",
-        "laundry": "Laundry",
+        "laundry": "Was",
         "solar_panels": "Zonnepanelen",
         "patio_deck": "Terras / vlonder",
         "garden_irrigation": "Tuinirrigatie",
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "Status beregeningsschakelaar"
+      },
+      "should_wash": {
+        "name": "Moet wassen"
       }
     },
     "sensor": {
@@ -311,7 +318,7 @@
           "bad_condition": "Slecht weer",
           "bad_current_condition": "Slecht actueel weer",
           "dirty_now": "Vies oppervlak — nu wassen",
-          "no_data": "No forecast data",
+          "no_data": "Geen voorspellingsgegevens",
           "snoozed": "Gesluimerd",
           "unavailable": "Niet beschikbaar"
         }
@@ -325,10 +332,10 @@
           "no_rain": "Nee — Regen",
           "no_freeze": "Nee — Vorst",
           "no_snow": "Nee — Sneeuw",
-          "no_wind": "No — Wind",
+          "no_wind": "Nee — Wind",
           "no_bad_condition": "Nee — Slecht weer",
           "no_bad_current_condition": "Nee — Slecht actueel weer",
-          "no_data": "No — No forecast data",
+          "no_data": "Nee — Geen voorspellingsgegevens",
           "snoozed": "Gesluimerd"
         }
       },
@@ -354,7 +361,7 @@
         "name": "Geanalyseerde dagen"
       },
       "hours_analyzed": {
-        "name": "Hours analyzed"
+        "name": "Geanalyseerde uren"
       },
       "precip_total_mm": {
         "name": "Totale neerslag in voorspelling"
@@ -392,7 +399,7 @@
           "boat": "Boot",
           "rv_camper": "Camper",
           "windows_house": "Huisramen",
-          "laundry": "Laundry",
+          "laundry": "Was",
           "solar_panels": "Zonnepanelen",
           "patio_deck": "Terras",
           "garden_irrigation": "Tuinberegening",
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "Markeer als bewaterd"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "Moet wassen ingeschakeld",
+      "description": "Het weer laat een wasbeurt toe en het is lang genoeg geleden sinds de laatste.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-configuratie",
+          "description": "Beperk deze trigger tot één WashWise-configuratie. Laat leeg om voor elke configuratie te activeren."
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "Moet wassen uitgeschakeld",
+      "description": "De aanbeveling 'Moet wassen' is vervallen.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-configuratie",
+          "description": "Beperk deze trigger tot één WashWise-configuratie. Laat leeg om voor elke configuratie te activeren."
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "Kan wassen ingeschakeld",
+      "description": "Het weer laat nu een wasbeurt toe.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-configuratie",
+          "description": "Beperk deze trigger tot één WashWise-configuratie. Laat leeg om voor elke configuratie te activeren."
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "Kan wassen uitgeschakeld",
+      "description": "Het weer laat geen wasbeurt meer toe.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-configuratie",
+          "description": "Beperk deze trigger tot één WashWise-configuratie. Laat leeg om voor elke configuratie te activeren."
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "Oordeel gewijzigd",
+      "description": "Het wasoordeel (kan wassen / moet wassen / score / reden) is gewijzigd.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-configuratie",
+          "description": "Beperk deze trigger tot één WashWise-configuratie. Laat leeg om voor elke configuratie te activeren."
+        }
       }
     }
   }

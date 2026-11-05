@@ -29,7 +29,8 @@
           "precip_weight": "降水评分权重",
           "freeze_weight": "结冰评分权重",
           "condition_weight": "天气状况评分权重",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "最大风速（km/h）",
+          "should_wash_min_days": "距上次清洗的最少天数"
         },
         "data_description": {
           "days": "要分析的预报时段数。使用逐日预报时每时段 = 1 天；使用逐小时预报时每时段 = 1 小时。值越大，覆盖天气范围越广，但判断结果越保守。",
@@ -40,7 +41,8 @@
           "precip_weight": "预报中的降雨量对 0–100 分评分的扣减幅度。值越高，对多雨天气的惩罚越重。",
           "freeze_weight": "结冰天气对 0–100 分评分的扣减幅度。设为 0 可在评分中忽略结冰，但仍会阻止清洗判断。",
           "condition_weight": "恶劣天气状况（风暴、冰雹、降雪）对 0–100 分评分的扣减幅度，严重程度按各状况单独计算。",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "留空则禁用。预报中风力超过此值的日期将阻止清洗。",
+          "should_wash_min_days": "只有距上次记录的清洗已过去至少这么多整天后，才开启“应当清洗”。设为 0 将禁用此限制，使“应当清洗”与“可以清洗”保持一致。从未清洗过的条目视为已逾期。"
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "降水阈值（毫米）",
           "freeze_check": "在结冰温度时阻止清洗",
           "forecast_type": "预报类型",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "最大风速（km/h）",
+          "should_wash_min_days": "距上次清洗的最少天数"
         },
         "data_description": {
           "days": "要分析的预报时段数。使用逐日预报时每时段 = 1 天；使用逐小时预报时每时段 = 1 小时。",
           "precip_threshold_mm": "每日总降水量超过此值将阻止清洗。",
           "freeze_check": "开启后，预报气温低于 0 °C 的日期将阻止清洗。",
           "forecast_type": "逐日模式每天一条记录；逐小时模式每小时一条记录。逐小时更精准，但需要来源支持逐小时数据。",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "留空则禁用。预报中风力超过此值的日期将阻止清洗。",
+          "should_wash_min_days": "只有距上次记录的清洗已过去至少这么多整天后，才开启“应当清洗”。设为 0 将禁用此限制，使“应当清洗”与“可以清洗”保持一致。从未清洗过的条目视为已逾期。"
         }
       },
       "scoring": {
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "灌溉开关状态"
+      },
+      "should_wash": {
+        "name": "应当清洗"
       }
     },
     "sensor": {
@@ -307,11 +314,11 @@
           "rain": "降雨",
           "freeze": "结冰",
           "snow": "降雪",
-          "wind": "Wind",
+          "wind": "大风",
           "bad_condition": "恶劣天气",
           "bad_current_condition": "当前天气恶劣",
           "dirty_now": "表面脏污——立即清洗",
-          "no_data": "No forecast data",
+          "no_data": "无预报数据",
           "snoozed": "已暂停",
           "unavailable": "不可用"
         }
@@ -325,10 +332,10 @@
           "no_rain": "否——降雨",
           "no_freeze": "否——结冰",
           "no_snow": "否——降雪",
-          "no_wind": "No — Wind",
+          "no_wind": "否——大风",
           "no_bad_condition": "否——恶劣天气",
           "no_bad_current_condition": "否——当前天气恶劣",
-          "no_data": "No — No forecast data",
+          "no_data": "否——无预报数据",
           "snoozed": "已暂停"
         }
       },
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "标记已灌溉"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "“应当清洗”已开启",
+      "description": "天气适合清洗，且距上次清洗已过去足够长的时间。",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise 条目",
+          "description": "将此触发器限定为单个 WashWise 条目。留空则对任意条目触发。"
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "“应当清洗”已关闭",
+      "description": "“应当清洗”建议已清除。",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise 条目",
+          "description": "将此触发器限定为单个 WashWise 条目。留空则对任意条目触发。"
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "“可以清洗”已开启",
+      "description": "天气现在适合清洗。",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise 条目",
+          "description": "将此触发器限定为单个 WashWise 条目。留空则对任意条目触发。"
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "“可以清洗”已关闭",
+      "description": "天气不再适合清洗。",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise 条目",
+          "description": "将此触发器限定为单个 WashWise 条目。留空则对任意条目触发。"
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "判断结果已更改",
+      "description": "清洗判断（可以清洗 / 应当清洗 / 评分 / 原因）发生了变化。",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise 条目",
+          "description": "将此触发器限定为单个 WashWise 条目。留空则对任意条目触发。"
+        }
       }
     }
   }

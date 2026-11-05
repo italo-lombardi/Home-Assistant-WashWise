@@ -29,7 +29,8 @@
           "precip_weight": "Precipitation score weight",
           "freeze_weight": "Freeze score weight",
           "condition_weight": "Condition score weight",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Max wind speed (km/h)",
+          "should_wash_min_days": "Minimum days since last wash"
         },
         "data_description": {
           "days": "Number of forecast slots to analyse. With daily forecast each slot = 1 day; with hourly each slot = 1 hour. Larger values catch more weather but produce more conservative verdicts.",
@@ -40,7 +41,8 @@
           "precip_weight": "How much rain in the forecast subtracts from the 0–100 score. Higher value penalizes rainy days more aggressively.",
           "freeze_weight": "How much a freezing day subtracts from the 0–100 score. Set to 0 to ignore freeze in scoring while still blocking the verdict.",
           "condition_weight": "How much bad weather conditions (storms, hail, snow) subtract from the 0–100 score. Severity is per-condition.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing.",
+          "should_wash_min_days": "Only turn on 'Should wash' once at least this many whole days have passed since the last recorded wash. 0 disables the gate so 'Should wash' mirrors 'Can wash'. A never-washed entry counts as overdue."
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "Precipitation threshold (mm)",
           "freeze_check": "Block on freezing temperatures",
           "forecast_type": "Forecast type",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Max wind speed (km/h)",
+          "should_wash_min_days": "Minimum days since last wash"
         },
         "data_description": {
           "days": "Number of forecast slots to analyse. With daily forecast each slot = 1 day; with hourly each slot = 1 hour.",
           "precip_threshold_mm": "Total precipitation per day above this value blocks the wash.",
           "freeze_check": "When on, a forecast day whose temperature crosses 0 °C blocks the wash.",
           "forecast_type": "Daily uses one entry per day; Hourly uses one entry per hour. Hourly is more accurate but requires the source to expose hourly data.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing.",
+          "should_wash_min_days": "Only turn on 'Should wash' once at least this many whole days have passed since the last recorded wash. 0 disables the gate so 'Should wash' mirrors 'Can wash'. A never-washed entry counts as overdue."
         }
       },
       "scoring": {
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "Irrigation switch state"
+      },
+      "should_wash": {
+        "name": "Should wash"
       }
     },
     "sensor": {
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "Mark irrigated"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "Should wash turned on",
+      "description": "Weather allows a wash and it has been long enough since the last one.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise entry",
+          "description": "Limit this trigger to a single WashWise entry. Leave blank to fire for any entry."
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "Should wash turned off",
+      "description": "The 'Should wash' recommendation cleared.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise entry",
+          "description": "Limit this trigger to a single WashWise entry. Leave blank to fire for any entry."
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "Can wash turned on",
+      "description": "The weather now allows a wash.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise entry",
+          "description": "Limit this trigger to a single WashWise entry. Leave blank to fire for any entry."
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "Can wash turned off",
+      "description": "The weather no longer allows a wash.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise entry",
+          "description": "Limit this trigger to a single WashWise entry. Leave blank to fire for any entry."
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "Verdict changed",
+      "description": "The wash verdict (can wash / should wash / score / reason) changed.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise entry",
+          "description": "Limit this trigger to a single WashWise entry. Leave blank to fire for any entry."
+        }
       }
     }
   }

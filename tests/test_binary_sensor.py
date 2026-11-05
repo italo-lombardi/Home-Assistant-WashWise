@@ -30,6 +30,7 @@ from custom_components.washwise.binary_sensor import (
     WashWiseCanWashBinarySensor,
     WashWiseDayOkBinarySensor,
     WashWiseFreezeRiskBinarySensor,
+    WashWiseShouldWashBinarySensor,
     _resolve_thresholds,
     async_setup_entry,
 )
@@ -100,6 +101,9 @@ def _make_coordinator(
     decision: Decision | None,
     *,
     active_weather_entity: str | None = "weather.home",
+    should_wash: bool | None = None,
+    days_since_last_wash: int | None = None,
+    min_days: int = 0,
 ) -> SimpleNamespace:
     """Return a stub coordinator that mimics the bits the entities read.
 
@@ -112,6 +116,9 @@ def _make_coordinator(
         last_update_success=decision is not None,
         active_weather_entity=active_weather_entity,
         async_add_listener=lambda update_callback, context=None: lambda: None,
+        should_wash=should_wash,
+        _days_since_last_wash=lambda stored=None: days_since_last_wash,
+        _resolve_should_wash_min_days=lambda: min_days,
     )
 
 
@@ -180,14 +187,69 @@ def test_can_wash_is_unavailable_when_no_decision() -> None:
 
 
 # ----------------------------------------------------------------------
-# can_wash attributes
+# should_wash state
 # ----------------------------------------------------------------------
 
 
+def test_should_wash_reflects_coordinator_true() -> None:
+    """``is_on`` mirrors ``coordinator.should_wash`` when True."""
+    decision = _make_decision(can_wash=True)
+    coordinator = _make_coordinator(decision, should_wash=True)
+    sensor = WashWiseShouldWashBinarySensor(coordinator, _make_entry())
+    assert sensor.is_on is True
+
+
+def test_should_wash_reflects_coordinator_false() -> None:
+    """``is_on`` mirrors ``coordinator.should_wash`` when False."""
+    decision = _make_decision(can_wash=True)
+    coordinator = _make_coordinator(decision, should_wash=False)
+    sensor = WashWiseShouldWashBinarySensor(coordinator, _make_entry())
+    assert sensor.is_on is False
+
+
+def test_should_wash_none_before_first_verdict() -> None:
+    """``is_on`` is ``None`` when the gate has not been computed yet."""
+    coordinator = _make_coordinator(None, should_wash=None)
+    sensor = WashWiseShouldWashBinarySensor(coordinator, _make_entry())
+    assert sensor.is_on is None
+
+
+def test_should_wash_attributes_surface_gate_inputs() -> None:
+    """Attributes expose can_wash, days-since, min_days and reason."""
+    decision = _make_decision(can_wash=True, reason="clear")
+    coordinator = _make_coordinator(decision, should_wash=False, days_since_last_wash=3, min_days=7)
+    sensor = WashWiseShouldWashBinarySensor(coordinator, _make_entry())
+    attrs = sensor.extra_state_attributes
+    assert attrs == {
+        "can_wash": True,
+        "days_since_last_wash": 3,
+        "min_days": 7,
+        "reason": "clear",
+    }
+
+
+def test_should_wash_attributes_none_decision() -> None:
+    """With no decision, can_wash/reason are ``None`` but gate inputs still render."""
+    coordinator = _make_coordinator(None, should_wash=None, days_since_last_wash=None, min_days=0)
+    sensor = WashWiseShouldWashBinarySensor(coordinator, _make_entry())
+    attrs = sensor.extra_state_attributes
+    assert attrs == {
+        "can_wash": None,
+        "days_since_last_wash": None,
+        "min_days": 0,
+        "reason": None,
+    }
+
+
+# ----------------------------------------------------------------------
+# can_wash attributes
+# ----------------------------------------------------------------------
 def test_can_wash_attributes_populated() -> None:
     """All required diagnostic attributes are present and well-typed."""
     decision = _make_decision(score=72, reason="clear", days_analyzed=3)
-    coordinator = _make_coordinator(decision, active_weather_entity="weather.home")
+    coordinator = _make_coordinator(
+        decision, active_weather_entity="weather.home", days_since_last_wash=4, min_days=7
+    )
     entry = _make_entry()
 
     sensor = WashWiseCanWashBinarySensor(coordinator, entry)
@@ -211,6 +273,20 @@ def test_can_wash_attributes_populated() -> None:
     assert attrs["score"] == 72
     assert attrs["reason"] == "clear"
     assert attrs["active_weather_entity"] == "weather.home"
+    # should_wash gate inputs are surfaced here too (card diagnostics read them
+    # even in can_wash verdict mode).
+    assert attrs["min_days"] == 7
+    assert attrs["days_since_last_wash"] == 4
+
+
+def test_can_wash_attributes_days_since_none_when_never_washed() -> None:
+    """days_since_last_wash is None (never washed) still renders in attributes."""
+    decision = _make_decision(score=50, reason="clear")
+    coordinator = _make_coordinator(decision, days_since_last_wash=None, min_days=0)
+    sensor = WashWiseCanWashBinarySensor(coordinator, _make_entry())
+    attrs = sensor.extra_state_attributes
+    assert attrs["days_since_last_wash"] is None
+    assert attrs["min_days"] == 0
 
 
 def test_can_wash_aggregate_diagnostics_from_forecast() -> None:
@@ -348,7 +424,7 @@ def test_per_day_count_matches_horizon_customized() -> None:
 async def test_async_setup_entry_creates_can_wash_plus_n_day_sensors(
     hass,
 ) -> None:
-    """``async_setup_entry`` registers 2 + N entities (can_wash + freeze_risk + N day_ok)."""
+    """``async_setup_entry`` registers 3 + N entities (base trio + N day_ok)."""
     decision = _make_decision()
     coordinator = _make_coordinator(decision)
 
@@ -362,9 +438,10 @@ async def test_async_setup_entry_creates_can_wash_plus_n_day_sensors(
 
     await async_setup_entry(hass, entry, _add)
 
-    assert len(added) == 2 + 3
+    assert len(added) == 3 + 3
     assert isinstance(added[0], WashWiseCanWashBinarySensor)
-    assert isinstance(added[1], WashWiseFreezeRiskBinarySensor)
+    assert isinstance(added[1], WashWiseShouldWashBinarySensor)
+    assert isinstance(added[2], WashWiseFreezeRiskBinarySensor)
     day_sensors = [e for e in added if isinstance(e, WashWiseDayOkBinarySensor)]
     assert len(day_sensors) == 3
 
@@ -381,7 +458,7 @@ async def test_async_setup_entry_creates_can_wash_plus_n_day_sensors(
 async def test_async_setup_entry_with_zero_horizon_only_registers_can_wash(
     hass,
 ) -> None:
-    """Horizon 0 → only can_wash + freeze_risk, no day sensors."""
+    """Horizon 0 → only can_wash + should_wash + freeze_risk, no day sensors."""
     decision = _make_decision(days_analyzed=0, forecast_summary=[])
     coordinator = _make_coordinator(decision)
 
@@ -395,9 +472,10 @@ async def test_async_setup_entry_with_zero_horizon_only_registers_can_wash(
 
     await async_setup_entry(hass, entry, _add)
 
-    assert len(added) == 2
+    assert len(added) == 3
     assert isinstance(added[0], WashWiseCanWashBinarySensor)
-    assert isinstance(added[1], WashWiseFreezeRiskBinarySensor)
+    assert isinstance(added[1], WashWiseShouldWashBinarySensor)
+    assert isinstance(added[2], WashWiseFreezeRiskBinarySensor)
 
 
 def test_day_ok_uses_blocked_field() -> None:
