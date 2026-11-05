@@ -115,7 +115,11 @@ class Decision:
             days_until_wash=(
                 None if d.get("days_until_wash") is None else int(d["days_until_wash"])
             ),
-            blocking_days=[_parse_date(x) for x in blocking_raw if x is not None],
+            blocking_days=[
+                parsed
+                for x in blocking_raw
+                if x is not None and (parsed := _parse_date(x)) is not None
+            ],
             forecast_summary=list(d.get("forecast_summary") or []),
             days_analyzed=int(d.get("days_analyzed", 0)),
         )

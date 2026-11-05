@@ -17,6 +17,11 @@ All notable changes to this project will be documented in this file.
 - **Solar-panel / garden-irrigation Wash Status no longer shows "unknown"** — for these inverted categories a positive verdict (rain/snow expected) now renders a proper *Yes — …* state instead of an empty "unknown".
 - **Dry freezing day no longer triggers a solar/irrigation "wash now"** — a cold, dry day is no longer treated as a cleaning/watering signal for inverted categories.
 - **Reconfigure no longer resets *Minimum days since last wash*** — the should-wash gate is now preserved across a non-customize reconfigure (e.g. a rename) instead of silently resetting to 0.
+- **Forecast-strip weekday is correct in all timezones** — the day label is now built from the local date, fixing an off-by-one for users in negative-UTC offsets.
+- **Card follows the should_wash sensor live** — in `verdict_source: should_wash`, a should_wash-only change now re-renders the card immediately instead of waiting for another change.
+- **Verdict uses one consistent calendar** — the forecast staleness filter and the decision engine now both anchor on Home Assistant's local date, avoiding a near-midnight day-boundary disagreement.
+- **Epoch-seconds forecast timestamps parsed correctly** — numeric timestamps in seconds are no longer misread as milliseconds.
+- **Minor robustness** — freeze-risk tolerates a malformed forecast day, diagnostics never carry an invalid blocking-day, and the score gauge reports "Unknown" to screen readers for a null score instead of a misleading "0".
 
 ### Changed
 - **Minimum Home Assistant version raised to 2025.11.0** — required by the named-trigger platform.

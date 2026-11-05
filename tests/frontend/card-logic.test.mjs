@@ -915,3 +915,46 @@ test("render: diagnostics hidden when its toggle is off, snoozed or not", () => 
   assert.doesNotMatch(renderWith({ snoozed: false, show_diagnostics: false }), /ww-diag-row/);
   assert.doesNotMatch(renderWith({ snoozed: true, show_diagnostics: false }), /ww-diag-row/);
 });
+
+// ── shouldUpdate: watches the should_wash sibling (verdict_source=should_wash) ─
+
+test("shouldUpdate: true when only the should_wash sibling changes", () => {
+  const id = "binary_sensor.x_can_wash";
+  const swId = "binary_sensor.x_should_wash";
+  const same = { state: "on" };
+  const oldHass = { states: { [id]: same, [swId]: { state: "off" } } };
+  const self = {
+    hass: { states: { [id]: same, [swId]: { state: "on" } } },
+    _config: { entity: id },
+  };
+  const changed = { has: () => false, get: () => oldHass };
+  assert.equal(Card.prototype.shouldUpdate.call(self, changed), true);
+});
+
+// ── _renderGauge: null score → no misleading aria-valuenow=0 ──────────────────
+
+test("_renderGauge: null score omits aria-valuenow, sets aria-valuetext=Unknown", () => {
+  const html = Card.prototype._renderGauge.call({}, null, "unknown").__html;
+  assert.match(html, /aria-valuetext=Unknown/, "screen reader hears 'Unknown'");
+  // The null branch binds aria-valuenow to the NOTHING sentinel, not 0.
+  assert.doesNotMatch(html, /aria-valuenow=0\b/, "must not announce a misleading 0");
+  assert.match(html, />—</, "visible label is an em-dash");
+});
+
+test("_renderGauge: numeric score keeps aria-valuenow", () => {
+  const html = Card.prototype._renderGauge.call({}, 73, "ok").__html;
+  assert.match(html, /aria-valuenow=73/);
+});
+
+// ── forecast strip weekday: built from LOCAL date parts (tz off-by-one fix) ────
+
+test("_renderForecastStrip: weekday label uses local date parts (no UTC shift)", () => {
+  // 2026-01-15 is a Thursday. A UTC-midnight parse + negative-offset tz could
+  // render "Wed"; the local-parts build must yield Thursday's short name here.
+  const frag = Card.prototype._renderForecastStrip.call(
+    {},
+    { attributes: { forecast_summary: [{ date: "2026-01-15", condition: "sunny" }] } }
+  ).__html;
+  const expected = new Date(2026, 0, 15).toLocaleDateString(undefined, { weekday: "short" });
+  assert.ok(frag.includes(expected), `strip should show ${expected} for 2026-01-15`);
+});

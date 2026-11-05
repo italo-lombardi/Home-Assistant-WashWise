@@ -14,7 +14,6 @@ import asyncio
 import logging
 from datetime import UTC, datetime, timedelta
 from json import JSONDecodeError
-from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
@@ -266,7 +265,3 @@ class WashWiseStore:
                 provider_health=kept,
             )
         )
-
-    async def migrate(self, old_data: dict[str, Any], old_version: int) -> dict[str, Any]:
-        del old_version
-        return old_data

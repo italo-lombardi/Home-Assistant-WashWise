@@ -291,12 +291,30 @@ def test_parse_time_iso_date_only() -> None:
 
 def test_parse_time_epoch_milliseconds() -> None:
     """Integer epoch ms (e.g. ``1700000000000``) -> a real ``date``."""
+    from datetime import UTC
+
     parsed = weather_source._parse_time(1700000000000)
     assert isinstance(parsed, date)
-    # 1700000000000 ms = 2023-11-14 22:13:20 UTC -> local date varies by tz,
-    # but the conversion itself must succeed and round-trip via fromtimestamp.
-    expected = datetime.fromtimestamp(1700000000000 / 1000).date()
+    # Compare against the same UTC conversion the implementation uses, so the
+    # assertion is stable regardless of the test host's local timezone.
+    expected = datetime.fromtimestamp(1700000000000 / 1000, tz=UTC).date()
     assert parsed == expected
+
+
+def test_parse_time_epoch_seconds() -> None:
+    """Epoch SECONDS (10-digit) are not misread as ms (1000x into the future).
+
+    1700000000 s and 1700000000000 ms are the same instant, so both must
+    resolve to the same date — previously the seconds value was divided by
+    1000 again and landed in 1970.
+    """
+    from datetime import UTC
+
+    parsed_s = weather_source._parse_time(1700000000)
+    assert isinstance(parsed_s, date)
+    assert parsed_s == datetime.fromtimestamp(1700000000, tz=UTC).date()
+    # Same instant as the ms form.
+    assert parsed_s == weather_source._parse_time(1700000000000)
 
 
 def test_parse_time_datetime_object() -> None:

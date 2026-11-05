@@ -465,7 +465,14 @@ function forecastIcon(condition) {
 }
 
 function shortDay(iso) {
-  const d = new Date(iso);
+  // A date-only ISO ("2026-01-15") parses as UTC midnight; toLocaleDateString
+  // then shifts it to the previous day for negative-UTC-offset users. Build a
+  // LOCAL date from the Y/M/D parts so the weekday label matches the forecast
+  // day regardless of timezone.
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+  const d = m
+    ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+    : new Date(iso);
   if (Number.isNaN(d.getTime())) return iso.slice(5, 10);
   return d.toLocaleDateString(undefined, { weekday: "short" });
 }
@@ -623,7 +630,12 @@ class WashWiseCard extends LitElement {
     const snoozeSensorId = `${base}_snooze_remaining`;
     if (oldHass.states?.[snoozeSensorId] !== this.hass.states?.[snoozeSensorId]) return true;
     const lastWashedId = `${base}_last_washed`;
-    return oldHass.states?.[lastWashedId] !== this.hass.states?.[lastWashedId];
+    if (oldHass.states?.[lastWashedId] !== this.hass.states?.[lastWashedId]) return true;
+    // In verdict_source=should_wash the badge is driven by the sibling
+    // should_wash binary_sensor, so a should_wash-only flip must trigger a
+    // re-render even when can_wash is unchanged.
+    const shouldWashId = `binary_sensor.${base.replace("sensor.", "")}_should_wash`;
+    return oldHass.states?.[shouldWashId] !== this.hass.states?.[shouldWashId];
   }
 
   render() {
@@ -734,9 +746,18 @@ class WashWiseCard extends LitElement {
     const pct = Math.max(0, Math.min(100, value));
     const label = score === null ? "—" : `${Math.round(value)}%`;
     const bad = verdict === "bad";
+    // For an unknown (null) score, expose aria-valuetext="Unknown" and omit
+    // aria-valuenow so screen readers don't announce a misleading "0" while
+    // the visible label shows an em-dash.
     return html`
-      <div class="ww-gauge" role="progressbar" aria-valuemin="0" aria-valuemax="100"
-           aria-valuenow=${Math.round(pct)}>
+      <div
+        class="ww-gauge"
+        role="progressbar"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow=${score === null ? nothing : Math.round(pct)}
+        aria-valuetext=${score === null ? "Unknown" : nothing}
+      >
         <div class="ww-gauge-bar-track">
           <div
             class="ww-gauge-bar-fill ${bad ? "bad" : ""}"
