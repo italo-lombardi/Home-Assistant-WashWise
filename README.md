@@ -34,9 +34,9 @@ Decide whether to wash your car (or motorcycle, boat, solar panels, patioâ€¦) â€
 |:------------------------:|:-----------:|
 | ![Thresholds](assets/screenshots/config-flow-optional-thresholds.png) | ![Card editor](assets/screenshots/card-configuration.png) |
 
-| Actions | |
-|:-------:|:-:|
-| ![Actions](assets/screenshots/actions.png) | |
+| Actions | Automation triggers |
+|:-------:|:-------------------:|
+| ![Actions](assets/screenshots/actions.png) | ![Automation triggers](assets/screenshots/automation-triggers.png) |
 
 ---
 
