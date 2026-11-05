@@ -170,9 +170,10 @@ test("shouldUpdate: false when nothing watched changed", () => {
 
 // ── _renderReason: snooze remaining formatting ────────────────────────────────
 
-// The snooze branch computes remaining time from (snooze_until - Date.now())
-// and formats it coarsely (w/d, d/h, h/m, or m). Pin Date.now() via a fixed
-// snooze_until offset so the arithmetic is deterministic.
+// The snooze branch renders HA's native <ha-relative-time> bound to
+// snooze_until (live, self-ticking) when the snooze is still in the future,
+// else an em-dash. Pin Date.now() via a fixed snooze_until offset so the
+// future-vs-elapsed guard is deterministic.
 
 function renderSnooze(remainingSeconds) {
   const NOW = 1_700_000_000_000; // fixed epoch ms
