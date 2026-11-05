@@ -842,3 +842,75 @@ test("_renderDiagnostics: min_days rows show when min_days>0, hidden when 0/abse
   // min_days absent → neither row
   assert.doesNotMatch(h({ days_since_last_wash: 5 }), /Min days between washes|Days since last wash/);
 });
+
+// ── render(): missing-entity loading gate (no error flash during load) ────────
+
+function renderMissing({ mountedAt, loadingTimer }) {
+  const self = {
+    _config: { entity: "binary_sensor.x_can_wash" },
+    _mergedConfig: Card.prototype._mergedConfig,
+    _renderSkeleton: Card.prototype._renderSkeleton,
+    _applyHostAttributes: () => {},
+    _hostStyle: () => ({}),
+    hass: { states: {} }, // entity absent
+    _mountedAt: mountedAt,
+    _loadingTimer: loadingTimer,
+  };
+  return Card.prototype.render.call(self).__html;
+}
+
+test("render: entity missing + not yet mounted → skeleton, never the error", () => {
+  const html = renderMissing({ mountedAt: 0, loadingTimer: null });
+  assert.match(html, /aria-busy="true"/, "shows loading skeleton");
+  assert.doesNotMatch(html, /not found/, "no error flash before mount");
+});
+
+test("render: entity missing + loading timer pending → skeleton (grace window)", () => {
+  const html = renderMissing({ mountedAt: 123, loadingTimer: 99 });
+  assert.match(html, /aria-busy="true"/);
+  assert.doesNotMatch(html, /not found/);
+});
+
+test("render: entity missing + mounted + grace elapsed → error surfaces", () => {
+  const html = renderMissing({ mountedAt: 123, loadingTimer: null });
+  assert.match(html, /Entity binary_sensor\.x_can_wash not found/);
+});
+
+// ── render(): diagnostics respects only its toggle, not snooze ────────────────
+
+function renderWith({ snoozed, show_diagnostics }) {
+  const stateObj = {
+    entity_id: "binary_sensor.x_can_wash",
+    attributes: {
+      friendly_name: "X Can wash",
+      reason: snoozed ? "snoozed" : "clear",
+      score: 80,
+      days_analyzed: 3,
+    },
+  };
+  const self = {
+    _config: { entity: "binary_sensor.x_can_wash", show_diagnostics, show_score_gauge: false,
+               show_reason: false, show_forecast_strip: false },
+    _mergedConfig: Card.prototype._mergedConfig,
+    _applyHostAttributes: () => {},
+    _hostStyle: () => ({}),
+    _renderHeader: () => ({ __html: "" }),
+    _renderDiagnostics: Card.prototype._renderDiagnostics,
+    _verdict: Card.prototype._verdict,
+    _shouldWashStateObj: () => null,
+    _score: Card.prototype._score,
+    hass: { states: { "binary_sensor.x_can_wash": stateObj } },
+    _mountedAt: 1, _loadingTimer: null,
+  };
+  return Card.prototype.render.call(self).__html;
+}
+
+test("render: diagnostics shown while snoozed when show_diagnostics is on (toggle-independent)", () => {
+  assert.match(renderWith({ snoozed: true, show_diagnostics: true }), /ww-diag-row|Days analyzed/,
+    "snooze must not hide the diagnostics section");
+});
+
+test("render: diagnostics hidden when its toggle is off, snoozed or not", () => {
+  assert.doesNotMatch(renderWith({ snoozed: false, show_diagnostics: false }), /ww-diag-row/);
+  assert.doesNotMatch(renderWith({ snoozed: true, show_diagnostics: false }), /ww-diag-row/);
+});

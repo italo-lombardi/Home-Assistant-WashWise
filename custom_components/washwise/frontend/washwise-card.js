@@ -568,10 +568,13 @@ class WashWiseCard extends LitElement {
     super.connectedCallback?.();
     this._mountedAt = Date.now();
     if (this._loadingTimer) clearTimeout(this._loadingTimer);
+    // Grace window: while this is pending, a missing entity renders the loading
+    // skeleton rather than an error, covering the state-restore race on a fresh
+    // HA boot. Generous so slow boots with many entities don't flash an error.
     this._loadingTimer = setTimeout(() => {
       this._loadingTimer = null;
       this.requestUpdate();
-    }, 4000);
+    }, 8000);
   }
 
   disconnectedCallback() {
@@ -633,8 +636,15 @@ class WashWiseCard extends LitElement {
     const cfg = this._mergedConfig();
     const stateObj = this.hass.states[cfg.entity];
     if (!stateObj) {
-      const sinceMount = Date.now() - this._mountedAt;
-      if (sinceMount < 4000) return this._renderSkeleton();
+      // Entity not in hass yet. This is almost always a transient load race
+      // (HA restores states gradually, especially on a fresh boot with many
+      // entities), not a real misconfiguration — so keep showing the loading
+      // animation during a grace window instead of flashing an error. Only
+      // after the window elapses (timer fired) do we surface the error. Before
+      // the card has mounted (_mountedAt === 0) we are always still loading.
+      if (this._mountedAt === 0 || this._loadingTimer !== null) {
+        return this._renderSkeleton();
+      }
       return html`
         <ha-card>
           <div class="ww-card">
@@ -679,7 +689,7 @@ class WashWiseCard extends LitElement {
           ${cfg.show_forecast_strip
             ? this._renderForecastStrip(stateObj)
             : nothing}
-          ${cfg.show_diagnostics && !snoozed ? this._renderDiagnostics(stateObj, cfg.diagnostics_open) : nothing}
+          ${cfg.show_diagnostics ? this._renderDiagnostics(stateObj, cfg.diagnostics_open) : nothing}
           ${cfg.show_actions ? this._renderActions(stateObj, snoozed, isIrrigation) : nothing}
         </div>
       </ha-card>
