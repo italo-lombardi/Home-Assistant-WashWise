@@ -471,6 +471,28 @@ test("_onMarkWashed: confirmed → calls mark_washed targeted by entity_id", () 
   ]);
 });
 
+test("_onMarkWashed: confirm prompt names the entity (config name > friendly name > generic)", () => {
+  const prompts = [];
+  const mk = (self) => ({
+    _callService: () => {},
+    _confirm: (m) => { prompts.push(m); return false; },
+    ...self,
+  });
+  // config name wins
+  Card.prototype._onMarkWashed.call(mk({ _config: { entity: "binary_sensor.x_can_wash", name: "Honda" } }));
+  // else friendly name (suffix stripped)
+  Card.prototype._onMarkWashed.call(mk({
+    _config: { entity: "binary_sensor.x_can_wash" },
+    hass: { states: { "binary_sensor.x_can_wash": { attributes: { friendly_name: "Car Italo Can wash" } } } },
+  }));
+  // else generic fallback (no name, no hass)
+  Card.prototype._onMarkWashed.call(mk({ _config: { entity: "binary_sensor.x_can_wash" } }));
+  assert.equal(prompts[0], "Mark Honda as washed now?");
+  assert.match(prompts[1], /^Mark Car Italo as washed now\?$/);
+  assert.equal(prompts[2], "Mark as washed now?");
+  assert.doesNotMatch(prompts.join("|"), /surface/, "no 'surface' wording");
+});
+
 test("_onMarkWashed: declined confirm → no service call", () => {
   const calls = [];
   const self = {

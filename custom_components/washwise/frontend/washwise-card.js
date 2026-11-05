@@ -1076,8 +1076,14 @@ class WashWiseCard extends LitElement {
     // (hass.entities) has no config_entry_id.
     const entity = this._config?.entity;
     if (!entity) return;
-    // Mark washed resets the wash state; confirm before firing.
-    if (!this._confirm("Mark this surface as washed now?")) return;
+    // Mark washed resets the wash state; confirm before firing. Name the entity
+    // (the card's title override, else the stripped friendly name) so the prompt
+    // reads naturally instead of "this surface".
+    const name =
+      this._config?.name ??
+      _stripEntitySuffix(this.hass?.states?.[entity]?.attributes?.friendly_name);
+    const prompt = name ? `Mark ${name} as washed now?` : "Mark as washed now?";
+    if (!this._confirm(prompt)) return;
     this._callService("mark_washed", { entity_id: entity });
   }
 
