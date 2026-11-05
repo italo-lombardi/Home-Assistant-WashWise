@@ -18,6 +18,7 @@ from custom_components.washwise.const import (
     CONF_FREEZE_CHECK,
     CONF_NAME,
     CONF_PRECIP_THRESHOLD,
+    CONF_SHOULD_WASH_MIN_DAYS,
     CONF_WEATHER_ENTITIES,
     CONF_WIND_THRESHOLD,
     DEFAULT_CATEGORY,
@@ -594,6 +595,59 @@ async def test_reconfigure_untoggle_customize_wipes_override_options(
     assert CONF_DAYS not in mock_config_entry.options
     # Unrelated advanced option survives.
     assert mock_config_entry.options.get("snooze_default_hours") == 12
+
+
+async def test_reconfigure_noncustomize_preserves_should_wash_min_days(
+    hass: HomeAssistant,
+    mock_config_entry: MockConfigEntry,
+) -> None:
+    """A non-customize reconfigure must NOT wipe should_wash_min_days.
+
+    Unlike the preset-shadowing thresholds (precip_weight/days/...), the
+    should_wash gate is an independent setting the coordinator reads
+    unconditionally and has no category preset. Stripping it on an unrelated
+    reconfigure (e.g. a rename with customize unticked) silently reset the
+    user's "wait N days" gate to 0. It must survive.
+    """
+    mock_config_entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(
+        mock_config_entry,
+        options={
+            CONF_CUSTOMIZE_THRESHOLDS: True,
+            "precip_weight": 80,  # preset-shadowing → should be wiped
+            CONF_SHOULD_WASH_MIN_DAYS: 30,  # independent gate → must survive
+        },
+    )
+
+    with (
+        patch(
+            "custom_components.washwise.async_setup_entry",
+            return_value=True,
+        ),
+        patch(
+            "custom_components.washwise.async_unload_entry",
+            return_value=True,
+        ),
+    ):
+        result = await mock_config_entry.start_reconfigure_flow(hass)
+        result = await hass.config_entries.flow.async_configure(
+            result["flow_id"],
+            {
+                CONF_WEATHER_ENTITIES: ["weather.home"],
+                CONF_NAME: "Renamed",
+                CONF_CATEGORY: "car",
+                CONF_CUSTOMIZE_THRESHOLDS: False,
+            },
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] == FlowResultType.ABORT
+    assert result["reason"] == "reconfigure_successful"
+    # Preset-shadowing override is wiped...
+    assert "precip_weight" not in mock_config_entry.options
+    # ...but the independent should_wash gate survives (options or data).
+    merged = {**mock_config_entry.data, **mock_config_entry.options}
+    assert merged.get(CONF_SHOULD_WASH_MIN_DAYS) == 30
 
 
 async def test_reconfigure_with_customize_true_overwrites_stale_options(

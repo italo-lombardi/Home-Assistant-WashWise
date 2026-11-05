@@ -328,6 +328,11 @@
         "state": {
           "ok_clear": "Sí — Sense incidències",
           "ok_dirty_now": "Sí — Superfície bruta — renta ara",
+          "ok_rain": "Sí — Pluja prevista",
+          "ok_freeze": "Sí — Gelada prevista",
+          "ok_snow": "Sí — Neu prevista",
+          "ok_wind": "Sí — Vent previst",
+          "ok_bad_condition": "Sí — Mal temps previst",
           "unknown_clear": "Desconegut",
           "no_rain": "No — Pluja",
           "no_freeze": "No — Gelada",

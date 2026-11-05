@@ -328,6 +328,11 @@
         "state": {
           "ok_clear": "Sì — Sereno",
           "ok_dirty_now": "Sì — Superficie sporca — lava ora",
+          "ok_rain": "Sì — Pioggia prevista",
+          "ok_freeze": "Sì — Gelo previsto",
+          "ok_snow": "Sì — Neve prevista",
+          "ok_wind": "Sì — Vento previsto",
+          "ok_bad_condition": "Sì — Maltempo previsto",
           "unknown_clear": "Sconosciuto",
           "no_rain": "No — Pioggia",
           "no_freeze": "No — Gelo",

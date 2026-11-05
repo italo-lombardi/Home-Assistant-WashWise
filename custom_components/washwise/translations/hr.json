@@ -328,6 +328,11 @@
         "state": {
           "ok_clear": "Da — Vedro",
           "ok_dirty_now": "Da — Površina prljava — operi odmah",
+          "ok_rain": "Da — Očekuje se kiša",
+          "ok_freeze": "Da — Očekuje se smrzavanje",
+          "ok_snow": "Da — Očekuje se snijeg",
+          "ok_wind": "Da — Očekuje se vjetar",
+          "ok_bad_condition": "Da — Očekuje se loše vrijeme",
           "unknown_clear": "Nepoznato",
           "no_rain": "Ne — Kiša",
           "no_freeze": "Ne — Smrzavanje",

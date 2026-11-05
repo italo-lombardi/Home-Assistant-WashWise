@@ -141,7 +141,13 @@ _RECONFIGURE_STRIPPED_OPTION_KEYS: tuple[str, ...] = (
     CONF_RAIN_GAUGE_ENTITY,
     CONF_RAIN_GAUGE_THRESHOLD_MM,
     CONF_IRRIGATION_SWITCH_ENTITY,
-    CONF_SHOULD_WASH_MIN_DAYS,
+    # NOTE: CONF_SHOULD_WASH_MIN_DAYS is deliberately NOT stripped. Unlike the
+    # keys above (preset-shadowing thresholds that must fall back to the
+    # category preset when customize is off), the should_wash gate is an
+    # independent setting the coordinator reads unconditionally and has no
+    # category preset. Stripping it on a non-customize reconfigure silently
+    # reset a user's "wait N days" gate to 0 (gate disabled) on an unrelated
+    # edit such as a rename, so it is preserved across reconfigure.
 )
 
 

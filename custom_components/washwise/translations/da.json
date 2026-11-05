@@ -328,6 +328,11 @@
         "state": {
           "ok_clear": "Ja — Klart",
           "ok_dirty_now": "Ja — Beskidt — vask nu",
+          "ok_rain": "Ja — Regn forventet",
+          "ok_freeze": "Ja — Frost forventet",
+          "ok_snow": "Ja — Sne forventet",
+          "ok_wind": "Ja — Vind forventet",
+          "ok_bad_condition": "Ja — Dårligt vejr forventet",
           "unknown_clear": "Ukendt",
           "no_rain": "Nej — Regn",
           "no_freeze": "Nej — Frost",

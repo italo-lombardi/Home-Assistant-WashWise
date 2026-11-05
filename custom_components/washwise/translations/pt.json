@@ -328,6 +328,11 @@
         "state": {
           "ok_clear": "Sim — Limpo",
           "ok_dirty_now": "Sim — Superfície suja — lavar agora",
+          "ok_rain": "Sim — Chuva prevista",
+          "ok_freeze": "Sim — Congelamento previsto",
+          "ok_snow": "Sim — Neve prevista",
+          "ok_wind": "Sim — Vento previsto",
+          "ok_bad_condition": "Sim — Tempo ruim previsto",
           "unknown_clear": "Desconhecido",
           "no_rain": "Não — Chuva",
           "no_freeze": "Não — Congelamento",

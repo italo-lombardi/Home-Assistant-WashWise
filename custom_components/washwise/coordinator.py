@@ -281,6 +281,35 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         else:
             await self.async_request_refresh()
 
+    def _snoozed_decision(self) -> Decision:
+        """Build the snoozed verdict, preserving the last real forecast data.
+
+        A snooze pauses the *recommendation*, not the weather — so carry the
+        last real decision's ``forecast_summary`` / ``days_analyzed`` (and thus
+        the card's forecast strip + diagnostics aggregates) through, while the
+        verdict fields reflect the snooze. Past days are dropped so a long
+        snooze doesn't surface a strip full of stale dates (mirrors the stale
+        filter on the real path). Falls back to an empty forecast when no real
+        decision has been computed yet (snoozed before first poll).
+        """
+        last = self._last_real_decision
+        if last is None:
+            summary: list[dict[str, Any]] = []
+        else:
+            today = dt_util.now().date().isoformat()
+            # Entries carry an ISO ``date`` string; keep today-or-future. A
+            # missing date is kept (can't judge staleness) to stay lenient.
+            summary = [d for d in last.forecast_summary if (d.get("date") or today) >= today]
+        return Decision(
+            can_wash=False,
+            score=0,
+            reason="snoozed",
+            days_until_wash=None,
+            blocking_days=[],
+            forecast_summary=summary,
+            days_analyzed=len(summary),
+        )
+
     async def async_snooze(self, duration: timedelta) -> None:
         """Snooze the wash advisor for ``duration`` from now.
 
@@ -289,15 +318,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         """
         until = dt_util.utcnow() + duration
         await self._store.set_snooze(until)
-        snooze_decision = Decision(
-            can_wash=False,
-            score=0,
-            reason="snoozed",
-            days_until_wash=None,
-            blocking_days=[],
-            forecast_summary=[],
-            days_analyzed=0,
-        )
+        snooze_decision = self._snoozed_decision()
         self._set_decision(snooze_decision, False)
         self.async_set_updated_data(snooze_decision)
 
@@ -358,15 +379,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
             except (ValueError, TypeError):
                 snooze_dt = None
             if snooze_dt is not None and snooze_dt > now:
-                snooze_decision = Decision(
-                    can_wash=False,
-                    score=0,
-                    reason="snoozed",
-                    days_until_wash=None,
-                    blocking_days=[],
-                    forecast_summary=[],
-                    days_analyzed=0,
-                )
+                snooze_decision = self._snoozed_decision()
                 self._set_decision(snooze_decision, False)
                 return snooze_decision
 

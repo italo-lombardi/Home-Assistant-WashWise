@@ -328,6 +328,11 @@
         "state": {
           "ok_clear": "가능 — 맑음",
           "ok_dirty_now": "가능 — 표면 오염 — 지금 세척하세요",
+          "ok_rain": "가능 — 비 예상",
+          "ok_freeze": "가능 — 동결 예상",
+          "ok_snow": "가능 — 눈 예상",
+          "ok_wind": "가능 — 바람 예상",
+          "ok_bad_condition": "가능 — 나쁜 날씨 예상",
           "unknown_clear": "알 수 없음",
           "no_rain": "불가 — 비",
           "no_freeze": "불가 — 동결",

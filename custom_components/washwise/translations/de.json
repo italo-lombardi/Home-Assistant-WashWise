@@ -328,6 +328,11 @@
         "state": {
           "ok_clear": "Ja — Klar",
           "ok_dirty_now": "Ja — Schmutzig — jetzt waschen",
+          "ok_rain": "Ja — Regen erwartet",
+          "ok_freeze": "Ja — Frost erwartet",
+          "ok_snow": "Ja — Schnee erwartet",
+          "ok_wind": "Ja — Wind erwartet",
+          "ok_bad_condition": "Ja — Schlechtes Wetter erwartet",
           "unknown_clear": "Unbekannt",
           "no_rain": "Nein — Regen",
           "no_freeze": "Nein — Frost",

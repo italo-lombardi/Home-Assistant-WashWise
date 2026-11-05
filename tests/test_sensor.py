@@ -725,6 +725,13 @@ def test_reason_empty_string_yields_none() -> None:
     [
         (True, "clear", "ok_clear"),
         (True, "dirty_now", "ok_dirty_now"),
+        # Inverted categories (solar/garden) return can_wash=True with a weather
+        # reason — these must resolve to a real OK state, not ``unknown``.
+        (True, "rain", "ok_rain"),
+        (True, "freeze", "ok_freeze"),
+        (True, "snow", "ok_snow"),
+        (True, "wind", "ok_wind"),
+        (True, "bad_condition", "ok_bad_condition"),
         (False, "clear", "unknown_clear"),
         (False, "rain", "no_rain"),
         (False, "freeze", "no_freeze"),
@@ -784,6 +791,11 @@ def test_wash_status_options_match_state_keys() -> None:
     expected = {
         "ok_clear",
         "ok_dirty_now",
+        "ok_rain",
+        "ok_freeze",
+        "ok_snow",
+        "ok_wind",
+        "ok_bad_condition",
         "unknown_clear",
         "no_rain",
         "no_freeze",
@@ -800,6 +812,12 @@ def test_wash_status_options_match_state_keys() -> None:
     assert set(sensor.options or []) == expected
     # HA reserves ``unavailable``/``unknown``; they must not appear as enum members.
     assert "unavailable" not in (sensor.options or [])
+    # Every value either mapping can emit must be a declared option (guards
+    # against adding a reason to the map without an enum slot / translation).
+    emitted = set(WashStatusSensor._OK_REASONS.values()) | set(
+        WashStatusSensor._NO_REASONS.values()
+    )
+    assert emitted <= set(sensor.options or [])
     assert "unknown" not in (sensor.options or [])
 
 
