@@ -154,6 +154,23 @@ def test_decision_with_blocking_days_and_none_window_roundtrip() -> None:
     assert again.blocking_days == [date(2026, 6, 11), date(2026, 6, 12)]
 
 
+def test_decision_from_dict_drops_unparseable_blocking_days() -> None:
+    """``from_dict`` never yields None in blocking_days (list[date] invariant)."""
+    again = Decision.from_dict(
+        {
+            "can_wash": False,
+            "score": 10,
+            "reason": "rain",
+            "days_until_wash": None,
+            "blocking_days": ["2026-06-11", None, "not-a-date", "2026-06-12"],
+            "forecast_summary": [],
+            "days_analyzed": 2,
+        }
+    )
+    assert again.blocking_days == [date(2026, 6, 11), date(2026, 6, 12)]
+    assert all(x is not None for x in again.blocking_days)
+
+
 def test_decision_tz_aware_next_window_roundtrip() -> None:
     d = Decision(
         can_wash=True,

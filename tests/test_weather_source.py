@@ -299,6 +299,22 @@ def test_parse_time_epoch_milliseconds() -> None:
     assert parsed == expected
 
 
+def test_parse_time_epoch_seconds() -> None:
+    """Epoch SECONDS (10-digit) are not misread as ms (1000x into the future).
+
+    1700000000 s and 1700000000000 ms are the same instant, so both must
+    resolve to the same date — previously the seconds value was divided by
+    1000 again and landed in 1970.
+    """
+    from datetime import UTC
+
+    parsed_s = weather_source._parse_time(1700000000)
+    assert isinstance(parsed_s, date)
+    assert parsed_s == datetime.fromtimestamp(1700000000, tz=UTC).date()
+    # Same instant as the ms form.
+    assert parsed_s == weather_source._parse_time(1700000000000)
+
+
 def test_parse_time_datetime_object() -> None:
     """A ``datetime`` instance returns its ``date()`` part."""
     dt = datetime(2026, 6, 11, 9, 30)

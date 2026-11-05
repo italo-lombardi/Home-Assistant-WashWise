@@ -154,9 +154,24 @@ async def test_snooze_missing_hours_uses_default_24(stub_coordinator) -> None:
     assert args[0] == timedelta(hours=24)
 
 
-# ---------------------------------------------------------------------------
-# clear_snooze
-# ---------------------------------------------------------------------------
+async def test_snooze_missing_hours_uses_configured_default(
+    hass: HomeAssistant, mock_config_entry: MockConfigEntry
+) -> None:
+    """With no hours arg, a configured snooze_default_hours is used (not 24)."""
+    mock_config_entry.add_to_hass(hass)
+    hass.config_entries.async_update_entry(mock_config_entry, options={"snooze_default_hours": 6})
+    coord = AsyncMock(spec=WashWiseCoordinator)
+    coord.entry = mock_config_entry
+    hass.data.setdefault(DOMAIN, {})[mock_config_entry.entry_id] = coord
+    await async_register_services(hass)
+    try:
+        await hass.services.async_call(
+            DOMAIN, SERVICE_SNOOZE, {ATTR_ENTRY_ID: mock_config_entry.entry_id}, blocking=True
+        )
+        args, _ = coord.async_snooze.call_args
+        assert args[0] == timedelta(hours=6)
+    finally:
+        async_unregister_services(hass)
 
 
 async def test_clear_snooze_calls_coordinator(stub_coordinator) -> None:

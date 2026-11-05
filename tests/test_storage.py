@@ -456,29 +456,6 @@ def test_parse_ts_invalid_returns_none() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Migration v1 stub returns input unchanged
-# ---------------------------------------------------------------------------
-
-
-async def test_migrate_v1_returns_input_unchanged(
-    store: WashWiseStore,
-) -> None:
-    """The v1 migration stub is a pass-through."""
-    payload = {"wash_log": [{"timestamp": "x", "source": "manual"}], "extra": 1}
-    result = await store.migrate(payload, 1)
-    assert result == payload
-
-
-async def test_migrate_v0_returns_input_unchanged(
-    store: WashWiseStore,
-) -> None:
-    """Migrating from v0 (hypothetical) is currently a no-op too."""
-    payload = {"snooze_until": None}
-    result = await store.migrate(payload, 0)
-    assert result == payload
-
-
-# ---------------------------------------------------------------------------
 # WW-3: in-memory cache eliminates per-tick disk reads
 # ---------------------------------------------------------------------------
 

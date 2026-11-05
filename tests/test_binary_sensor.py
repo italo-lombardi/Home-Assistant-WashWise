@@ -556,6 +556,20 @@ def test_freeze_risk_binary_sensor_instantiates() -> None:
     assert sensor.unique_id == f"{entry.entry_id}_freeze_risk"
 
 
+def test_freeze_risk_skips_non_dict_day_entries() -> None:
+    """A malformed (non-dict) forecast day is skipped, not crashed on."""
+    from custom_components.washwise.binary_sensor import WashWiseFreezeRiskBinarySensor
+
+    # A stray non-dict entry mixed with a valid freezing day.
+    summary = ["garbage", {"temp_min": -2.0, "temp_max": 1.0}]
+    decision = _make_decision(forecast_summary=summary, days_analyzed=2)
+    coordinator = _make_coordinator(decision)
+    sensor = WashWiseFreezeRiskBinarySensor(coordinator, _make_entry())
+
+    # Non-dict skipped; the valid freezing day still drives the result.
+    assert sensor.is_on is True
+
+
 def test_freeze_risk_binary_sensor_spanning_zero_branch() -> None:
     """``is_on`` True when low <= 0 — covers both line 295 and line 298."""
     from custom_components.washwise.binary_sensor import WashWiseFreezeRiskBinarySensor

@@ -336,7 +336,14 @@ def _parse_time(value: Any) -> date | None:
         return None
     if isinstance(value, (int, float)):
         try:
-            return datetime.fromtimestamp(float(value) / 1000, tz=UTC).date()
+            secs = float(value)
+            # Heuristic: epoch values with magnitude >= 1e11 are milliseconds
+            # (year ~5138 in seconds — never a real forecast date), so scale
+            # them down; smaller values are already seconds. Fixes epoch-seconds
+            # timestamps previously misread 1000x into the future.
+            if abs(secs) >= 1e11:
+                secs /= 1000
+            return datetime.fromtimestamp(secs, tz=UTC).date()
         except (OverflowError, OSError, ValueError):
             return None
     if isinstance(value, str):

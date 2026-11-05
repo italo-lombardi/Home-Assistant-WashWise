@@ -368,7 +368,13 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
 
         # Step 2: load persisted state.
         data = await self._store.load()
-        now = dt_util.utcnow()
+        # HA-local, tz-aware: the forecast carries local calendar dates and the
+        # stale-day filter below anchors on the local date, so compute() must
+        # derive ``today`` from the same calendar (``now.date()``). Using UTC
+        # here disagreed with the local stale filter near midnight in non-UTC
+        # zones. ``dt_util.now()`` is tz-aware, so snooze comparisons below
+        # (against a tz-aware ``snooze_until``) stay correct.
+        now = dt_util.now()
 
         # Step 3: snooze short-circuit.
         if data.snooze_until:

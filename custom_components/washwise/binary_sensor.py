@@ -26,7 +26,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import CALLBACK_TYPE, HomeAssistant, callback
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change_event
@@ -371,6 +371,8 @@ class WashWiseFreezeRiskBinarySensor(_WashWiseBinarySensorBase):
         if decision is None:
             return None
         for day in decision.forecast_summary or []:
+            if not isinstance(day, dict):
+                continue
             tmin = day.get("temp_min")
             tmax = day.get("temp_max")
             if tmin is None and tmax is None:
@@ -464,7 +466,7 @@ class IrrigationSwitchStateBinarySensor(_WashWiseBinarySensorBase):
     def __init__(self, coordinator: WashWiseCoordinator, entry: ConfigEntry) -> None:
         """Register the irrigation switch state binary sensor."""
         super().__init__(coordinator, entry, "irrigation_switch_state")
-        self._unsub_switch: callback | None = None
+        self._unsub_switch: CALLBACK_TYPE | None = None
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to switch state changes for live updates."""
