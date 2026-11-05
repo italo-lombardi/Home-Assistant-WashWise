@@ -2,15 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.3.0] - 2026-11-04
+## [0.3.0] - 2026-11-05
 
 ### Added
-- **`should_wash` binary sensor** — ON when the weather allows a wash **and** at least *Minimum days since last wash* have passed since the last recorded wash. The new threshold defaults to **0** (gate disabled, mirrors `can_wash`), so existing setups are unchanged.
+- **`should_wash` binary sensor** — ON when the weather allows a wash **and** at least *Minimum days since last wash* have passed since the last wash. New threshold defaults to **0** (disabled → mirrors `can_wash`), so existing setups are unchanged.
 - **Named automation triggers** — `should_wash` on/off, `can_wash` on/off, and `verdict changed`, discoverable in the automation editor with an optional per-entry scope. See [docs/AUTOMATION_EXAMPLES.md](docs/AUTOMATION_EXAMPLES.md).
-- **Card `verdict_source` option** — point the card at `should_wash` for a three-way badge (Wash now / Not yet / No); diagnostics show the washing-days setting. Defaults to `can_wash`.
-
-### Fixed
-- **`should_wash` no longer stays stale after *Mark washed*** — the gate now recomputes immediately (and fires `should_wash_off`) instead of waiting for the next poll.
+- **Card `verdict_source` option** — set to `should_wash` for a three-way badge (Wash now / Not yet / No) plus washing-days diagnostics. Defaults to `can_wash`.
 
 ### Changed
 - **Minimum Home Assistant version raised to 2025.11.0** — required by the named-trigger platform.
