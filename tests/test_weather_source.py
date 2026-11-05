@@ -291,11 +291,13 @@ def test_parse_time_iso_date_only() -> None:
 
 def test_parse_time_epoch_milliseconds() -> None:
     """Integer epoch ms (e.g. ``1700000000000``) -> a real ``date``."""
+    from datetime import UTC
+
     parsed = weather_source._parse_time(1700000000000)
     assert isinstance(parsed, date)
-    # 1700000000000 ms = 2023-11-14 22:13:20 UTC -> local date varies by tz,
-    # but the conversion itself must succeed and round-trip via fromtimestamp.
-    expected = datetime.fromtimestamp(1700000000000 / 1000).date()
+    # Compare against the same UTC conversion the implementation uses, so the
+    # assertion is stable regardless of the test host's local timezone.
+    expected = datetime.fromtimestamp(1700000000000 / 1000, tz=UTC).date()
     assert parsed == expected
 
 
