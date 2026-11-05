@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - **Card no longer flashes "Entity not found" while loading** — a missing entity during Home Assistant's state-restore now keeps showing the loading animation until the entity appears (or a grace window elapses), instead of briefly showing an error.
 - **Snooze no longer hides the diagnostics section** — the diagnostics block now follows only its own `show_diagnostics` toggle, independent of snooze state.
+- **Diagnostics stay populated while snoozed** — a snooze now carries the last real forecast, so the diagnostics block and forecast strip keep showing weather data instead of truncating to a near-empty section.
 
 ### Changed
 - **Minimum Home Assistant version raised to 2025.11.0** — required by the named-trigger platform.

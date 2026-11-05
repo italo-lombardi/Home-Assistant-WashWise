@@ -813,6 +813,47 @@ async def test_snooze_pushes_snoozed_decision_without_fetch(hass: HomeAssistant)
 
 
 @freeze_time(FROZEN_NOW)
+async def test_snooze_preserves_last_real_forecast_for_diagnostics(hass: HomeAssistant) -> None:
+    """A snooze keeps the last real forecast so the card's diagnostics/strip
+    stay populated — snooze pauses the recommendation, not the weather."""
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+    # Seed a real decision with forecast data (as a normal poll would).
+    real = Decision(
+        can_wash=True,
+        score=90,
+        reason="clear",
+        days_until_wash=0,
+        blocking_days=[],
+        forecast_summary=[{"date": "2026-06-11", "condition": "sunny", "precipitation_mm": 0.0}],
+        days_analyzed=3,
+    )
+    coord._last_real_decision = real
+
+    await coord.async_snooze(timedelta(hours=2))
+
+    snoozed = coord.data
+    assert snoozed.reason == "snoozed"
+    assert snoozed.can_wash is False
+    # Weather-derived diagnostics carried through from the last real decision.
+    assert snoozed.forecast_summary == real.forecast_summary
+    assert snoozed.days_analyzed == 3
+
+
+@freeze_time(FROZEN_NOW)
+async def test_snooze_without_prior_decision_has_empty_forecast(hass: HomeAssistant) -> None:
+    """Snoozed before any real poll → empty forecast (graceful fallback)."""
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+    assert coord._last_real_decision is None
+    await coord.async_snooze(timedelta(hours=1))
+    assert coord.data.forecast_summary == []
+    assert coord.data.days_analyzed == 0
+
+
+@freeze_time(FROZEN_NOW)
 async def test_clear_snooze_restores_cached_real_decision(hass: HomeAssistant) -> None:
     """clear_snooze pushes the last real decision instantly, then refreshes."""
     entry = _make_entry(["weather.primary"])
