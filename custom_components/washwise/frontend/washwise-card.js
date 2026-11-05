@@ -1,10 +1,10 @@
 /**
- * WashWise Card v0.2.7
+ * WashWise Card v0.3.0
  * Custom Lovelace card for the Home Assistant WashWise integration.
  * Single-file, hand-coded, no build step.
  */
 
-const CARD_VERSION = "0.2.7";
+const CARD_VERSION = "0.3.0";
 
 console.info(
   `%c WASHWISE-CARD %c v${CARD_VERSION} %c — github.com/italo-lombardi/Home-Assistant-WashWise `,
@@ -132,6 +132,7 @@ const cardStyles = css`
 
   .ww-badge.ok { background: var(--ww-accent); }
   .ww-badge.bad { background: var(--ww-bad); }
+  .ww-badge.warn { background: #e8a33d; }
   .ww-badge.unknown { background: var(--ww-fg-muted); }
 
   .ww-row {
@@ -424,6 +425,7 @@ const DEFAULT_CONFIG = {
   show_actions: false,
   show_last_washed: false,
   mode: "wash",
+  verdict_source: "can_wash",
 };
 
 const REASON_MAP = {
@@ -645,7 +647,18 @@ class WashWiseCard extends LitElement {
     const hostStyle = buildStyle(this._hostStyle(cfg));
 
     const isIrrigation = cfg.mode === "irrigation";
-    const verdict = this._verdict(stateObj, isIrrigation);
+    // verdict_source lets the card badge follow the stricter should_wash gate
+    // instead of can_wash. Irrigation mode ignores it (should_wash is a
+    // wash-timing concept). Falls back to the can_wash badge if the sibling
+    // should_wash sensor isn't available yet.
+    const gateObj =
+      cfg.verdict_source === "should_wash" && !isIrrigation
+        ? this._shouldWashStateObj()
+        : null;
+    const useShould = gateObj != null;
+    const verdict = useShould
+      ? this._shouldWashVerdict(gateObj)
+      : this._verdict(stateObj, isIrrigation);
     const score = this._score(stateObj);
     const friendly =
       cfg.name ?? _stripEntitySuffix(stateObj.attributes.friendly_name) ?? cfg.entity;
@@ -654,7 +667,7 @@ class WashWiseCard extends LitElement {
     return html`
       <ha-card style=${hostStyle}>
         <div class="ww-card">
-          ${this._renderHeader(friendly, verdict, isIrrigation)}
+          ${this._renderHeader(friendly, verdict, isIrrigation, useShould)}
           ${cfg.show_score_gauge && !snoozed ? this._renderGauge(score, verdict) : nothing}
           ${cfg.show_reason ? this._renderReason(stateObj, isIrrigation) : nothing}
           ${cfg.show_last_washed ? this._renderLastWashed() : nothing}
@@ -671,13 +684,26 @@ class WashWiseCard extends LitElement {
 
   // ── Render helpers ─────────────────────────────────────────────────────
 
-  _renderHeader(title, verdict, isIrrigation = false) {
-    const okLabel = isIrrigation ? "Irrigate" : "OK";
-    const badLabel = isIrrigation ? "Skip" : "No";
-    const okSymbol = isIrrigation ? "💧" : "✅";
-    const badSymbol = isIrrigation ? "🌧️" : "⛔";
-    const label = verdict === "ok" ? okLabel : verdict === "bad" ? badLabel : "—";
-    const symbol = verdict === "ok" ? okSymbol : verdict === "bad" ? badSymbol : "❓";
+  _renderHeader(title, verdict, isIrrigation = false, useShould = false) {
+    let label;
+    let symbol;
+    if (useShould) {
+      // should_wash gate: ok = wash now, warn = weather fine but not due yet,
+      // bad = weather blocks it.
+      const map = {
+        ok: ["✅", "Wash now"],
+        warn: ["⏸️", "Not yet"],
+        bad: ["⛔", "No"],
+      };
+      [symbol, label] = map[verdict] ?? ["❓", "—"];
+    } else {
+      const okLabel = isIrrigation ? "Irrigate" : "OK";
+      const badLabel = isIrrigation ? "Skip" : "No";
+      const okSymbol = isIrrigation ? "💧" : "✅";
+      const badSymbol = isIrrigation ? "🌧️" : "⛔";
+      label = verdict === "ok" ? okLabel : verdict === "bad" ? badLabel : "—";
+      symbol = verdict === "ok" ? okSymbol : verdict === "bad" ? badSymbol : "❓";
+    }
     return html`
       <div class="ww-header">
         <h2 class="ww-title">${title}</h2>
@@ -884,6 +910,20 @@ class WashWiseCard extends LitElement {
       ],
       ["🔎", "Days analyzed", a.days_analyzed != null ? `${a.days_analyzed}` : null, ""],
       ["⛔", "Blocking days", typeof blockingCount === "number" ? `${blockingCount}` : null, ""],
+      [
+        "📆",
+        "Min days between washes",
+        typeof a.min_days === "number" && a.min_days > 0 ? `${a.min_days}` : null,
+        "",
+      ],
+      [
+        "🧼",
+        "Days since last wash",
+        typeof a.min_days === "number" && a.min_days > 0 && a.days_since_last_wash != null
+          ? `${a.days_since_last_wash}`
+          : null,
+        "",
+      ],
       null, // divider: verdict ↑ / forecast ↓
       ["🌧️", "Total precip", typeof a.precip_total_mm === "number" ? `${a.precip_total_mm} mm` : null, ""],
       ["💨", "Max wind", typeof a.max_wind_kmh === "number" ? `${a.max_wind_kmh} km/h` : null, ""],
@@ -1118,6 +1158,28 @@ class WashWiseCard extends LitElement {
     return "unknown";
   }
 
+  // Resolve the sibling should_wash binary_sensor from the configured can_wash
+  // entity. Returns null when the entity isn't a can_wash id or the sibling
+  // isn't registered yet (card falls back to the can_wash badge).
+  _shouldWashStateObj() {
+    const id = this._config?.entity;
+    if (!id || !/_can_wash$/.test(id)) return null;
+    const shouldId = id.replace(/_can_wash$/, "_should_wash");
+    return this.hass?.states?.[shouldId] ?? null;
+  }
+
+  // Three-way verdict for should_wash mode:
+  //   on              → ok   (weather fine AND due → wash now)
+  //   off + can_wash  → warn (weather fine but washed too recently → not yet)
+  //   off + !can_wash → bad  (weather blocks it → no)
+  _shouldWashVerdict(gateObj) {
+    if (gateObj.state === "on") return "ok";
+    if (gateObj.state === "off") {
+      return gateObj.attributes?.can_wash ? "warn" : "bad";
+    }
+    return "unknown";
+  }
+
   _score(stateObj) {
     const s = stateObj.attributes.score;
     if (typeof s === "number" && Number.isFinite(s)) return s;
@@ -1327,6 +1389,21 @@ class WashWiseCardEditor extends LitElement {
           </select>
           <span class="helper">
             Irrigation mode relabels the verdict badge and shows rain gauge data when available.
+          </span>
+        </div>
+
+        <div class="field">
+          <label for="ww-verdict-source">Verdict source</label>
+          <select
+            id="ww-verdict-source"
+            .value=${cfg.verdict_source ?? "can_wash"}
+            @change=${(e) => this._set("verdict_source", e.target.value)}
+          >
+            <option value="can_wash" ?selected=${(cfg.verdict_source ?? "can_wash") === "can_wash"}>Can wash (weather only)</option>
+            <option value="should_wash" ?selected=${(cfg.verdict_source ?? "can_wash") === "should_wash"}>Should wash (weather + timing)</option>
+          </select>
+          <span class="helper">
+            Should wash shows a three-way badge: Wash now, Not yet (washed recently), or No (weather blocks it). Ignored in irrigation mode.
           </span>
         </div>
 

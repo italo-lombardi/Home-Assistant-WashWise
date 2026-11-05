@@ -29,7 +29,8 @@
           "precip_weight": "Vikt för nederbörd",
           "freeze_weight": "Vikt för frost",
           "condition_weight": "Vikt för väderförhållanden",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Max vindhastighet (km/h)",
+          "should_wash_min_days": "Minsta antal dagar sedan senaste tvätt"
         },
         "data_description": {
           "days": "Hur många prognosdagar som ska beaktas, inklusive idag. En längre horisont fångar upp mer väder men ger en mer försiktig bedömning.",
@@ -40,7 +41,8 @@
           "precip_weight": "Hur mycket regn i prognosen drar av från poängen 0–100. Ett högre värde bestraffar regniga dagar hårdare.",
           "freeze_weight": "Hur mycket en frostdag drar av från poängen 0–100. Sätt till 0 för att ignorera frost i poängsättningen men ändå låta bedömningen blockera.",
           "condition_weight": "Hur mycket dåligt väder (åska, hagel, snö) drar av från poängen 0–100. Hur allvarligt det är beror på respektive förhållande.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Lämna tomt för att inaktivera. En prognosdag som är blåsigare än så blockerar tvätt.",
+          "should_wash_min_days": "Slå bara på 'Bör tvätta' när minst så här många hela dagar har gått sedan den senast registrerade tvätten. 0 inaktiverar spärren så att 'Bör tvätta' speglar 'Kan tvätta'. En post som aldrig tvättats räknas som försenad."
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "Nederbördströskel (mm)",
           "freeze_check": "Blockera vid minusgrader",
           "forecast_type": "Prognostyp",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Max vindhastighet (km/h)",
+          "should_wash_min_days": "Minsta antal dagar sedan senaste tvätt"
         },
         "data_description": {
           "days": "Hur många prognosdagar som ska beaktas, inklusive idag.",
           "precip_threshold_mm": "Total nederbörd per dag över det här värdet blockerar tvätten.",
           "freeze_check": "När detta är på blockerar en prognosdag vars temperatur passerar 0 °C tvätten.",
           "forecast_type": "Daglig använder en post per dag; Timvis aggregerar timposter när det stöds.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Lämna tomt för att inaktivera. En prognosdag som är blåsigare än så blockerar tvätt.",
+          "should_wash_min_days": "Slå bara på 'Bör tvätta' när minst så här många hela dagar har gått sedan den senast registrerade tvätten. 0 inaktiverar spärren så att 'Bör tvätta' speglar 'Kan tvätta'. En post som aldrig tvättats räknas som försenad."
         }
       },
       "scoring": {
@@ -242,7 +246,7 @@
         "boat": "Båt",
         "rv_camper": "Husbil/husvagn",
         "windows_house": "Husfönster",
-        "laundry": "Laundry",
+        "laundry": "Tvätt",
         "solar_panels": "Solpaneler",
         "patio_deck": "Uteplats/altan",
         "garden_irrigation": "Trädgårdsbevattning",
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "Status för bevattningsbrytare"
+      },
+      "should_wash": {
+        "name": "Bör tvätta"
       }
     },
     "sensor": {
@@ -307,11 +314,11 @@
           "rain": "Regn",
           "freeze": "Frost",
           "snow": "Snö",
-          "wind": "Wind",
+          "wind": "Vind",
           "bad_condition": "Dåligt väder",
           "bad_current_condition": "Dåligt väder just nu",
           "dirty_now": "Smutsig yta — tvätta nu",
-          "no_data": "No forecast data",
+          "no_data": "Inga prognosdata",
           "snoozed": "Pausad",
           "unavailable": "Otillgänglig"
         }
@@ -325,10 +332,10 @@
           "no_rain": "Nej — Regn",
           "no_freeze": "Nej — Frost",
           "no_snow": "Nej — Snö",
-          "no_wind": "No — Wind",
+          "no_wind": "Nej — Vind",
           "no_bad_condition": "Nej — Dåligt väder",
           "no_bad_current_condition": "Nej — Dåligt väder just nu",
-          "no_data": "No — No forecast data",
+          "no_data": "Nej — Inga prognosdata",
           "snoozed": "Pausad"
         }
       },
@@ -354,7 +361,7 @@
         "name": "Analyserade dagar"
       },
       "hours_analyzed": {
-        "name": "Hours analyzed"
+        "name": "Analyserade timmar"
       },
       "precip_total_mm": {
         "name": "Total nederbörd i prognosen"
@@ -392,7 +399,7 @@
           "boat": "Båt",
           "rv_camper": "Husbil",
           "windows_house": "Husfönster",
-          "laundry": "Laundry",
+          "laundry": "Tvätt",
           "solar_panels": "Solpaneler",
           "patio_deck": "Uteplats",
           "garden_irrigation": "Trädgårdsbevattning",
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "Markera som bevattnad"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "Bör tvätta slogs på",
+      "description": "Vädret tillåter tvätt och det har gått tillräckligt länge sedan den senaste.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-post",
+          "description": "Begränsa den här utlösaren till en enda WashWise-post. Lämna tomt för att utlösa för valfri post."
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "Bör tvätta slogs av",
+      "description": "Rekommendationen 'Bör tvätta' rensades.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-post",
+          "description": "Begränsa den här utlösaren till en enda WashWise-post. Lämna tomt för att utlösa för valfri post."
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "Kan tvätta slogs på",
+      "description": "Vädret tillåter nu tvätt.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-post",
+          "description": "Begränsa den här utlösaren till en enda WashWise-post. Lämna tomt för att utlösa för valfri post."
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "Kan tvätta slogs av",
+      "description": "Vädret tillåter inte längre tvätt.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-post",
+          "description": "Begränsa den här utlösaren till en enda WashWise-post. Lämna tomt för att utlösa för valfri post."
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "Bedömning ändrad",
+      "description": "Tvättbedömningen (kan tvätta / bör tvätta / poäng / orsak) ändrades.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-post",
+          "description": "Begränsa den här utlösaren till en enda WashWise-post. Lämna tomt för att utlösa för valfri post."
+        }
       }
     }
   }

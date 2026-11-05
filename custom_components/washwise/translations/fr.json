@@ -29,7 +29,8 @@
           "precip_weight": "Poids du score de précipitations",
           "freeze_weight": "Poids du score de gel",
           "condition_weight": "Poids du score des conditions",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Vitesse maximale du vent (km/h)",
+          "should_wash_min_days": "Nombre minimal de jours depuis le dernier lavage"
         },
         "data_description": {
           "days": "Nombre de jours de prévision à anticiper, aujourd'hui inclus. Des horizons plus longs détectent plus d'aléas mais produisent des verdicts plus prudents.",
@@ -40,7 +41,8 @@
           "precip_weight": "Nombre de points retirés du score de 0 à 100 en fonction de la pluie prévue. Une valeur plus élevée pénalise plus fortement les jours pluvieux.",
           "freeze_weight": "Nombre de points retirés du score de 0 à 100 par un jour de gel. Mettez 0 pour ignorer le gel dans le calcul du score tout en bloquant le verdict.",
           "condition_weight": "Nombre de points retirés du score de 0 à 100 par les mauvaises conditions météo (orages, grêle, neige). La sévérité dépend de la condition.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Laissez vide pour désactiver. Un jour de prévision plus venteux que cette valeur bloque le lavage.",
+          "should_wash_min_days": "N'active « Lavage recommandé » que lorsqu'au moins ce nombre de jours entiers se sont écoulés depuis le dernier lavage enregistré. 0 désactive ce filtre, de sorte que « Lavage recommandé » reflète « Lavage possible ». Une entrée jamais lavée est considérée comme en retard."
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "Seuil de précipitations (mm)",
           "freeze_check": "Bloquer en cas de températures de gel",
           "forecast_type": "Type de prévision",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Vitesse maximale du vent (km/h)",
+          "should_wash_min_days": "Nombre minimal de jours depuis le dernier lavage"
         },
         "data_description": {
           "days": "Nombre de jours de prévision à anticiper, aujourd'hui inclus.",
           "precip_threshold_mm": "Toute précipitation quotidienne totale supérieure à cette valeur bloque le lavage.",
           "freeze_check": "Si activé, un jour de prévision dont la température franchit 0 °C bloque le lavage.",
           "forecast_type": "Quotidien utilise une entrée par jour ; Horaire agrège les entrées horaires lorsqu'elles sont prises en charge.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Laissez vide pour désactiver. Un jour de prévision plus venteux que cette valeur bloque le lavage.",
+          "should_wash_min_days": "N'active « Lavage recommandé » que lorsqu'au moins ce nombre de jours entiers se sont écoulés depuis le dernier lavage enregistré. 0 désactive ce filtre, de sorte que « Lavage recommandé » reflète « Lavage possible ». Une entrée jamais lavée est considérée comme en retard."
         }
       },
       "scoring": {
@@ -242,7 +246,7 @@
         "boat": "Bateau",
         "rv_camper": "Camping-car",
         "windows_house": "Fenêtres de la maison",
-        "laundry": "Laundry",
+        "laundry": "Linge",
         "solar_panels": "Panneaux solaires",
         "patio_deck": "Terrasse",
         "garden_irrigation": "Irrigation du jardin",
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "État interrupteur d'arrosage"
+      },
+      "should_wash": {
+        "name": "Lavage recommandé"
       }
     },
     "sensor": {
@@ -307,11 +314,11 @@
           "rain": "Pluie",
           "freeze": "Gel",
           "snow": "Neige",
-          "wind": "Wind",
+          "wind": "Vent",
           "bad_condition": "Mauvaise météo",
           "bad_current_condition": "Mauvaise météo actuelle",
           "dirty_now": "Surface sale — laver maintenant",
-          "no_data": "No forecast data",
+          "no_data": "Aucune donnée de prévision",
           "snoozed": "En pause",
           "unavailable": "Indisponible"
         }
@@ -325,10 +332,10 @@
           "no_rain": "Non — Pluie",
           "no_freeze": "Non — Gel",
           "no_snow": "Non — Neige",
-          "no_wind": "No — Wind",
+          "no_wind": "Non — Vent",
           "no_bad_condition": "Non — Mauvaise météo",
           "no_bad_current_condition": "Non — Mauvaise météo actuelle",
-          "no_data": "No — No forecast data",
+          "no_data": "Non — Aucune donnée de prévision",
           "snoozed": "En pause"
         }
       },
@@ -354,7 +361,7 @@
         "name": "Jours analysés"
       },
       "hours_analyzed": {
-        "name": "Hours analyzed"
+        "name": "Heures analysées"
       },
       "precip_total_mm": {
         "name": "Précipitations totales prévues"
@@ -392,7 +399,7 @@
           "boat": "Bateau",
           "rv_camper": "Camping-car",
           "windows_house": "Fenêtres de la maison",
-          "laundry": "Laundry",
+          "laundry": "Linge",
           "solar_panels": "Panneaux solaires",
           "patio_deck": "Terrasse",
           "garden_irrigation": "Irrigation du jardin",
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "Marquer comme irrigué"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "Lavage recommandé activé",
+      "description": "La météo autorise un lavage et suffisamment de temps s'est écoulé depuis le dernier.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Entrée WashWise",
+          "description": "Limite ce déclencheur à une seule entrée WashWise. Laissez vide pour se déclencher pour n'importe quelle entrée."
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "Lavage recommandé désactivé",
+      "description": "La recommandation « Lavage recommandé » a été effacée.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Entrée WashWise",
+          "description": "Limite ce déclencheur à une seule entrée WashWise. Laissez vide pour se déclencher pour n'importe quelle entrée."
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "Lavage possible activé",
+      "description": "La météo autorise désormais un lavage.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Entrée WashWise",
+          "description": "Limite ce déclencheur à une seule entrée WashWise. Laissez vide pour se déclencher pour n'importe quelle entrée."
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "Lavage possible désactivé",
+      "description": "La météo n'autorise plus de lavage.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Entrée WashWise",
+          "description": "Limite ce déclencheur à une seule entrée WashWise. Laissez vide pour se déclencher pour n'importe quelle entrée."
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "Verdict modifié",
+      "description": "Le verdict de lavage (lavage possible / lavage recommandé / score / raison) a changé.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Entrée WashWise",
+          "description": "Limite ce déclencheur à une seule entrée WashWise. Laissez vide pour se déclencher pour n'importe quelle entrée."
+        }
       }
     }
   }

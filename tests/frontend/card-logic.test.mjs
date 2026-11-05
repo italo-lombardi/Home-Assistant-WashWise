@@ -736,3 +736,83 @@ test("_renderDiagnostics: absent aggregate attributes produce no rows", () => {
   ).__html;
   assert.doesNotMatch(html, /Total precip|Max wind|Worst condition|Min temp|Weather source/);
 });
+
+// ── should_wash verdict source ────────────────────────────────────────────────
+
+test("_shouldWashVerdict: on→ok, off+can_wash→warn, off+!can_wash→bad, else unknown", () => {
+  const v = (state, can_wash) =>
+    Card.prototype._shouldWashVerdict({ state, attributes: { can_wash } });
+  assert.equal(v("on", true), "ok", "gate open → wash now");
+  assert.equal(v("off", true), "warn", "weather fine but washed recently → not yet");
+  assert.equal(v("off", false), "bad", "weather blocks → no");
+  assert.equal(v("unavailable", true), "unknown");
+});
+
+test("_mergedConfig: verdict_source defaults to can_wash", () => {
+  const merged = Card.prototype._mergedConfig.call({
+    _config: { entity: "binary_sensor.x_can_wash" },
+  });
+  assert.equal(merged.verdict_source, "can_wash");
+});
+
+test("_shouldWashStateObj: derives the sibling should_wash sensor from the can_wash id", () => {
+  const canId = "binary_sensor.x_can_wash";
+  const shouldId = "binary_sensor.x_should_wash";
+  const gate = { state: "off", attributes: { can_wash: true } };
+  const self = { _config: { entity: canId }, hass: { states: { [shouldId]: gate } } };
+  assert.equal(Card.prototype._shouldWashStateObj.call(self), gate);
+});
+
+test("_shouldWashStateObj: null when entity isn't a can_wash id or sibling missing", () => {
+  // non-can_wash entity → null (no suffix to swap)
+  assert.equal(
+    Card.prototype._shouldWashStateObj.call({
+      _config: { entity: "binary_sensor.x_should_wash" },
+      hass: { states: {} },
+    }),
+    null
+  );
+  // sibling not registered yet → null
+  assert.equal(
+    Card.prototype._shouldWashStateObj.call({
+      _config: { entity: "binary_sensor.x_can_wash" },
+      hass: { states: {} },
+    }),
+    null
+  );
+});
+
+test("_renderHeader: should_wash mode uses the 3-way labels + warn class", () => {
+  const h = (verdict) => Card.prototype._renderHeader.call({}, "T", verdict, false, true).__html;
+  assert.match(h("ok"), /ww-badge ok[\s\S]*?Wash now/);
+  assert.match(h("warn"), /ww-badge warn[\s\S]*?Not yet/);
+  assert.match(h("bad"), /ww-badge bad[\s\S]*?>No</);
+  assert.match(h("unknown"), /ww-badge unknown[\s\S]*?—/);
+});
+
+test("_renderHeader: can_wash mode unchanged (OK/No), irrigation (Irrigate/Skip)", () => {
+  const wash = (v) => Card.prototype._renderHeader.call({}, "T", v, false, false).__html;
+  assert.match(wash("ok"), /✅<span>OK</);
+  assert.match(wash("bad"), /⛔<span>No</);
+  const irr = (v) => Card.prototype._renderHeader.call({}, "T", v, true, false).__html;
+  assert.match(irr("ok"), /💧<span>Irrigate</);
+  assert.match(irr("bad"), /🌧️<span>Skip</);
+});
+
+test("_renderDiagnostics: min_days rows show when min_days>0, hidden when 0/absent", () => {
+  const h = (attrs) =>
+    Card.prototype._renderDiagnostics.call(
+      { hass: { states: {} } }, { attributes: attrs }, false
+    ).__html;
+  // min_days > 0 → both rows present
+  const on = h({ min_days: 3, days_since_last_wash: 1 });
+  assert.match(on, /ww-diag-label">Min days between washes<[\s\S]*?ww-diag-value[^>]*>3</);
+  assert.match(on, /ww-diag-label">Days since last wash<[\s\S]*?ww-diag-value[^>]*>1</);
+  // days_since 0 still shows (recently washed is meaningful)
+  assert.match(h({ min_days: 3, days_since_last_wash: 0 }),
+    /ww-diag-label">Days since last wash<[\s\S]*?ww-diag-value[^>]*>0</);
+  // min_days 0 (gate disabled) → neither row
+  assert.doesNotMatch(h({ min_days: 0, days_since_last_wash: 5 }), /Min days between washes|Days since last wash/);
+  // min_days absent → neither row
+  assert.doesNotMatch(h({ days_since_last_wash: 5 }), /Min days between washes|Days since last wash/);
+});

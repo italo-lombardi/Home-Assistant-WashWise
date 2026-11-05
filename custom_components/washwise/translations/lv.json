@@ -29,7 +29,8 @@
           "precip_weight": "Nokrišņu punktu svars",
           "freeze_weight": "Sasalšanas punktu svars",
           "condition_weight": "Laika apstākļu punktu svars",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Maks. vēja ātrums (km/h)",
+          "should_wash_min_days": "Minimālais dienu skaits kopš pēdējās mazgāšanas"
         },
         "data_description": {
           "days": "Analizējamo prognozes slotu skaits. Ar dienas prognozi katrs slots = 1 diena; ar stundas prognozi katrs slots = 1 stunda. Lielākas vērtības uztver vairāk laika, bet sniedz konservatīvākus secinājumus.",
@@ -40,7 +41,8 @@
           "precip_weight": "Cik daudz lietus prognozē atņem no 0–100 punktu skaita. Augstāka vērtība agresīvāk soda lietainas dienas.",
           "freeze_weight": "Cik daudz sasalšanas diena atņem no 0–100 punktu skaita. Iestatiet uz 0, lai ignorētu sasalšanu punktu skaitā, saglabājot verdikta bloķēšanu.",
           "condition_weight": "Cik daudz slikti laika apstākļi (vētras, krusa, sniegs) atņem no 0–100 punktu skaita. Smagums ir atkarīgs no katra apstākļa.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Atstājiet tukšu, lai atspējotu. Prognozes diena ar stiprāku vēju par šo bloķē mazgāšanu.",
+          "should_wash_min_days": "Ieslēdziet “Vajadzētu mazgāt” tikai tad, kad kopš pēdējās reģistrētās mazgāšanas ir pagājis vismaz šis pilno dienu skaits. 0 atspējo šo nosacījumu, tādēļ “Vajadzētu mazgāt” atbilst “Var mazgāt”. Ieraksts, kas nekad nav mazgāts, tiek uzskatīts par nokavētu."
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "Nokrišņu slieksnis (mm)",
           "freeze_check": "Bloķēt sasalšanas temperatūrās",
           "forecast_type": "Prognozes veids",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Maks. vēja ātrums (km/h)",
+          "should_wash_min_days": "Minimālais dienu skaits kopš pēdējās mazgāšanas"
         },
         "data_description": {
           "days": "Analizējamo prognozes slotu skaits. Ar dienas prognozi katrs slots = 1 diena; ar stundas prognozi katrs slots = 1 stunda.",
           "precip_threshold_mm": "Kopējie nokrišņi dienā virs šīs vērtības bloķē mazgāšanu.",
           "freeze_check": "Ja ieslēgts, prognozes diena, kurā temperatūra nokrīt zem 0 °C, bloķē mazgāšanu.",
           "forecast_type": "Dienas prognoze izmanto vienu ierakstu dienā; stundas prognoze izmanto vienu ierakstu stundā. Stundas prognoze ir precīzāka, bet prasa, lai avots sniegtu stundas datus.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Atstājiet tukšu, lai atspējotu. Prognozes diena ar stiprāku vēju par šo bloķē mazgāšanu.",
+          "should_wash_min_days": "Ieslēdziet “Vajadzētu mazgāt” tikai tad, kad kopš pēdējās reģistrētās mazgāšanas ir pagājis vismaz šis pilno dienu skaits. 0 atspējo šo nosacījumu, tādēļ “Vajadzētu mazgāt” atbilst “Var mazgāt”. Ieraksts, kas nekad nav mazgāts, tiek uzskatīts par nokavētu."
         }
       },
       "scoring": {
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "Apūdeņošanas slēdža stāvoklis"
+      },
+      "should_wash": {
+        "name": "Vajadzētu mazgāt"
       }
     },
     "sensor": {
@@ -307,11 +314,11 @@
           "rain": "Lietus",
           "freeze": "Sasalšana",
           "snow": "Sniegs",
-          "wind": "Wind",
+          "wind": "Vējš",
           "bad_condition": "Slikti laika apstākļi",
           "bad_current_condition": "Slikti pašreizējie laika apstākļi",
           "dirty_now": "Virsma netīra — mazgājiet tagad",
-          "no_data": "No forecast data",
+          "no_data": "Nav prognozes datu",
           "snoozed": "Atlikts",
           "unavailable": "Nav pieejams"
         }
@@ -325,10 +332,10 @@
           "no_rain": "Nē — Lietus",
           "no_freeze": "Nē — Sasalšana",
           "no_snow": "Nē — Sniegs",
-          "no_wind": "No — Wind",
+          "no_wind": "Nē — Vējš",
           "no_bad_condition": "Nē — Slikti laika apstākļi",
           "no_bad_current_condition": "Nē — Slikti pašreizējie laika apstākļi",
-          "no_data": "No — No forecast data",
+          "no_data": "Nē — Nav prognozes datu",
           "snoozed": "Atlikts"
         }
       },
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "Atzīmēt kā apūdeņotu"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "“Vajadzētu mazgāt” ieslēgts",
+      "description": "Laikapstākļi ļauj mazgāt, un kopš pēdējās reizes ir pagājis pietiekami ilgs laiks.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise ieraksts",
+          "description": "Ierobežot šo aktivizētāju līdz vienam WashWise ierakstam. Atstājiet tukšu, lai aktivizētu jebkuram ierakstam."
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "“Vajadzētu mazgāt” izslēgts",
+      "description": "Ieteikums “Vajadzētu mazgāt” tika notīrīts.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise ieraksts",
+          "description": "Ierobežot šo aktivizētāju līdz vienam WashWise ierakstam. Atstājiet tukšu, lai aktivizētu jebkuram ierakstam."
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "“Var mazgāt” ieslēgts",
+      "description": "Laikapstākļi tagad ļauj mazgāt.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise ieraksts",
+          "description": "Ierobežot šo aktivizētāju līdz vienam WashWise ierakstam. Atstājiet tukšu, lai aktivizētu jebkuram ierakstam."
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "“Var mazgāt” izslēgts",
+      "description": "Laikapstākļi vairs neļauj mazgāt.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise ieraksts",
+          "description": "Ierobežot šo aktivizētāju līdz vienam WashWise ierakstam. Atstājiet tukšu, lai aktivizētu jebkuram ierakstam."
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "Verdikts mainījies",
+      "description": "Mazgāšanas verdikts (var mazgāt / vajadzētu mazgāt / punktu skaits / iemesls) mainījās.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise ieraksts",
+          "description": "Ierobežot šo aktivizētāju līdz vienam WashWise ierakstam. Atstājiet tukšu, lai aktivizētu jebkuram ierakstam."
+        }
       }
     }
   }

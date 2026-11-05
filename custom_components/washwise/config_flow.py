@@ -33,6 +33,7 @@ from .const import (
     CONF_PRECIP_WEIGHT,
     CONF_RAIN_GAUGE_ENTITY,
     CONF_RAIN_GAUGE_THRESHOLD_MM,
+    CONF_SHOULD_WASH_MIN_DAYS,
     CONF_TEMPERATURE_UNIT,
     CONF_WEATHER_ENTITIES,
     CONF_WIND_THRESHOLD,
@@ -42,6 +43,7 @@ from .const import (
     DEFAULT_FREEZE_WEIGHT,
     DEFAULT_PRECIP_WEIGHT,
     DEFAULT_RAIN_GAUGE_THRESHOLD_MM,
+    DEFAULT_SHOULD_WASH_MIN_DAYS,
     DEFAULT_TEMPERATURE_UNIT,
     DOMAIN,
     TEMPERATURE_UNIT_OPTIONS,
@@ -139,6 +141,7 @@ _RECONFIGURE_STRIPPED_OPTION_KEYS: tuple[str, ...] = (
     CONF_RAIN_GAUGE_ENTITY,
     CONF_RAIN_GAUGE_THRESHOLD_MM,
     CONF_IRRIGATION_SWITCH_ENTITY,
+    CONF_SHOULD_WASH_MIN_DAYS,
 )
 
 
@@ -305,6 +308,18 @@ class WashWiseConfigFlow(ConfigFlow, domain=DOMAIN):
                         step=1,
                         mode=selector.NumberSelectorMode.BOX,
                         unit_of_measurement="slots",
+                    )
+                ),
+                vol.Optional(
+                    CONF_SHOULD_WASH_MIN_DAYS,
+                    default=self._data.get(CONF_SHOULD_WASH_MIN_DAYS, DEFAULT_SHOULD_WASH_MIN_DAYS),
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0,
+                        max=365,
+                        step=1,
+                        mode=selector.NumberSelectorMode.BOX,
+                        unit_of_measurement="days",
                     )
                 ),
                 vol.Required(
@@ -641,6 +656,18 @@ class WashWiseOptionsFlow(OptionsFlow):
                         step=1,
                         mode=selector.NumberSelectorMode.BOX,
                         unit_of_measurement="slots",
+                    )
+                ),
+                vol.Optional(
+                    CONF_SHOULD_WASH_MIN_DAYS,
+                    default=current.get(CONF_SHOULD_WASH_MIN_DAYS, DEFAULT_SHOULD_WASH_MIN_DAYS),
+                ): selector.NumberSelector(
+                    selector.NumberSelectorConfig(
+                        min=0,
+                        max=365,
+                        step=1,
+                        mode=selector.NumberSelectorMode.BOX,
+                        unit_of_measurement="days",
                     )
                 ),
                 vol.Required(

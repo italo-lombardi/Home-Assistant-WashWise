@@ -29,7 +29,8 @@
           "precip_weight": "Gewichtung Niederschlag",
           "freeze_weight": "Gewichtung Frost",
           "condition_weight": "Gewichtung Wetterlage",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Max. Windgeschwindigkeit (km/h)",
+          "should_wash_min_days": "Mindestanzahl Tage seit letzter Wäsche"
         },
         "data_description": {
           "days": "Wie viele Vorhersagetage einschließlich heute berücksichtigt werden. Längere Zeiträume erfassen mehr Wetterereignisse, führen aber zu vorsichtigeren Bewertungen.",
@@ -40,7 +41,8 @@
           "precip_weight": "Wie stark Regen in der Vorhersage den Score (0–100) reduziert. Höhere Werte bestrafen Regentage stärker.",
           "freeze_weight": "Wie stark ein Frosttag den Score (0–100) reduziert. Auf 0 setzen, um Frost beim Score zu ignorieren, während die Bewertung weiterhin blockiert wird.",
           "condition_weight": "Wie stark schlechte Wetterlagen (Sturm, Hagel, Schnee) den Score (0–100) reduzieren. Der Schweregrad wird je Wetterlage festgelegt.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Leer lassen, um zu deaktivieren. Ein Vorhersagetag mit stärkerem Wind als diesem Wert blockiert den Waschvorgang.",
+          "should_wash_min_days": "„Waschen empfohlen“ erst aktivieren, wenn seit der letzten erfassten Wäsche mindestens so viele ganze Tage vergangen sind. 0 deaktiviert die Sperre, sodass „Waschen empfohlen“ dem Wert „Waschen möglich“ entspricht. Ein nie gewaschener Eintrag gilt als überfällig."
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "Niederschlagsschwelle (mm)",
           "freeze_check": "Bei Frosttemperaturen blockieren",
           "forecast_type": "Vorhersagetyp",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Max. Windgeschwindigkeit (km/h)",
+          "should_wash_min_days": "Mindestanzahl Tage seit letzter Wäsche"
         },
         "data_description": {
           "days": "Wie viele Vorhersagetage einschließlich heute berücksichtigt werden.",
           "precip_threshold_mm": "Eine Tagesniederschlagsmenge oberhalb dieses Werts blockiert den Waschvorgang.",
           "freeze_check": "Wenn aktiviert, blockiert ein Vorhersagetag, an dem die Temperatur 0 °C über- oder unterschreitet, den Waschvorgang.",
           "forecast_type": "„Täglich“ verwendet einen Eintrag pro Tag; „Stündlich“ fasst die stündlichen Einträge zusammen, sofern unterstützt.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Leer lassen, um zu deaktivieren. Ein Vorhersagetag mit stärkerem Wind als diesem Wert blockiert den Waschvorgang.",
+          "should_wash_min_days": "„Waschen empfohlen“ erst aktivieren, wenn seit der letzten erfassten Wäsche mindestens so viele ganze Tage vergangen sind. 0 deaktiviert die Sperre, sodass „Waschen empfohlen“ dem Wert „Waschen möglich“ entspricht. Ein nie gewaschener Eintrag gilt als überfällig."
         }
       },
       "scoring": {
@@ -242,7 +246,7 @@
         "boat": "Boot",
         "rv_camper": "Wohnmobil / Camper",
         "windows_house": "Hausfenster",
-        "laundry": "Laundry",
+        "laundry": "Wäsche",
         "solar_panels": "Solarmodule",
         "patio_deck": "Terrasse / Deck",
         "garden_irrigation": "Gartenbewässerung",
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "Bewässerungsschalter-Status"
+      },
+      "should_wash": {
+        "name": "Waschen empfohlen"
       }
     },
     "sensor": {
@@ -311,7 +318,7 @@
           "bad_condition": "Schlechtes Wetter",
           "bad_current_condition": "Aktuell schlechtes Wetter",
           "dirty_now": "Schmutzig — jetzt waschen",
-          "no_data": "No forecast data",
+          "no_data": "Keine Vorhersagedaten",
           "snoozed": "Schlummert",
           "unavailable": "Nicht verfügbar"
         }
@@ -325,10 +332,10 @@
           "no_rain": "Nein — Regen",
           "no_freeze": "Nein — Frost",
           "no_snow": "Nein — Schnee",
-          "no_wind": "No — Wind",
+          "no_wind": "Nein — Wind",
           "no_bad_condition": "Nein — Schlechtes Wetter",
           "no_bad_current_condition": "Nein — Aktuell schlechtes Wetter",
-          "no_data": "No — No forecast data",
+          "no_data": "Nein — Keine Vorhersagedaten",
           "snoozed": "Schlummert"
         }
       },
@@ -354,7 +361,7 @@
         "name": "Analysierte Tage"
       },
       "hours_analyzed": {
-        "name": "Hours analyzed"
+        "name": "Analysierte Stunden"
       },
       "precip_total_mm": {
         "name": "Gesamtniederschlag in der Vorhersage"
@@ -392,7 +399,7 @@
           "boat": "Boot",
           "rv_camper": "Wohnmobil",
           "windows_house": "Hausfenster",
-          "laundry": "Laundry",
+          "laundry": "Wäsche",
           "solar_panels": "Solaranlage",
           "patio_deck": "Terrasse",
           "garden_irrigation": "Gartenbewässerung",
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "Als bewässert markieren"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "„Waschen empfohlen“ aktiviert",
+      "description": "Das Wetter lässt einen Waschvorgang zu und seit der letzten Wäsche ist genug Zeit vergangen.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-Eintrag",
+          "description": "Beschränkt diesen Auslöser auf einen einzelnen WashWise-Eintrag. Leer lassen, um bei jedem Eintrag auszulösen."
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "„Waschen empfohlen“ deaktiviert",
+      "description": "Die Empfehlung „Waschen empfohlen“ wurde aufgehoben.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-Eintrag",
+          "description": "Beschränkt diesen Auslöser auf einen einzelnen WashWise-Eintrag. Leer lassen, um bei jedem Eintrag auszulösen."
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "„Waschen möglich“ aktiviert",
+      "description": "Das Wetter lässt jetzt einen Waschvorgang zu.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-Eintrag",
+          "description": "Beschränkt diesen Auslöser auf einen einzelnen WashWise-Eintrag. Leer lassen, um bei jedem Eintrag auszulösen."
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "„Waschen möglich“ deaktiviert",
+      "description": "Das Wetter lässt keinen Waschvorgang mehr zu.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-Eintrag",
+          "description": "Beschränkt diesen Auslöser auf einen einzelnen WashWise-Eintrag. Leer lassen, um bei jedem Eintrag auszulösen."
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "Bewertung geändert",
+      "description": "Die Waschbewertung (Waschen möglich / Waschen empfohlen / Score / Grund) hat sich geändert.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-Eintrag",
+          "description": "Beschränkt diesen Auslöser auf einen einzelnen WashWise-Eintrag. Leer lassen, um bei jedem Eintrag auszulösen."
+        }
       }
     }
   }

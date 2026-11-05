@@ -29,7 +29,8 @@
           "precip_weight": "Pes de la puntuació de precipitació",
           "freeze_weight": "Pes de la puntuació de gelada",
           "condition_weight": "Pes de la puntuació de condicions",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Velocitat màxima del vent (km/h)",
+          "should_wash_min_days": "Dies mínims des de l'últim rentat"
         },
         "data_description": {
           "days": "Nombre d'intervals de previsió a analitzar. Amb previsió diària cada interval equival a 1 dia; amb previsió horària, a 1 hora. Valors més grans capten més fenòmens meteorològics però produeixen veredictes més conservadors.",
@@ -40,7 +41,8 @@
           "precip_weight": "Quant resta a la puntuació de 0–100 la pluja a la previsió. Un valor més alt penalitza els dies plujosos de forma més agressiva.",
           "freeze_weight": "Quant resta a la puntuació de 0–100 un dia de gelada. Posa'l a 0 per ignorar les gelades en la puntuació tot mantenint el bloqueig del veredicte.",
           "condition_weight": "Quant resten a la puntuació de 0–100 les condicions meteorològiques adverses (tempestes, calamarsa, neu). La gravetat és per condició.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Deixa-ho buit per desactivar-ho. Un dia de previsió amb més vent que aquest valor bloqueja el rentat.",
+          "should_wash_min_days": "Activa «Cal rentar» només quan hagin passat almenys aquests dies sencers des de l'últim rentat registrat. El valor 0 desactiva aquest filtre, de manera que «Cal rentar» reflecteix «Es pot rentar». Una entrada que no s'ha rentat mai es considera endarrerida."
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "Llindar de precipitació (mm)",
           "freeze_check": "Bloqueja amb temperatures de gelada",
           "forecast_type": "Tipus de previsió",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Velocitat màxima del vent (km/h)",
+          "should_wash_min_days": "Dies mínims des de l'últim rentat"
         },
         "data_description": {
           "days": "Nombre d'intervals de previsió a analitzar. Amb previsió diària cada interval equival a 1 dia; amb previsió horària, a 1 hora.",
           "precip_threshold_mm": "La precipitació total diària per sobre d'aquest valor bloqueja el rentat.",
           "freeze_check": "Quan està activat, un dia de previsió on la temperatura creui els 0 °C bloqueja el rentat.",
           "forecast_type": "Diària usa una entrada per dia; Horària usa una entrada per hora. Horària és més precisa però requereix que la font exposi dades horàries.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Deixa-ho buit per desactivar-ho. Un dia de previsió amb més vent que aquest valor bloqueja el rentat.",
+          "should_wash_min_days": "Activa «Cal rentar» només quan hagin passat almenys aquests dies sencers des de l'últim rentat registrat. El valor 0 desactiva aquest filtre, de manera que «Cal rentar» reflecteix «Es pot rentar». Una entrada que no s'ha rentat mai es considera endarrerida."
         }
       },
       "scoring": {
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "Estat de l'interruptor de reg"
+      },
+      "should_wash": {
+        "name": "Cal rentar"
       }
     },
     "sensor": {
@@ -307,11 +314,11 @@
           "rain": "Pluja",
           "freeze": "Gelada",
           "snow": "Neu",
-          "wind": "Wind",
+          "wind": "Vent",
           "bad_condition": "Mal temps",
           "bad_current_condition": "Mal temps actual",
           "dirty_now": "Superfície bruta — renta ara",
-          "no_data": "No forecast data",
+          "no_data": "Sense dades de previsió",
           "snoozed": "Ajornat",
           "unavailable": "No disponible"
         }
@@ -325,10 +332,10 @@
           "no_rain": "No — Pluja",
           "no_freeze": "No — Gelada",
           "no_snow": "No — Neu",
-          "no_wind": "No — Wind",
+          "no_wind": "No — Vent",
           "no_bad_condition": "No — Mal temps",
           "no_bad_current_condition": "No — Mal temps actual",
-          "no_data": "No — No forecast data",
+          "no_data": "No — Sense dades de previsió",
           "snoozed": "Ajornat"
         }
       },
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "Marca com a regat"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "«Cal rentar» s'ha activat",
+      "description": "El temps permet un rentat i ha passat prou temps des de l'últim.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Entrada de WashWise",
+          "description": "Limita aquest activador a una única entrada de WashWise. Deixa-ho buit perquè s'activi amb qualsevol entrada."
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "«Cal rentar» s'ha desactivat",
+      "description": "La recomanació «Cal rentar» s'ha esborrat.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Entrada de WashWise",
+          "description": "Limita aquest activador a una única entrada de WashWise. Deixa-ho buit perquè s'activi amb qualsevol entrada."
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "«Es pot rentar» s'ha activat",
+      "description": "El temps ara permet un rentat.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Entrada de WashWise",
+          "description": "Limita aquest activador a una única entrada de WashWise. Deixa-ho buit perquè s'activi amb qualsevol entrada."
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "«Es pot rentar» s'ha desactivat",
+      "description": "El temps ja no permet un rentat.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Entrada de WashWise",
+          "description": "Limita aquest activador a una única entrada de WashWise. Deixa-ho buit perquè s'activi amb qualsevol entrada."
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "El veredicte ha canviat",
+      "description": "El veredicte de rentat (es pot rentar / cal rentar / puntuació / motiu) ha canviat.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Entrada de WashWise",
+          "description": "Limita aquest activador a una única entrada de WashWise. Deixa-ho buit perquè s'activi amb qualsevol entrada."
+        }
       }
     }
   }

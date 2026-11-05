@@ -29,7 +29,8 @@
           "precip_weight": "降水分數權重",
           "freeze_weight": "結凍分數權重",
           "condition_weight": "天氣狀況分數權重",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "最大風速（km/h）",
+          "should_wash_min_days": "距上次清洗的最少天數"
         },
         "data_description": {
           "days": "要分析的預報時段數。使用每日預報時，每個時段 = 1 天；使用每小時預報時，每個時段 = 1 小時。數值越大涵蓋的天氣越多，但判斷結果會較為保守。",
@@ -40,7 +41,8 @@
           "precip_weight": "預報中的降雨量從 0–100 分中扣除的程度。數值越高，對多雨日的扣分越重。",
           "freeze_weight": "結凍日從 0–100 分中扣除的程度。設為 0 可在計分時忽略結凍，同時仍封鎖判斷結果。",
           "condition_weight": "惡劣天氣狀況（暴風雨、冰雹、降雪）從 0–100 分中扣除的程度。嚴重程度依天氣狀況而定。",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "留空以停用。預報風速超過此值的日子將封鎖清洗。",
+          "should_wash_min_days": "只有在距上次記錄的清洗已經過至少這麼多整天後，才會開啟「建議清洗」。設為 0 會停用此限制，使「建議清洗」與「可以清洗」一致。從未清洗過的項目視為已逾期。"
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "降水臨界值（毫米）",
           "freeze_check": "在結凍溫度時封鎖",
           "forecast_type": "預報類型",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "最大風速（km/h）",
+          "should_wash_min_days": "距上次清洗的最少天數"
         },
         "data_description": {
           "days": "要分析的預報時段數。使用每日預報時，每個時段 = 1 天；使用每小時預報時，每個時段 = 1 小時。",
           "precip_threshold_mm": "每天總降水量超過此值將封鎖清洗。",
           "freeze_check": "開啟後，預報溫度低於 0 °C 的日子將封鎖清洗。",
           "forecast_type": "每日預報每天一筆資料；每小時預報每小時一筆資料。每小時預報較為精確，但需要來源支援每小時資料。",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "留空以停用。預報風速超過此值的日子將封鎖清洗。",
+          "should_wash_min_days": "只有在距上次記錄的清洗已經過至少這麼多整天後，才會開啟「建議清洗」。設為 0 會停用此限制，使「建議清洗」與「可以清洗」一致。從未清洗過的項目視為已逾期。"
         }
       },
       "scoring": {
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "灌溉開關狀態"
+      },
+      "should_wash": {
+        "name": "建議清洗"
       }
     },
     "sensor": {
@@ -307,11 +314,11 @@
           "rain": "降雨",
           "freeze": "結凍",
           "snow": "降雪",
-          "wind": "Wind",
+          "wind": "強風",
           "bad_condition": "惡劣天氣",
           "bad_current_condition": "目前天氣惡劣",
           "dirty_now": "表面已髒——立即清洗",
-          "no_data": "No forecast data",
+          "no_data": "無預報資料",
           "snoozed": "已暫停",
           "unavailable": "無法使用"
         }
@@ -325,10 +332,10 @@
           "no_rain": "否——降雨",
           "no_freeze": "否——結凍",
           "no_snow": "否——降雪",
-          "no_wind": "No — Wind",
+          "no_wind": "否——強風",
           "no_bad_condition": "否——惡劣天氣",
           "no_bad_current_condition": "否——目前天氣惡劣",
-          "no_data": "No — No forecast data",
+          "no_data": "否——無預報資料",
           "snoozed": "已暫停"
         }
       },
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "標記已灌溉"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "建議清洗已開啟",
+      "description": "天氣適合清洗，且距上次清洗已經過足夠的時間。",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise 項目",
+          "description": "將此觸發器限制為單一 WashWise 項目。留空則對任何項目觸發。"
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "建議清洗已關閉",
+      "description": "「建議清洗」建議已清除。",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise 項目",
+          "description": "將此觸發器限制為單一 WashWise 項目。留空則對任何項目觸發。"
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "可以清洗已開啟",
+      "description": "天氣現在允許清洗。",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise 項目",
+          "description": "將此觸發器限制為單一 WashWise 項目。留空則對任何項目觸發。"
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "可以清洗已關閉",
+      "description": "天氣已不再允許清洗。",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise 項目",
+          "description": "將此觸發器限制為單一 WashWise 項目。留空則對任何項目觸發。"
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "判斷結果已變更",
+      "description": "清洗判斷結果（可以清洗／建議清洗／分數／原因）已變更。",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise 項目",
+          "description": "將此觸發器限制為單一 WashWise 項目。留空則對任何項目觸發。"
+        }
       }
     }
   }

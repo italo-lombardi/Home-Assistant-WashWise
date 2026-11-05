@@ -29,7 +29,8 @@
           "precip_weight": "강수 점수 가중치",
           "freeze_weight": "동결 점수 가중치",
           "condition_weight": "날씨 조건 점수 가중치",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "최대 풍속 (km/h)",
+          "should_wash_min_days": "마지막 세척 후 최소 경과 일수"
         },
         "data_description": {
           "days": "분석할 예보 슬롯 수입니다. 일별 예보에서는 슬롯 1개 = 1일, 시간별에서는 슬롯 1개 = 1시간입니다. 값이 클수록 더 많은 날씨를 포착하지만 더 보수적인 판정을 냅니다.",
@@ -40,7 +41,8 @@
           "precip_weight": "예보의 강수량이 0–100 점수에서 얼마나 감점되는지를 나타냅니다. 값이 높을수록 비 오는 날의 감점이 커집니다.",
           "freeze_weight": "영하의 날이 0–100 점수에서 얼마나 감점되는지를 나타냅니다. 판정은 차단하되 점수에서 동결을 무시하려면 0으로 설정하세요.",
           "condition_weight": "나쁜 날씨 조건(폭풍, 우박, 눈)이 0–100 점수에서 얼마나 감점되는지를 나타냅니다. 심각도는 조건별로 다릅니다.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "비활성화하려면 비워두세요. 이 값보다 바람이 강한 예보 일자는 세척을 차단합니다.",
+          "should_wash_min_days": "마지막으로 기록된 세척 이후 최소 이만큼의 전체 일수가 지난 경우에만 '세척 권장'을 켭니다. 0으로 설정하면 게이트가 비활성화되어 '세척 권장'이 '세척 가능'과 동일하게 동작합니다. 세척 기록이 없는 항목은 기한 초과로 간주됩니다."
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "강수 임계값 (mm)",
           "freeze_check": "영하 온도 시 차단",
           "forecast_type": "예보 유형",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "최대 풍속 (km/h)",
+          "should_wash_min_days": "마지막 세척 후 최소 경과 일수"
         },
         "data_description": {
           "days": "분석할 예보 슬롯 수입니다. 일별 예보에서는 슬롯 1개 = 1일, 시간별에서는 슬롯 1개 = 1시간입니다.",
           "precip_threshold_mm": "이 값을 초과하는 일일 총 강수량은 세척을 차단합니다.",
           "freeze_check": "켜면 온도가 0°C 미만인 예보 일자는 세척을 차단합니다.",
           "forecast_type": "일별은 하루 1개 항목을 사용하고, 시간별은 시간당 1개 항목을 사용합니다. 시간별이 더 정확하지만 소스가 시간별 데이터를 제공해야 합니다.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "비활성화하려면 비워두세요. 이 값보다 바람이 강한 예보 일자는 세척을 차단합니다.",
+          "should_wash_min_days": "마지막으로 기록된 세척 이후 최소 이만큼의 전체 일수가 지난 경우에만 '세척 권장'을 켭니다. 0으로 설정하면 게이트가 비활성화되어 '세척 권장'이 '세척 가능'과 동일하게 동작합니다. 세척 기록이 없는 항목은 기한 초과로 간주됩니다."
         }
       },
       "scoring": {
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "관개 스위치 상태"
+      },
+      "should_wash": {
+        "name": "세척 권장"
       }
     },
     "sensor": {
@@ -307,11 +314,11 @@
           "rain": "비",
           "freeze": "동결",
           "snow": "눈",
-          "wind": "Wind",
+          "wind": "바람",
           "bad_condition": "나쁜 날씨",
           "bad_current_condition": "현재 날씨 불량",
           "dirty_now": "표면 오염 — 지금 세척하세요",
-          "no_data": "No forecast data",
+          "no_data": "예보 데이터 없음",
           "snoozed": "일시 중지됨",
           "unavailable": "사용 불가"
         }
@@ -325,10 +332,10 @@
           "no_rain": "불가 — 비",
           "no_freeze": "불가 — 동결",
           "no_snow": "불가 — 눈",
-          "no_wind": "No — Wind",
+          "no_wind": "불가 — 바람",
           "no_bad_condition": "불가 — 나쁜 날씨",
           "no_bad_current_condition": "불가 — 현재 날씨 불량",
-          "no_data": "No — No forecast data",
+          "no_data": "불가 — 예보 데이터 없음",
           "snoozed": "일시 중지됨"
         }
       },
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "관개 완료 표시"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "세척 권장 켜짐",
+      "description": "날씨가 세척에 적합하고 마지막 세척 이후 충분한 시간이 지났습니다.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise 항목",
+          "description": "이 트리거를 단일 WashWise 항목으로 제한합니다. 모든 항목에 대해 실행하려면 비워두세요."
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "세척 권장 꺼짐",
+      "description": "'세척 권장' 권고가 해제되었습니다.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise 항목",
+          "description": "이 트리거를 단일 WashWise 항목으로 제한합니다. 모든 항목에 대해 실행하려면 비워두세요."
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "세척 가능 켜짐",
+      "description": "이제 날씨가 세척에 적합합니다.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise 항목",
+          "description": "이 트리거를 단일 WashWise 항목으로 제한합니다. 모든 항목에 대해 실행하려면 비워두세요."
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "세척 가능 꺼짐",
+      "description": "날씨가 더 이상 세척에 적합하지 않습니다.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise 항목",
+          "description": "이 트리거를 단일 WashWise 항목으로 제한합니다. 모든 항목에 대해 실행하려면 비워두세요."
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "판정 변경됨",
+      "description": "세척 판정(세척 가능 / 세척 권장 / 점수 / 이유)이 변경되었습니다.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise 항목",
+          "description": "이 트리거를 단일 WashWise 항목으로 제한합니다. 모든 항목에 대해 실행하려면 비워두세요."
+        }
       }
     }
   }

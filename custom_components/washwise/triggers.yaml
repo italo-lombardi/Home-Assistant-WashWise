@@ -1,0 +1,17 @@
+# Describes the format for WashWise automation triggers.
+# Each relays a bus event. The optional config_entry_id field scopes a trigger
+# to a single WashWise entry; blank fires for any entry.
+
+.scope: &scope
+  fields:
+    config_entry_id:
+      required: false
+      selector:
+        config_entry:
+          integration: washwise
+
+should_wash_on: *scope
+should_wash_off: *scope
+can_wash_on: *scope
+can_wash_off: *scope
+verdict_changed: *scope

@@ -29,7 +29,8 @@
           "precip_weight": "Csapadék pontszám súlya",
           "freeze_weight": "Fagyás pontszám súlya",
           "condition_weight": "Időjárási állapot pontszám súlya",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Max. szélsebesség (km/h)",
+          "should_wash_min_days": "Minimum napok száma az utolsó mosás óta"
         },
         "data_description": {
           "days": "Az elemzendő előrejelzési időrések száma. Napi előrejelzésnél minden időrés = 1 nap; óránkéntnél = 1 óra. Nagyobb értékek több időjárást fognak be, de konzervatívabb verdikteket adnak.",
@@ -40,7 +41,8 @@
           "precip_weight": "Mennyivel von le az előrejelzésben szereplő eső a 0–100-as pontszámból. Magasabb érték agresszívabban bünteti az esős napokat.",
           "freeze_weight": "Mennyivel von le egy fagyos nap a 0–100-as pontszámból. Állítsd 0-ra, ha a fagyást figyelmen kívül akarod hagyni a pontozásnál, miközben a verdikt blokkolása megmarad.",
           "condition_weight": "Mennyivel vonnak le a rossz időjárási körülmények (vihar, jégeső, hó) a 0–100-as pontszámból. A mérték állapotonként eltérő.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Hagyd üresen a letiltáshoz. Ha egy előrejelzési nap ennél szelesebb, a mosás le van tiltva.",
+          "should_wash_min_days": "Az „Érdemes mosni” csak akkor kapcsol be, ha legalább ennyi teljes nap telt el az utoljára rögzített mosás óta. A 0 letiltja a feltételt, így az „Érdemes mosni” a „Lehet mosni” állapotát tükrözi. A sosem mosott bejegyzés esedékesnek számít."
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "Csapadékküszöb (mm)",
           "freeze_check": "Blokkolás fagyás esetén",
           "forecast_type": "Előrejelzés típusa",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Max. szélsebesség (km/h)",
+          "should_wash_min_days": "Minimum napok száma az utolsó mosás óta"
         },
         "data_description": {
           "days": "Az elemzendő előrejelzési időrések száma. Napi előrejelzésnél minden időrés = 1 nap; óránkéntnél = 1 óra.",
           "precip_threshold_mm": "Ha a napi csapadék összege meghaladja ezt az értéket, a mosás le van tiltva.",
           "freeze_check": "Ha be van kapcsolva, az előrejelzési nap blokkolja a mosást, ha a hőmérséklet 0 °C alá süllyed.",
           "forecast_type": "A Napi egy bejegyzést használ naponként; az Óránkénti egy bejegyzést óránként. Az óránkénti pontosabb, de a forrástól óránkénti adatok szükségesek hozzá.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Hagyd üresen a letiltáshoz. Ha egy előrejelzési nap ennél szelesebb, a mosás le van tiltva.",
+          "should_wash_min_days": "Az „Érdemes mosni” csak akkor kapcsol be, ha legalább ennyi teljes nap telt el az utoljára rögzített mosás óta. A 0 letiltja a feltételt, így az „Érdemes mosni” a „Lehet mosni” állapotát tükrözi. A sosem mosott bejegyzés esedékesnek számít."
         }
       },
       "scoring": {
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "Öntözőkapcsoló állapota"
+      },
+      "should_wash": {
+        "name": "Érdemes mosni"
       }
     },
     "sensor": {
@@ -307,11 +314,11 @@
           "rain": "Eső",
           "freeze": "Fagyás",
           "snow": "Hó",
-          "wind": "Wind",
+          "wind": "Szél",
           "bad_condition": "Rossz időjárás",
           "bad_current_condition": "Rossz jelenlegi időjárás",
           "dirty_now": "Felület piszkos — most mosd le",
-          "no_data": "No forecast data",
+          "no_data": "Nincs előrejelzési adat",
           "snoozed": "Szüneteltetve",
           "unavailable": "Nem elérhető"
         }
@@ -325,10 +332,10 @@
           "no_rain": "Nem — Eső",
           "no_freeze": "Nem — Fagyás",
           "no_snow": "Nem — Hó",
-          "no_wind": "No — Wind",
+          "no_wind": "Nem — Szél",
           "no_bad_condition": "Nem — Rossz időjárás",
           "no_bad_current_condition": "Nem — Rossz jelenlegi időjárás",
-          "no_data": "No — No forecast data",
+          "no_data": "Nem — Nincs előrejelzési adat",
           "snoozed": "Szüneteltetve"
         }
       },
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "Megöntözöttnek jelöl"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "Érdemes mosni bekapcsolt",
+      "description": "Az időjárás lehetővé teszi a mosást, és elég idő telt el az utolsó óta.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise bejegyzés",
+          "description": "Korlátozza ezt az eseményindítót egyetlen WashWise bejegyzésre. Hagyd üresen, hogy bármely bejegyzésnél aktiválódjon."
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "Érdemes mosni kikapcsolt",
+      "description": "Az „Érdemes mosni” javaslat megszűnt.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise bejegyzés",
+          "description": "Korlátozza ezt az eseményindítót egyetlen WashWise bejegyzésre. Hagyd üresen, hogy bármely bejegyzésnél aktiválódjon."
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "Lehet mosni bekapcsolt",
+      "description": "Az időjárás most lehetővé teszi a mosást.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise bejegyzés",
+          "description": "Korlátozza ezt az eseményindítót egyetlen WashWise bejegyzésre. Hagyd üresen, hogy bármely bejegyzésnél aktiválódjon."
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "Lehet mosni kikapcsolt",
+      "description": "Az időjárás már nem teszi lehetővé a mosást.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise bejegyzés",
+          "description": "Korlátozza ezt az eseményindítót egyetlen WashWise bejegyzésre. Hagyd üresen, hogy bármely bejegyzésnél aktiválódjon."
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "Verdikt megváltozott",
+      "description": "A mosási verdikt (lehet mosni / érdemes mosni / pontszám / ok) megváltozott.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise bejegyzés",
+          "description": "Korlátozza ezt az eseményindítót egyetlen WashWise bejegyzésre. Hagyd üresen, hogy bármely bejegyzésnél aktiválódjon."
+        }
       }
     }
   }

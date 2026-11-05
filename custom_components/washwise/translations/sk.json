@@ -29,7 +29,8 @@
           "precip_weight": "Váha skóre zrážok",
           "freeze_weight": "Váha skóre mrazu",
           "condition_weight": "Váha skóre podmienok počasia",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Max. rýchlosť vetra (km/h)",
+          "should_wash_min_days": "Minimálny počet dní od posledného umytia"
         },
         "data_description": {
           "days": "Počet úsekov predpovede na analýzu. Pri dennej predpovedi každý úsek = 1 deň; pri hodinovej každý úsek = 1 hodina. Väčšie hodnoty zachytia viac počasia, ale dávajú konzervatívnejšie verdikty.",
@@ -40,7 +41,8 @@
           "precip_weight": "O koľko dážď v predpovedi znižuje skóre 0–100. Vyššia hodnota prísnejšie penalizuje daždivé dni.",
           "freeze_weight": "O koľko mrazivý deň znižuje skóre 0–100. Nastavte na 0, ak chcete ignorovať mráz pri skórovaní, ale stále blokovať verdikt.",
           "condition_weight": "O koľko zlé poveternostné podmienky (búrky, krúpy, sneh) znižujú skóre 0–100. Závažnosť je individuálna pre každú podmienku.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Nechajte prázdne, ak chcete zakázať. Deň predpovede s vetrom silnejším ako táto hodnota blokuje umývanie.",
+          "should_wash_min_days": "Zapnúť „Treba umyť“ až vtedy, keď od posledného zaznamenaného umytia uplynul aspoň tento počet celých dní. Hodnota 0 vypne túto podmienku, takže „Treba umyť“ zrkadlí „Možno umyť“. Záznam, ktorý nebol nikdy umytý, sa počíta ako po termíne."
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "Prahová hodnota zrážok (mm)",
           "freeze_check": "Blokovať pri mrazivých teplotách",
           "forecast_type": "Typ predpovede",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Max. rýchlosť vetra (km/h)",
+          "should_wash_min_days": "Minimálny počet dní od posledného umytia"
         },
         "data_description": {
           "days": "Počet úsekov predpovede na analýzu. Pri dennej predpovedi každý úsek = 1 deň; pri hodinovej každý úsek = 1 hodina.",
           "precip_threshold_mm": "Celkové denné zrážky nad touto hodnotou blokujú umývanie.",
           "freeze_check": "Keď je zapnuté, deň predpovede, v ktorom teplota klesne pod 0 °C, blokuje umývanie.",
           "forecast_type": "Denná používa jeden záznam na deň; hodinová používa jeden záznam na hodinu. Hodinová je presnejšia, ale vyžaduje, aby zdroj poskytoval hodinové dáta.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Nechajte prázdne, ak chcete zakázať. Deň predpovede s vetrom silnejším ako táto hodnota blokuje umývanie.",
+          "should_wash_min_days": "Zapnúť „Treba umyť“ až vtedy, keď od posledného zaznamenaného umytia uplynul aspoň tento počet celých dní. Hodnota 0 vypne túto podmienku, takže „Treba umyť“ zrkadlí „Možno umyť“. Záznam, ktorý nebol nikdy umytý, sa počíta ako po termíne."
         }
       },
       "scoring": {
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "Stav prepínača zavlažovania"
+      },
+      "should_wash": {
+        "name": "Treba umyť"
       }
     },
     "sensor": {
@@ -307,11 +314,11 @@
           "rain": "Dážď",
           "freeze": "Mráz",
           "snow": "Sneh",
-          "wind": "Wind",
+          "wind": "Vietor",
           "bad_condition": "Zlé počasie",
           "bad_current_condition": "Zlé aktuálne počasie",
           "dirty_now": "Povrch špinavý — umyte teraz",
-          "no_data": "No forecast data",
+          "no_data": "Žiadne dáta predpovede",
           "snoozed": "Odložené",
           "unavailable": "Nedostupné"
         }
@@ -325,10 +332,10 @@
           "no_rain": "Nie — Dážď",
           "no_freeze": "Nie — Mráz",
           "no_snow": "Nie — Sneh",
-          "no_wind": "No — Wind",
+          "no_wind": "Nie — Vietor",
           "no_bad_condition": "Nie — Zlé počasie",
           "no_bad_current_condition": "Nie — Zlé aktuálne počasie",
-          "no_data": "No — No forecast data",
+          "no_data": "Nie — Žiadne dáta predpovede",
           "snoozed": "Odložené"
         }
       },
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "Označiť ako zavlažené"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "„Treba umyť“ zapnuté",
+      "description": "Počasie umožňuje umývanie a od posledného umytia uplynul dostatočný čas.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Záznam WashWise",
+          "description": "Obmedzte tento spúšťač na jeden záznam WashWise. Nechajte prázdne, aby sa spustil pre ľubovoľný záznam."
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "„Treba umyť“ vypnuté",
+      "description": "Odporúčanie „Treba umyť“ sa zrušilo.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Záznam WashWise",
+          "description": "Obmedzte tento spúšťač na jeden záznam WashWise. Nechajte prázdne, aby sa spustil pre ľubovoľný záznam."
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "„Možno umyť“ zapnuté",
+      "description": "Počasie teraz umožňuje umývanie.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Záznam WashWise",
+          "description": "Obmedzte tento spúšťač na jeden záznam WashWise. Nechajte prázdne, aby sa spustil pre ľubovoľný záznam."
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "„Možno umyť“ vypnuté",
+      "description": "Počasie už neumožňuje umývanie.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Záznam WashWise",
+          "description": "Obmedzte tento spúšťač na jeden záznam WashWise. Nechajte prázdne, aby sa spustil pre ľubovoľný záznam."
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "Verdikt sa zmenil",
+      "description": "Verdikt umývania (možno umyť / treba umyť / skóre / dôvod) sa zmenil.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Záznam WashWise",
+          "description": "Obmedzte tento spúšťač na jeden záznam WashWise. Nechajte prázdne, aby sa spustil pre ľubovoľný záznam."
+        }
       }
     }
   }

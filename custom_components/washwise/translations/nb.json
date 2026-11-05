@@ -29,7 +29,8 @@
           "precip_weight": "Nedbørsvekt",
           "freeze_weight": "Frostvekt",
           "condition_weight": "Værforholdsvekt",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Maks vindhastighet (km/h)",
+          "should_wash_min_days": "Minimum antall dager siden siste vask"
         },
         "data_description": {
           "days": "Hvor mange varseldager som skal undersøkes fremover, inkludert i dag. Lengre horisonter fanger opp mer vær, men gir mer forsiktige avgjørelser.",
@@ -40,7 +41,8 @@
           "precip_weight": "Hvor mye regn i værvarselet trekker fra poengsummen (0–100). Høyere verdi straffer regnværsdager hardere.",
           "freeze_weight": "Hvor mye en frostdag trekker fra poengsummen (0–100). Sett til 0 for å se bort fra frost i poengsummen, men fortsatt blokkere avgjørelsen.",
           "condition_weight": "Hvor mye dårlige værforhold (uvær, hagl, snø) trekker fra poengsummen (0–100). Alvorlighetsgrad varierer per værforhold.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "La stå tom for å deaktivere. En varseldag med mer vind enn dette blokkerer vask.",
+          "should_wash_min_days": "Slå på «Bør vaske» først når minst så mange hele dager har gått siden siste registrerte vask. 0 deaktiverer sperren, slik at «Bør vaske» speiler «Kan vaske». En oppføring som aldri er vasket, regnes som overmoden."
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "Nedbørsterskel (mm)",
           "freeze_check": "Blokker ved frosttemperaturer",
           "forecast_type": "Varseltype",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Maks vindhastighet (km/h)",
+          "should_wash_min_days": "Minimum antall dager siden siste vask"
         },
         "data_description": {
           "days": "Hvor mange varseldager som skal undersøkes fremover, inkludert i dag.",
           "precip_threshold_mm": "Total nedbør per dag over denne verdien blokkerer vask.",
           "freeze_check": "Når dette er på, vil en varseldag der temperaturen krysser 0 °C blokkere vask.",
           "forecast_type": "Daglig bruker én oppføring per dag; Per time slår sammen timesoppføringer når det støttes.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "La stå tom for å deaktivere. En varseldag med mer vind enn dette blokkerer vask.",
+          "should_wash_min_days": "Slå på «Bør vaske» først når minst så mange hele dager har gått siden siste registrerte vask. 0 deaktiverer sperren, slik at «Bør vaske» speiler «Kan vaske». En oppføring som aldri er vasket, regnes som overmoden."
         }
       },
       "scoring": {
@@ -242,7 +246,7 @@
         "boat": "Båt",
         "rv_camper": "Bobil / campingvogn",
         "windows_house": "Husvinduer",
-        "laundry": "Laundry",
+        "laundry": "Klesvask",
         "solar_panels": "Solcellepaneler",
         "patio_deck": "Terrasse / platting",
         "garden_irrigation": "Havevanning",
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "Status for vanningsbryter"
+      },
+      "should_wash": {
+        "name": "Bør vaske"
       }
     },
     "sensor": {
@@ -307,11 +314,11 @@
           "rain": "Regn",
           "freeze": "Frost",
           "snow": "Snø",
-          "wind": "Wind",
+          "wind": "Vind",
           "bad_condition": "Dårlig vær",
           "bad_current_condition": "Dårlig vær akkurat nå",
           "dirty_now": "Skitten overflate — vask nå",
-          "no_data": "No forecast data",
+          "no_data": "Ingen værvarseldata",
           "snoozed": "Slumret",
           "unavailable": "Utilgjengelig"
         }
@@ -325,10 +332,10 @@
           "no_rain": "Nei — Regn",
           "no_freeze": "Nei — Frost",
           "no_snow": "Nei — Snø",
-          "no_wind": "No — Wind",
+          "no_wind": "Nei — Vind",
           "no_bad_condition": "Nei — Dårlig vær",
           "no_bad_current_condition": "Nei — Dårlig vær akkurat nå",
-          "no_data": "No — No forecast data",
+          "no_data": "Nei — Ingen værvarseldata",
           "snoozed": "Slumret"
         }
       },
@@ -354,7 +361,7 @@
         "name": "Dager analysert"
       },
       "hours_analyzed": {
-        "name": "Hours analyzed"
+        "name": "Timer analysert"
       },
       "precip_total_mm": {
         "name": "Total nedbør i værvarselet"
@@ -392,7 +399,7 @@
           "boat": "Båt",
           "rv_camper": "Bobil",
           "windows_house": "Husvinduer",
-          "laundry": "Laundry",
+          "laundry": "Klesvask",
           "solar_panels": "Solcellepaneler",
           "patio_deck": "Terrasse",
           "garden_irrigation": "Hagevanningsanlegg",
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "Marker som vannet"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "Bør vaske slått på",
+      "description": "Været tillater vask, og det har gått lenge nok siden forrige gang.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-oppføring",
+          "description": "Begrens denne utløseren til én enkelt WashWise-oppføring. La stå tom for å utløse for alle oppføringer."
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "Bør vaske slått av",
+      "description": "Anbefalingen «Bør vaske» ble fjernet.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-oppføring",
+          "description": "Begrens denne utløseren til én enkelt WashWise-oppføring. La stå tom for å utløse for alle oppføringer."
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "Kan vaske slått på",
+      "description": "Været tillater nå vask.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-oppføring",
+          "description": "Begrens denne utløseren til én enkelt WashWise-oppføring. La stå tom for å utløse for alle oppføringer."
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "Kan vaske slått av",
+      "description": "Været tillater ikke lenger vask.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-oppføring",
+          "description": "Begrens denne utløseren til én enkelt WashWise-oppføring. La stå tom for å utløse for alle oppføringer."
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "Avgjørelse endret",
+      "description": "Vaskeavgjørelsen (kan vaske / bør vaske / poengsum / årsak) ble endret.",
+      "fields": {
+        "config_entry_id": {
+          "name": "WashWise-oppføring",
+          "description": "Begrens denne utløseren til én enkelt WashWise-oppføring. La stå tom for å utløse for alle oppføringer."
+        }
       }
     }
   }

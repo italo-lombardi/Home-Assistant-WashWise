@@ -1,0 +1,19 @@
+{
+    "triggers": {
+        "should_wash_on": {
+            "trigger": "mdi:car-wash"
+        },
+        "should_wash_off": {
+            "trigger": "mdi:car-off"
+        },
+        "can_wash_on": {
+            "trigger": "mdi:water-check"
+        },
+        "can_wash_off": {
+            "trigger": "mdi:water-off"
+        },
+        "verdict_changed": {
+            "trigger": "mdi:swap-horizontal"
+        }
+    }
+}

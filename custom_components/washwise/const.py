@@ -7,9 +7,16 @@ PLATFORMS = ["binary_sensor", "sensor", "button"]
 
 # Event fired on the HA bus when a verdict flips (see coordinator).
 EVENT_VERDICT_CHANGED = f"{DOMAIN}_verdict_changed"
+# Edge events fired when the ``should_wash`` gate flips (see coordinator).
+EVENT_SHOULD_WASH_ON = f"{DOMAIN}_should_wash_on"
+EVENT_SHOULD_WASH_OFF = f"{DOMAIN}_should_wash_off"
+# Edge events fired when ``can_wash`` flips (see coordinator).
+EVENT_CAN_WASH_ON = f"{DOMAIN}_can_wash_on"
+EVENT_CAN_WASH_OFF = f"{DOMAIN}_can_wash_off"
 
-# Minimum supported Home Assistant version.
-MIN_HA_VERSION = "2024.10.0"
+# Minimum supported Home Assistant version. Raised to 2025.11.0 for the
+# integration-level Trigger platform (``trigger.py`` / ``async_attach_runner``).
+MIN_HA_VERSION = "2025.11.0"
 
 # Weather condition codes that block washing.
 BAD_CONDITIONS = (
@@ -179,6 +186,15 @@ CONF_SCAN_INTERVAL_MINUTES = "scan_interval_minutes"
 CONF_RAIN_GAUGE_ENTITY = "rain_gauge_entity"
 CONF_RAIN_GAUGE_THRESHOLD_MM = "rain_gauge_threshold_mm"
 CONF_IRRIGATION_SWITCH_ENTITY = "irrigation_switch_entity"
+
+# Minimum whole days since the last recorded wash before ``should_wash`` may
+# turn on. 0 (default) disables the gate so ``should_wash`` mirrors
+# ``can_wash``. A never-washed entry (empty log) counts as overdue.
+CONF_SHOULD_WASH_MIN_DAYS = "should_wash_min_days"
+DEFAULT_SHOULD_WASH_MIN_DAYS = 0
+
+# Trigger-platform field: optionally scopes a named trigger to one config entry.
+CONF_CONFIG_ENTRY_ID = "config_entry_id"
 
 DEFAULT_RAIN_GAUGE_THRESHOLD_MM = 5.0
 CONF_TEMPERATURE_UNIT = "temperature_unit"

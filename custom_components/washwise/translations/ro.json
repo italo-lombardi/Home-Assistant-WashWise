@@ -29,7 +29,8 @@
           "precip_weight": "Pondere precipitații în scor",
           "freeze_weight": "Pondere îngheț în scor",
           "condition_weight": "Pondere condiții în scor",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Viteză maximă a vântului (km/h)",
+          "should_wash_min_days": "Număr minim de zile de la ultima spălare"
         },
         "data_description": {
           "days": "Numărul de intervale din prognoză de analizat. Cu prognoză zilnică, fiecare interval = 1 zi; cu prognoză orară, fiecare interval = 1 oră. Valorile mai mari captează mai mult timp, dar produc verdicte mai conservatoare.",
@@ -40,7 +41,8 @@
           "precip_weight": "Cât de mult scade ploaia din prognoză scorul de la 0 la 100. O valoare mai mare penalizează mai agresiv zilele ploioase.",
           "freeze_weight": "Cât de mult scade o zi de îngheț din scorul de la 0 la 100. Setați la 0 pentru a ignora înghețul în calcul, menținând totuși blocarea verdictului.",
           "condition_weight": "Cât de mult scad condițiile meteo nefavorabile (furtuni, grindină, ninsoare) din scorul de la 0 la 100. Severitatea este per condiție.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Lăsați gol pentru a dezactiva. O zi din prognoză cu vânt mai puternic decât această valoare blochează spălarea.",
+          "should_wash_min_days": "Activați „Ar trebui spălat” doar după ce au trecut cel puțin atâtea zile întregi de la ultima spălare înregistrată. Valoarea 0 dezactivează condiția, astfel încât „Ar trebui spălat” reflectă „Poate spăla”. O intrare nespălată niciodată este considerată restantă."
         }
       },
       "irrigation": {
@@ -117,14 +119,16 @@
           "precip_threshold_mm": "Prag precipitații (mm)",
           "freeze_check": "Blocare la temperaturi de îngheț",
           "forecast_type": "Tip prognoză",
-          "wind_threshold_kmh": "Max wind speed (km/h)"
+          "wind_threshold_kmh": "Viteză maximă a vântului (km/h)",
+          "should_wash_min_days": "Număr minim de zile de la ultima spălare"
         },
         "data_description": {
           "days": "Numărul de intervale din prognoză de analizat. Cu prognoză zilnică, fiecare interval = 1 zi; cu prognoză orară, fiecare interval = 1 oră.",
           "precip_threshold_mm": "Precipitațiile totale pe zi care depășesc această valoare blochează spălarea.",
           "freeze_check": "Când este activat, o zi din prognoză cu temperatura sub 0 °C blochează spălarea.",
           "forecast_type": "Zilnic folosește o intrare pe zi; Orar folosește o intrare pe oră. Prognoza orară este mai precisă, dar necesită ca sursa să expună date orare.",
-          "wind_threshold_kmh": "Leave blank to disable. A forecast day windier than this blocks washing."
+          "wind_threshold_kmh": "Lăsați gol pentru a dezactiva. O zi din prognoză cu vânt mai puternic decât această valoare blochează spălarea.",
+          "should_wash_min_days": "Activați „Ar trebui spălat” doar după ce au trecut cel puțin atâtea zile întregi de la ultima spălare înregistrată. Valoarea 0 dezactivează condiția, astfel încât „Ar trebui spălat” reflectă „Poate spăla”. O intrare nespălată niciodată este considerată restantă."
         }
       },
       "scoring": {
@@ -294,6 +298,9 @@
       },
       "irrigation_switch_state": {
         "name": "Stare comutator irigare"
+      },
+      "should_wash": {
+        "name": "Ar trebui spălat"
       }
     },
     "sensor": {
@@ -307,11 +314,11 @@
           "rain": "Ploaie",
           "freeze": "Îngheț",
           "snow": "Ninsoare",
-          "wind": "Wind",
+          "wind": "Vânt",
           "bad_condition": "Condiții meteo nefavorabile",
           "bad_current_condition": "Condiții meteo curente nefavorabile",
           "dirty_now": "Suprafață murdară — spălați acum",
-          "no_data": "No forecast data",
+          "no_data": "Lipsă date din prognoză",
           "snoozed": "Amânat",
           "unavailable": "Indisponibil"
         }
@@ -325,10 +332,10 @@
           "no_rain": "Nu — Ploaie",
           "no_freeze": "Nu — Îngheț",
           "no_snow": "Nu — Ninsoare",
-          "no_wind": "No — Wind",
+          "no_wind": "Nu — Vânt",
           "no_bad_condition": "Nu — Condiții meteo nefavorabile",
           "no_bad_current_condition": "Nu — Condiții meteo curente nefavorabile",
-          "no_data": "No — No forecast data",
+          "no_data": "Nu — Lipsă date din prognoză",
           "snoozed": "Amânat"
         }
       },
@@ -406,6 +413,58 @@
       },
       "mark_irrigated": {
         "name": "Marchează ca irigat"
+      }
+    }
+  },
+  "triggers": {
+    "should_wash_on": {
+      "name": "„Ar trebui spălat” s-a activat",
+      "description": "Vremea permite o spălare și a trecut suficient timp de la ultima.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Intrare WashWise",
+          "description": "Limitați acest declanșator la o singură intrare WashWise. Lăsați gol pentru a se declanșa pentru orice intrare."
+        }
+      }
+    },
+    "should_wash_off": {
+      "name": "„Ar trebui spălat” s-a dezactivat",
+      "description": "Recomandarea „Ar trebui spălat” a dispărut.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Intrare WashWise",
+          "description": "Limitați acest declanșator la o singură intrare WashWise. Lăsați gol pentru a se declanșa pentru orice intrare."
+        }
+      }
+    },
+    "can_wash_on": {
+      "name": "„Poate spăla” s-a activat",
+      "description": "Vremea permite acum o spălare.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Intrare WashWise",
+          "description": "Limitați acest declanșator la o singură intrare WashWise. Lăsați gol pentru a se declanșa pentru orice intrare."
+        }
+      }
+    },
+    "can_wash_off": {
+      "name": "„Poate spăla” s-a dezactivat",
+      "description": "Vremea nu mai permite o spălare.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Intrare WashWise",
+          "description": "Limitați acest declanșator la o singură intrare WashWise. Lăsați gol pentru a se declanșa pentru orice intrare."
+        }
+      }
+    },
+    "verdict_changed": {
+      "name": "Verdict modificat",
+      "description": "Verdictul de spălare (poate spăla / ar trebui spălat / scor / motiv) s-a modificat.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Intrare WashWise",
+          "description": "Limitați acest declanșator la o singură intrare WashWise. Lăsați gol pentru a se declanșa pentru orice intrare."
+        }
       }
     }
   }
