@@ -19,7 +19,7 @@ windows are deterministic.
 from __future__ import annotations
 
 import contextlib
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime, timedelta, timezone
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -2010,6 +2010,49 @@ def _seed_wash(stub: _StubStore, days_ago: int) -> None:
     """Seed the stub store with a single wash entry ``days_ago`` days back."""
     ts = (FROZEN_NOW - timedelta(days=days_ago)).isoformat()
     stub.data = StoredData(wash_log=[WashEntry(timestamp=ts, source="manual")])
+
+
+async def test_update_passes_local_now_to_compute(hass: HomeAssistant) -> None:
+    """``_async_update_data`` must pass HA-LOCAL now to ``decision.compute``.
+
+    Regression guard for the UTC/local day-boundary bug: the stale-day filter
+    anchors on ``dt_util.now().date()`` (local), so the decision engine's
+    ``today = now.date()`` must use the same local calendar. If the coordinator
+    reverted to ``dt_util.utcnow()``, ``now`` would carry a different date near
+    midnight in a non-UTC zone. Make local and UTC deliberately disagree and
+    assert the LOCAL value is what reaches ``compute``.
+    """
+    local_now = datetime(2026, 6, 11, 23, 30, tzinfo=timezone(timedelta(hours=-5)))
+    utc_now = datetime(2026, 6, 12, 4, 30, tzinfo=UTC)  # same instant, NEXT day in UTC
+    captured: dict[str, Any] = {}
+
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+
+    import custom_components.washwise.coordinator as coord_mod
+
+    real_compute = coord_mod.decision_module.compute
+
+    def _spy(*args, **kwargs):
+        captured["now"] = kwargs.get("now")
+        return real_compute(*args, **kwargs)
+
+    with contextlib.ExitStack() as stack:
+        for p in _sunny_patch():
+            stack.enter_context(p)
+        stack.enter_context(
+            patch("custom_components.washwise.coordinator.dt_util.now", return_value=local_now)
+        )
+        stack.enter_context(
+            patch("custom_components.washwise.coordinator.dt_util.utcnow", return_value=utc_now)
+        )
+        stack.enter_context(patch.object(coord_mod.decision_module, "compute", side_effect=_spy))
+        await coord._async_update_data()
+
+    assert captured["now"] is not None
+    assert captured["now"].date() == local_now.date()  # local 11th, not UTC 12th
+    assert captured["now"].date() != utc_now.date()
 
 
 @freeze_time(FROZEN_NOW)
