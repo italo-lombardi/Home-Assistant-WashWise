@@ -299,9 +299,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
             today = dt_util.now().date().isoformat()
             # Entries carry an ISO ``date`` string; keep today-or-future. A
             # missing date is kept (can't judge staleness) to stay lenient.
-            summary = [
-                d for d in last.forecast_summary if (d.get("date") or today) >= today
-            ]
+            summary = [d for d in last.forecast_summary if (d.get("date") or today) >= today]
         return Decision(
             can_wash=False,
             score=0,

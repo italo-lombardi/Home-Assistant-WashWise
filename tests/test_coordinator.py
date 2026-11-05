@@ -835,8 +835,13 @@ async def test_snooze_preserves_last_real_forecast_for_diagnostics(hass: HomeAss
         },
     ]
     real = Decision(
-        can_wash=True, score=90, reason="clear", days_until_wash=0,
-        blocking_days=[], forecast_summary=summary, days_analyzed=3,
+        can_wash=True,
+        score=90,
+        reason="clear",
+        days_until_wash=0,
+        blocking_days=[],
+        forecast_summary=summary,
+        days_analyzed=3,
     )
     coord._last_real_decision = real
 
@@ -859,7 +864,11 @@ async def test_snooze_drops_stale_forecast_days(hass: HomeAssistant) -> None:
     coord, _stub = _build_coordinator(hass, entry)
     today = FROZEN_NOW.date()
     real = Decision(
-        can_wash=True, score=80, reason="clear", days_until_wash=0, blocking_days=[],
+        can_wash=True,
+        score=80,
+        reason="clear",
+        days_until_wash=0,
+        blocking_days=[],
         forecast_summary=[
             {"date": (today - timedelta(days=2)).isoformat(), "condition": "rainy"},
             {"date": (today - timedelta(days=1)).isoformat(), "condition": "sunny"},
