@@ -287,18 +287,29 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         A snooze pauses the *recommendation*, not the weather — so carry the
         last real decision's ``forecast_summary`` / ``days_analyzed`` (and thus
         the card's forecast strip + diagnostics aggregates) through, while the
-        verdict fields reflect the snooze. Falls back to an empty forecast when
-        no real decision has been computed yet (snoozed before first poll).
+        verdict fields reflect the snooze. Past days are dropped so a long
+        snooze doesn't surface a strip full of stale dates (mirrors the stale
+        filter on the real path). Falls back to an empty forecast when no real
+        decision has been computed yet (snoozed before first poll).
         """
         last = self._last_real_decision
+        if last is None:
+            summary: list[dict[str, Any]] = []
+        else:
+            today = dt_util.now().date().isoformat()
+            # Entries carry an ISO ``date`` string; keep today-or-future. A
+            # missing date is kept (can't judge staleness) to stay lenient.
+            summary = [
+                d for d in last.forecast_summary if (d.get("date") or today) >= today
+            ]
         return Decision(
             can_wash=False,
             score=0,
             reason="snoozed",
             days_until_wash=None,
             blocking_days=[],
-            forecast_summary=list(last.forecast_summary) if last else [],
-            days_analyzed=last.days_analyzed if last else 0,
+            forecast_summary=summary,
+            days_analyzed=len(summary),
         )
 
     async def async_snooze(self, duration: timedelta) -> None:

@@ -819,15 +819,24 @@ async def test_snooze_preserves_last_real_forecast_for_diagnostics(hass: HomeAss
     entry = _make_entry(["weather.primary"])
     entry.add_to_hass(hass)
     coord, _stub = _build_coordinator(hass, entry)
-    # Seed a real decision with forecast data (as a normal poll would).
+    # Seed a real decision with today-or-future forecast data.
+    today = FROZEN_NOW.date()
+    summary = [
+        {"date": today.isoformat(), "condition": "sunny", "precipitation_mm": 0.0},
+        {
+            "date": (today + timedelta(days=1)).isoformat(),
+            "condition": "cloudy",
+            "precipitation_mm": 0.0,
+        },
+        {
+            "date": (today + timedelta(days=2)).isoformat(),
+            "condition": "rainy",
+            "precipitation_mm": 3.0,
+        },
+    ]
     real = Decision(
-        can_wash=True,
-        score=90,
-        reason="clear",
-        days_until_wash=0,
-        blocking_days=[],
-        forecast_summary=[{"date": "2026-06-11", "condition": "sunny", "precipitation_mm": 0.0}],
-        days_analyzed=3,
+        can_wash=True, score=90, reason="clear", days_until_wash=0,
+        blocking_days=[], forecast_summary=summary, days_analyzed=3,
     )
     coord._last_real_decision = real
 
@@ -836,9 +845,35 @@ async def test_snooze_preserves_last_real_forecast_for_diagnostics(hass: HomeAss
     snoozed = coord.data
     assert snoozed.reason == "snoozed"
     assert snoozed.can_wash is False
-    # Weather-derived diagnostics carried through from the last real decision.
-    assert snoozed.forecast_summary == real.forecast_summary
+    # All three future days carried through for the strip + aggregates.
+    assert snoozed.forecast_summary == summary
     assert snoozed.days_analyzed == 3
+
+
+@freeze_time(FROZEN_NOW)
+async def test_snooze_drops_stale_forecast_days(hass: HomeAssistant) -> None:
+    """Past days are filtered from the carried forecast so a long snooze does
+    not show a strip full of stale dates."""
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+    today = FROZEN_NOW.date()
+    real = Decision(
+        can_wash=True, score=80, reason="clear", days_until_wash=0, blocking_days=[],
+        forecast_summary=[
+            {"date": (today - timedelta(days=2)).isoformat(), "condition": "rainy"},
+            {"date": (today - timedelta(days=1)).isoformat(), "condition": "sunny"},
+            {"date": today.isoformat(), "condition": "sunny"},
+            {"date": (today + timedelta(days=1)).isoformat(), "condition": "cloudy"},
+        ],
+        days_analyzed=4,
+    )
+    coord._last_real_decision = real
+    await coord.async_snooze(timedelta(days=14))
+    snoozed = coord.data
+    dates = [d["date"] for d in snoozed.forecast_summary]
+    assert dates == [today.isoformat(), (today + timedelta(days=1)).isoformat()]
+    assert snoozed.days_analyzed == 2
 
 
 @freeze_time(FROZEN_NOW)
