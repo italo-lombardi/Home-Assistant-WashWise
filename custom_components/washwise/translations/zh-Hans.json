@@ -335,7 +335,7 @@
           "ok_snow": "是——预计降雪",
           "ok_wind": "是——预计大风",
           "ok_bad_condition": "是——预计恶劣天气",
-          "unknown_clear": "未知",
+          "unknown_clear": "否——预报无降雨",
           "no_rain": "否——降雨",
           "no_freeze": "否——结冰",
           "no_snow": "否——降雪",
@@ -343,6 +343,34 @@
           "no_bad_condition": "否——恶劣天气",
           "no_bad_current_condition": "否——当前天气恶劣",
           "no_data": "否——无预报数据",
+          "snoozed": "已暂停"
+        }
+      },
+      "should_wash_status": {
+        "name": "是否该清洗状态",
+        "state": {
+          "ok_clear": "立即清洗——天气晴好且已逾期",
+          "ok_dirty_now": "立即清洗——表面脏污",
+          "ok_rain": "立即清洗——降雨会有帮助",
+          "ok_freeze": "立即清洗——结冰会有帮助",
+          "ok_snow": "立即清洗——降雪会有帮助",
+          "ok_wind": "立即清洗——大风会有帮助",
+          "ok_bad_condition": "立即清洗——恶劣天气有帮助",
+          "not_due_yet": "暂不需要——最近已清洗",
+          "unknown_clear": "无需——预报无降雨",
+          "no_rain": "暂缓——降雨将至",
+          "no_freeze": "暂缓——结冰将至",
+          "no_snow": "暂缓——降雪将至",
+          "no_wind": "暂缓——大风将至",
+          "no_bad_condition": "暂缓——恶劣天气将至",
+          "no_bad_current_condition": "暂缓——当前天气恶劣",
+          "recent_no_rain": "暂缓——降雨将至，最近已清洗",
+          "recent_no_freeze": "暂缓——结冰将至，最近已清洗",
+          "recent_no_snow": "暂缓——降雪将至，最近已清洗",
+          "recent_no_wind": "暂缓——大风将至，最近已清洗",
+          "recent_no_bad_condition": "暂缓——恶劣天气将至，最近已清洗",
+          "recent_no_bad_current_condition": "暂缓——当前天气恶劣，最近已清洗",
+          "no_data": "无预报数据",
           "snoozed": "已暂停"
         }
       },

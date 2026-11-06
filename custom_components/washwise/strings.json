@@ -335,7 +335,7 @@
           "ok_snow": "Yes — Snow expected",
           "ok_wind": "Yes — Wind expected",
           "ok_bad_condition": "Yes — Bad weather expected",
-          "unknown_clear": "Unknown",
+          "unknown_clear": "No — No rain in forecast",
           "no_rain": "No — Rain",
           "no_freeze": "No — Freeze",
           "no_snow": "No — Snow",
@@ -343,6 +343,34 @@
           "no_bad_condition": "No — Bad weather",
           "no_bad_current_condition": "No — Bad current weather",
           "no_data": "No — No forecast data",
+          "snoozed": "Snoozed"
+        }
+      },
+      "should_wash_status": {
+        "name": "Should wash status",
+        "state": {
+          "ok_clear": "Wash now — clear & overdue",
+          "ok_dirty_now": "Wash now — surface dirty",
+          "ok_rain": "Wash now — rain will help",
+          "ok_freeze": "Wash now — freeze will help",
+          "ok_snow": "Wash now — snow will help",
+          "ok_wind": "Wash now — wind will help",
+          "ok_bad_condition": "Wash now — bad weather helps",
+          "not_due_yet": "Not yet — washed recently",
+          "unknown_clear": "Not needed — no rain in forecast",
+          "no_rain": "Hold off — rain coming",
+          "no_freeze": "Hold off — freeze coming",
+          "no_snow": "Hold off — snow coming",
+          "no_wind": "Hold off — wind coming",
+          "no_bad_condition": "Hold off — bad weather coming",
+          "no_bad_current_condition": "Hold off — bad weather now",
+          "recent_no_rain": "Hold off — rain coming, washed recently",
+          "recent_no_freeze": "Hold off — freeze coming, washed recently",
+          "recent_no_snow": "Hold off — snow coming, washed recently",
+          "recent_no_wind": "Hold off — wind coming, washed recently",
+          "recent_no_bad_condition": "Hold off — bad weather coming, washed recently",
+          "recent_no_bad_current_condition": "Hold off — bad weather now, washed recently",
+          "no_data": "No forecast data",
           "snoozed": "Snoozed"
         }
       },

@@ -335,7 +335,7 @@
           "ok_snow": "Taip — Numatomas sniegas",
           "ok_wind": "Taip — Numatomas vėjas",
           "ok_bad_condition": "Taip — Numatomas blogas oras",
-          "unknown_clear": "Nežinoma",
+          "unknown_clear": "Ne — Prognozėje lietaus nėra",
           "no_rain": "Ne — Lietus",
           "no_freeze": "Ne — Šalna",
           "no_snow": "Ne — Sniegas",
@@ -343,6 +343,34 @@
           "no_bad_condition": "Ne — Blogas oras",
           "no_bad_current_condition": "Ne — Bloga dabartinė orų sąlyga",
           "no_data": "Ne — Nėra prognozės duomenų",
+          "snoozed": "Atidėta"
+        }
+      },
+      "should_wash_status": {
+        "name": "Skalbimo poreikio statusas",
+        "state": {
+          "ok_clear": "Plaukite dabar — švaru ir pradelsta",
+          "ok_dirty_now": "Plaukite dabar — paviršius nešvarus",
+          "ok_rain": "Plaukite dabar — lietus padės",
+          "ok_freeze": "Plaukite dabar — šalna padės",
+          "ok_snow": "Plaukite dabar — sniegas padės",
+          "ok_wind": "Plaukite dabar — vėjas padės",
+          "ok_bad_condition": "Plaukite dabar — blogas oras padės",
+          "not_due_yet": "Dar ne — neseniai plauta",
+          "unknown_clear": "Nereikia — prognozėje lietaus nėra",
+          "no_rain": "Palaukite — artėja lietus",
+          "no_freeze": "Palaukite — artėja šalna",
+          "no_snow": "Palaukite — artėja sniegas",
+          "no_wind": "Palaukite — artėja vėjas",
+          "no_bad_condition": "Palaukite — artėja blogas oras",
+          "no_bad_current_condition": "Palaukite — dabar blogas oras",
+          "recent_no_rain": "Palaukite — artėja lietus, neseniai plauta",
+          "recent_no_freeze": "Palaukite — artėja šalna, neseniai plauta",
+          "recent_no_snow": "Palaukite — artėja sniegas, neseniai plauta",
+          "recent_no_wind": "Palaukite — artėja vėjas, neseniai plauta",
+          "recent_no_bad_condition": "Palaukite — artėja blogas oras, neseniai plauta",
+          "recent_no_bad_current_condition": "Palaukite — dabar blogas oras, neseniai plauta",
+          "no_data": "Nėra prognozės duomenų",
           "snoozed": "Atidėta"
         }
       },

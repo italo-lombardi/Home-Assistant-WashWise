@@ -24,6 +24,7 @@ its update cycle.
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from types import MappingProxyType
 from typing import Any, ClassVar
 
 from homeassistant.components.sensor import (
@@ -71,6 +72,7 @@ async def async_setup_entry(
         ScoreSensor(coordinator, entry),
         ReasonSensor(coordinator, entry),
         WashStatusSensor(coordinator, entry),
+        ShouldWashStatusSensor(coordinator, entry),
         DaysUntilWashSensor(coordinator, entry),
         DaysSinceWashSensor(coordinator, entry),
         LastWashedSensor(coordinator, entry),
@@ -135,6 +137,60 @@ def _resolve_forecast_type(entry: ConfigEntry) -> str:
     category = (entry.data or {}).get(CONF_CATEGORY, DEFAULT_CATEGORY)
     preset = CATEGORY_PRESETS.get(category, CATEGORY_PRESETS[DEFAULT_CATEGORY])
     return preset.get("forecast_type", DEFAULT_FORECAST_TYPE)
+
+
+# ----------------------------------------------------------------------
+# Shared reason → state-key maps (used by WashStatusSensor and
+# ShouldWashStatusSensor). Keyed by Decision.reason; selection between the
+# two tables is by verdict. Reasons not in the chosen table resolve to
+# "no_data" so the sensor never falls through to HA's reserved "unknown"
+# state. See decision.py for the full set of reason constants.
+# ----------------------------------------------------------------------
+
+# OK path: non-inverted categories reach here only with clear/dirty_now,
+# but inverted categories (solar_panels, garden_irrigation) return
+# can_wash=True with a weather reason (rain/snow/freeze/bad_condition means
+# "good" for them), so those must map to a real OK state.
+# Read-only (MappingProxyType): shared between two sensors, never mutated.
+_OK_REASONS: MappingProxyType[str, str] = MappingProxyType(
+    {
+        "clear": "ok_clear",
+        "dirty_now": "ok_dirty_now",
+        "rain": "ok_rain",
+        "freeze": "ok_freeze",
+        "snow": "ok_snow",
+        "wind": "ok_wind",
+        "bad_condition": "ok_bad_condition",
+    }
+)
+_NO_REASONS: MappingProxyType[str, str] = MappingProxyType(
+    {
+        "clear": "unknown_clear",
+        "rain": "no_rain",
+        "freeze": "no_freeze",
+        "snow": "no_snow",
+        "wind": "no_wind",
+        "bad_condition": "no_bad_condition",
+        "bad_current_condition": "no_bad_current_condition",
+        "no_data": "no_data",
+        "snoozed": "snoozed",
+    }
+)
+
+# should_wash_status only: when the weather blocks the wash AND the item was
+# also washed too recently, surface both facts in one state. Keyed by the same
+# weather reasons as the "real blocker" subset of _NO_REASONS — deliberately
+# excludes clear/no_data/snoozed (not weather blockers maskable by recency).
+_RECENT_NO_REASONS: MappingProxyType[str, str] = MappingProxyType(
+    {
+        "rain": "recent_no_rain",
+        "freeze": "recent_no_freeze",
+        "snow": "recent_no_snow",
+        "wind": "recent_no_wind",
+        "bad_condition": "recent_no_bad_condition",
+        "bad_current_condition": "recent_no_bad_current_condition",
+    }
+)
 
 
 # ----------------------------------------------------------------------
@@ -268,53 +324,135 @@ class WashStatusSensor(WashWiseSensorBase):
         "snoozed",
     ]
 
-    # Map a (can_wash, reason) tuple to the composed key. Reasons not in
-    # the map resolve to ``None`` (HA renders that as ``unknown``) so a
-    # future reason key added without a matching translation surfaces as
-    # the platform-standard ``unknown`` state rather than colliding with
-    # the reserved ``unavailable`` state. ``unavailable``/``unknown`` are
+    # Map a (can_wash, reason) tuple to the composed key via the shared
+    # module-level reason tables. Any reason absent from the chosen table
+    # (including a future reason added without a matching translation)
+    # resolves to "no_data" rather than None, so the sensor never surfaces
+    # HA's reserved "unknown" state. ``unavailable``/``unknown`` are
     # deliberately omitted from ``_attr_options`` — HA reserves them as
     # state-machine values, not enum members.
-    # OK path: non-inverted categories reach here only with clear/dirty_now,
-    # but inverted categories (solar_panels, garden_irrigation) return
-    # can_wash=True with a weather reason (rain/snow/freeze/bad_condition means
-    # "good" for them — e.g. rain cleans panels / skip irrigation), so those
-    # must map to a real OK state rather than falling through to ``unknown``.
-    _OK_REASONS: ClassVar[dict[str, str]] = {
-        "clear": "ok_clear",
-        "dirty_now": "ok_dirty_now",
-        "rain": "ok_rain",
-        "freeze": "ok_freeze",
-        "snow": "ok_snow",
-        "wind": "ok_wind",
-        "bad_condition": "ok_bad_condition",
-    }
-    _NO_REASONS: ClassVar[dict[str, str]] = {
-        "clear": "unknown_clear",
-        "rain": "no_rain",
-        "freeze": "no_freeze",
-        "snow": "no_snow",
-        "wind": "no_wind",
-        "bad_condition": "no_bad_condition",
-        "bad_current_condition": "no_bad_current_condition",
-        "no_data": "no_data",
-        "snoozed": "snoozed",
-    }
 
     def __init__(self, coordinator: WashWiseCoordinator, entry: ConfigEntry) -> None:
         """Register the combined wash-status sensor."""
         super().__init__(coordinator, entry, "wash_status")
 
     @property
-    def native_value(self) -> str | None:
-        """Return the merged verdict+reason key, or ``None`` when unknown."""
+    def native_value(self) -> str:
+        """Return the merged verdict+reason key, never ``None``.
+
+        Falls back to ``no_data`` whenever a decision/reason is missing or a
+        reason isn't in the selected table, so the entity never renders as
+        HA's ``unknown`` state.
+        """
         decision = self._decision
-        if decision is None:
-            return None
-        if not decision.reason:
-            return None
-        table = self._OK_REASONS if decision.can_wash else self._NO_REASONS
-        return table.get(decision.reason)
+        if decision is None or not decision.reason:
+            return "no_data"
+        table = _OK_REASONS if decision.can_wash else _NO_REASONS
+        return table.get(decision.reason, "no_data")
+
+
+class ShouldWashStatusSensor(WashWiseSensorBase):
+    """Combined ``should_wash`` gate verdict + reason as one translated enum.
+
+    The ``should_wash`` gate is ``can_wash AND overdue`` (days-since-last-wash
+    >= configured minimum). This sensor merges that gate with
+    :attr:`Decision.reason` so a dashboard/automation can branch on a single
+    recency-aware value, distinct from :class:`WashStatusSensor` which only
+    reflects ``can_wash``. The extra ``not_due_yet`` state covers the case
+    where the weather is fine but the item was washed too recently to bother.
+    Translation lives under ``entity.sensor.should_wash_status.state.*``.
+    """
+
+    _attr_icon = "mdi:car-wash"
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options: ClassVar[list[str]] = [
+        "ok_clear",
+        "ok_dirty_now",
+        "ok_rain",
+        "ok_freeze",
+        "ok_snow",
+        "ok_wind",
+        "ok_bad_condition",
+        "not_due_yet",
+        "unknown_clear",
+        "no_rain",
+        "no_freeze",
+        "no_snow",
+        "no_wind",
+        "no_bad_condition",
+        "no_bad_current_condition",
+        "recent_no_rain",
+        "recent_no_freeze",
+        "recent_no_snow",
+        "recent_no_wind",
+        "recent_no_bad_condition",
+        "recent_no_bad_current_condition",
+        "no_data",
+        "snoozed",
+    ]
+
+    def __init__(self, coordinator: WashWiseCoordinator, entry: ConfigEntry) -> None:
+        """Register the combined should-wash status sensor."""
+        super().__init__(coordinator, entry, "should_wash_status")
+
+    @property
+    def native_value(self) -> str:
+        """Return the merged gate verdict + reason key, never ``None``.
+
+        * gate ON  -> OK reason map (good to wash, and overdue)
+        * gate OFF but ``can_wash`` -> ``not_due_yet`` (weather fine, too soon)
+        * gate OFF, weather blocks, AND washed too recently -> combined
+          ``recent_no_*`` state (shows both facts) for the six real weather
+          blockers; other reasons (clear/no_data/snoozed) keep their plain key
+        * gate OFF, weather blocks, not recently washed -> NO reason map
+        * missing decision/gate/reason or unmapped reason -> ``no_data``
+        """
+        decision = self._decision
+        should_wash = self.coordinator.should_wash
+        if decision is None or should_wash is None or not decision.reason:
+            return "no_data"
+        if should_wash:
+            # Gate ON implies can_wash=True (see coordinator._compute_should_wash),
+            # so decision.reason is always an _OK_REASONS key; .get's default is
+            # defensive only.
+            return _OK_REASONS.get(decision.reason, "no_data")
+        if decision.can_wash:
+            # Weather allows a wash; the recency gate is what holds it back.
+            return "not_due_yet"
+        # Weather blocks. If it was also washed too recently, show both.
+        if self._recently_washed() and decision.reason in _RECENT_NO_REASONS:
+            return _RECENT_NO_REASONS[decision.reason]
+        return _NO_REASONS.get(decision.reason, "no_data")
+
+    def _recently_washed(self) -> bool:
+        """True when the recency gate (not the weather) would block a wash.
+
+        Washed within the configured minimum: ``days_since`` known and below
+        ``min_days``. Never-washed (``None``) and an inert ``min_days`` of 0
+        are both *not* "recently washed".
+        """
+        min_days = self.coordinator._resolve_should_wash_min_days()
+        if min_days <= 0:
+            return False
+        days_since = self.coordinator._days_since_last_wash()
+        return days_since is not None and days_since < min_days
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Surface the recency gate's inputs alongside the weather verdict.
+
+        The state key only encodes recency in the ``not_due_yet`` case; these
+        attributes make the days-since / min-days gate visible in every state
+        (e.g. a ``no_rain`` state can still show whether it was also due).
+        Mirrors the ``should_wash`` binary sensor's attributes.
+        """
+        decision = self._decision
+        return {
+            "can_wash": bool(decision.can_wash) if decision is not None else None,
+            "days_since_last_wash": self.coordinator._days_since_last_wash(),
+            "min_days": self.coordinator._resolve_should_wash_min_days(),
+            "reason": decision.reason if decision is not None else None,
+        }
 
 
 class DaysUntilWashSensor(WashWiseSensorBase):

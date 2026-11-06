@@ -335,7 +335,7 @@
           "ok_snow": "Jā — Gaidāms sniegs",
           "ok_wind": "Jā — Gaidāms vējš",
           "ok_bad_condition": "Jā — Gaidāmi slikti laika apstākļi",
-          "unknown_clear": "Nezināms",
+          "unknown_clear": "Nē — Prognozē nav lietus",
           "no_rain": "Nē — Lietus",
           "no_freeze": "Nē — Sasalšana",
           "no_snow": "Nē — Sniegs",
@@ -343,6 +343,34 @@
           "no_bad_condition": "Nē — Slikti laika apstākļi",
           "no_bad_current_condition": "Nē — Slikti pašreizējie laika apstākļi",
           "no_data": "Nē — Nav prognozes datu",
+          "snoozed": "Atlikts"
+        }
+      },
+      "should_wash_status": {
+        "name": "Mazgāšanas nepieciešamības statuss",
+        "state": {
+          "ok_clear": "Mazgājiet tagad — tīrs un nokavēts",
+          "ok_dirty_now": "Mazgājiet tagad — virsma netīra",
+          "ok_rain": "Mazgājiet tagad — lietus palīdzēs",
+          "ok_freeze": "Mazgājiet tagad — sals palīdzēs",
+          "ok_snow": "Mazgājiet tagad — sniegs palīdzēs",
+          "ok_wind": "Mazgājiet tagad — vējš palīdzēs",
+          "ok_bad_condition": "Mazgājiet tagad — slikti laika apstākļi palīdzēs",
+          "not_due_yet": "Vēl nē — nesen mazgāts",
+          "unknown_clear": "Nav nepieciešams — prognozē nav lietus",
+          "no_rain": "Pagaidiet — tuvojas lietus",
+          "no_freeze": "Pagaidiet — tuvojas sasalšana",
+          "no_snow": "Pagaidiet — tuvojas sniegs",
+          "no_wind": "Pagaidiet — tuvojas vējš",
+          "no_bad_condition": "Pagaidiet — tuvojas slikti laika apstākļi",
+          "no_bad_current_condition": "Pagaidiet — pašlaik slikti laika apstākļi",
+          "recent_no_rain": "Pagaidiet — tuvojas lietus, nesen mazgāts",
+          "recent_no_freeze": "Pagaidiet — tuvojas sasalšana, nesen mazgāts",
+          "recent_no_snow": "Pagaidiet — tuvojas sniegs, nesen mazgāts",
+          "recent_no_wind": "Pagaidiet — tuvojas vējš, nesen mazgāts",
+          "recent_no_bad_condition": "Pagaidiet — tuvojas slikti laika apstākļi, nesen mazgāts",
+          "recent_no_bad_current_condition": "Pagaidiet — pašlaik slikti laika apstākļi, nesen mazgāts",
+          "no_data": "Nav prognozes datu",
           "snoozed": "Atlikts"
         }
       },

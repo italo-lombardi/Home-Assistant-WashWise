@@ -335,7 +335,7 @@
           "ok_snow": "可 — 雪予想",
           "ok_wind": "可 — 風予想",
           "ok_bad_condition": "可 — 悪天候予想",
-          "unknown_clear": "不明",
+          "unknown_clear": "不可 — 予報に雨なし",
           "no_rain": "不可 — 雨",
           "no_freeze": "不可 — 凍結",
           "no_snow": "不可 — 雪",
@@ -343,6 +343,34 @@
           "no_bad_condition": "不可 — 悪天候",
           "no_bad_current_condition": "不可 — 現在の悪天候",
           "no_data": "不可 — 予報データなし",
+          "snoozed": "スヌーズ中"
+        }
+      },
+      "should_wash_status": {
+        "name": "洗浄要否ステータス",
+        "state": {
+          "ok_clear": "今すぐ洗浄 — 晴れで期限超過",
+          "ok_dirty_now": "今すぐ洗浄 — 表面が汚れています",
+          "ok_rain": "今すぐ洗浄 — 雨が役立ちます",
+          "ok_freeze": "今すぐ洗浄 — 凍結が役立ちます",
+          "ok_snow": "今すぐ洗浄 — 雪が役立ちます",
+          "ok_wind": "今すぐ洗浄 — 風が役立ちます",
+          "ok_bad_condition": "今すぐ洗浄 — 悪天候が役立ちます",
+          "not_due_yet": "まだ不要 — 最近洗浄済み",
+          "unknown_clear": "不要 — 予報に雨なし",
+          "no_rain": "待機 — 雨が近づいています",
+          "no_freeze": "待機 — 凍結が近づいています",
+          "no_snow": "待機 — 雪が近づいています",
+          "no_wind": "待機 — 風が近づいています",
+          "no_bad_condition": "待機 — 悪天候が近づいています",
+          "no_bad_current_condition": "待機 — 現在の悪天候",
+          "recent_no_rain": "待機 — 雨が近づいています、最近洗浄済み",
+          "recent_no_freeze": "待機 — 凍結が近づいています、最近洗浄済み",
+          "recent_no_snow": "待機 — 雪が近づいています、最近洗浄済み",
+          "recent_no_wind": "待機 — 風が近づいています、最近洗浄済み",
+          "recent_no_bad_condition": "待機 — 悪天候が近づいています、最近洗浄済み",
+          "recent_no_bad_current_condition": "待機 — 現在の悪天候、最近洗浄済み",
+          "no_data": "予報データなし",
           "snoozed": "スヌーズ中"
         }
       },

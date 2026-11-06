@@ -335,7 +335,7 @@
           "ok_snow": "Da — Ninsoare prognozată",
           "ok_wind": "Da — Vânt prognozat",
           "ok_bad_condition": "Da — Condiții meteo nefavorabile prognozate",
-          "unknown_clear": "Necunoscut",
+          "unknown_clear": "Nu — Fără ploaie în prognoză",
           "no_rain": "Nu — Ploaie",
           "no_freeze": "Nu — Îngheț",
           "no_snow": "Nu — Ninsoare",
@@ -343,6 +343,34 @@
           "no_bad_condition": "Nu — Condiții meteo nefavorabile",
           "no_bad_current_condition": "Nu — Condiții meteo curente nefavorabile",
           "no_data": "Nu — Lipsă date din prognoză",
+          "snoozed": "Amânat"
+        }
+      },
+      "should_wash_status": {
+        "name": "Stare ar trebui spălat",
+        "state": {
+          "ok_clear": "Spălați acum — Senin și întârziat",
+          "ok_dirty_now": "Spălați acum — Suprafață murdară",
+          "ok_rain": "Spălați acum — Ploaia va ajuta",
+          "ok_freeze": "Spălați acum — Înghețul va ajuta",
+          "ok_snow": "Spălați acum — Ninsoarea va ajuta",
+          "ok_wind": "Spălați acum — Vântul va ajuta",
+          "ok_bad_condition": "Spălați acum — Vremea nefavorabilă ajută",
+          "not_due_yet": "Încă nu — Spălat recent",
+          "unknown_clear": "Nu e nevoie — fără ploaie în prognoză",
+          "no_rain": "Așteptați — Vine ploaie",
+          "no_freeze": "Așteptați — Vine îngheț",
+          "no_snow": "Așteptați — Vine ninsoare",
+          "no_wind": "Așteptați — Vine vânt",
+          "no_bad_condition": "Așteptați — Vine vreme nefavorabilă",
+          "no_bad_current_condition": "Așteptați — Condiții meteo curente nefavorabile",
+          "recent_no_rain": "Așteptați — Vine ploaie, spălat recent",
+          "recent_no_freeze": "Așteptați — Vine îngheț, spălat recent",
+          "recent_no_snow": "Așteptați — Vine ninsoare, spălat recent",
+          "recent_no_wind": "Așteptați — Vine vânt, spălat recent",
+          "recent_no_bad_condition": "Așteptați — Vine vreme nefavorabilă, spălat recent",
+          "recent_no_bad_current_condition": "Așteptați — Condiții meteo curente nefavorabile, spălat recent",
+          "no_data": "Lipsă date din prognoză",
           "snoozed": "Amânat"
         }
       },

@@ -335,7 +335,7 @@
           "ok_snow": "Sí — Nieve prevista",
           "ok_wind": "Sí — Viento previsto",
           "ok_bad_condition": "Sí — Mal tiempo previsto",
-          "unknown_clear": "Desconocido",
+          "unknown_clear": "No — Sin lluvia prevista",
           "no_rain": "No — Lluvia",
           "no_freeze": "No — Heladas",
           "no_snow": "No — Nieve",
@@ -343,6 +343,34 @@
           "no_bad_condition": "No — Mal tiempo",
           "no_bad_current_condition": "No — Mal tiempo actual",
           "no_data": "No — Sin datos de previsión",
+          "snoozed": "Pospuesto"
+        }
+      },
+      "should_wash_status": {
+        "name": "Estado de si conviene lavar",
+        "state": {
+          "ok_clear": "Lava ahora — despejado y atrasado",
+          "ok_dirty_now": "Lava ahora — superficie sucia",
+          "ok_rain": "Lava ahora — la lluvia ayudará",
+          "ok_freeze": "Lava ahora — las heladas ayudarán",
+          "ok_snow": "Lava ahora — la nieve ayudará",
+          "ok_wind": "Lava ahora — el viento ayudará",
+          "ok_bad_condition": "Lava ahora — el mal tiempo ayuda",
+          "not_due_yet": "Todavía no — lavado hace poco",
+          "unknown_clear": "No hace falta — sin lluvia prevista",
+          "no_rain": "Espera — llega lluvia",
+          "no_freeze": "Espera — llegan heladas",
+          "no_snow": "Espera — llega nieve",
+          "no_wind": "Espera — llega viento",
+          "no_bad_condition": "Espera — llega mal tiempo",
+          "no_bad_current_condition": "Espera — mal tiempo ahora",
+          "recent_no_rain": "Espera — llega lluvia, lavado hace poco",
+          "recent_no_freeze": "Espera — llegan heladas, lavado hace poco",
+          "recent_no_snow": "Espera — llega nieve, lavado hace poco",
+          "recent_no_wind": "Espera — llega viento, lavado hace poco",
+          "recent_no_bad_condition": "Espera — llega mal tiempo, lavado hace poco",
+          "recent_no_bad_current_condition": "Espera — mal tiempo ahora, lavado hace poco",
+          "no_data": "Sin datos de previsión",
           "snoozed": "Pospuesto"
         }
       },

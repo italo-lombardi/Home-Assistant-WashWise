@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.1] - 2026-11-06
+
+### Added
+- **`should_wash_status` sensor** — a combined enum sensor mirroring `wash_status` but for the recency-aware should-wash gate. It merges the verdict and reason into one translated string (e.g. *Wash now — clear & overdue*, *Not yet — washed recently*, *Hold off — rain coming*), distinct from `wash_status` which only reflects `can_wash`. When the weather blocks a wash **and** the surface was also washed too recently, the state carries both facts (e.g. *Hold off — rain coming, washed recently*). Fully translated across all 29 locales.
+- **Recency attributes on `should_wash_status`** — `can_wash`, `days_since_last_wash`, `min_days`, and `reason` are exposed as attributes so the recency gate is visible in every state, not only the `not_due_yet` one (mirrors the `should_wash` binary sensor).
+
+### Fixed
+- **`wash_status` never shows "unknown"** — the combined wash-status sensor now resolves every reachable verdict/reason combination to a real state (falling back to *No forecast data*) instead of occasionally rendering Home Assistant's reserved `unknown` state.
+- **`unknown_clear` state retexted** — the inverted-mode (solar/garden) "clear but no rain coming" state now reads *No — No rain in forecast* / *Not needed — no rain in forecast* instead of the misleading literal "Unknown".
+- **Card "Not yet" no longer contradicts the reason** — in `verdict_source: should_wash`, a *Not yet* badge now shows *Reason: Washed too recently* instead of the weather reason (e.g. "clear"); a weather-blocked state that was also washed recently shows both (e.g. *Rain · washed recently*).
+
+### Changed
+- **Card bumped to v0.3.1** — carries the should-wash reason fix above.
+
 ## [0.3.0] - 2026-11-05
 
 ### Added

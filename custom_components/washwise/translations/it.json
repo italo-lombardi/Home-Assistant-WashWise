@@ -335,7 +335,7 @@
           "ok_snow": "Sì — Neve prevista",
           "ok_wind": "Sì — Vento previsto",
           "ok_bad_condition": "Sì — Maltempo previsto",
-          "unknown_clear": "Sconosciuto",
+          "unknown_clear": "No — Nessuna pioggia prevista",
           "no_rain": "No — Pioggia",
           "no_freeze": "No — Gelo",
           "no_snow": "No — Neve",
@@ -343,6 +343,34 @@
           "no_bad_condition": "No — Maltempo",
           "no_bad_current_condition": "No — Maltempo attuale",
           "no_data": "No — Nessun dato di previsione",
+          "snoozed": "In pausa"
+        }
+      },
+      "should_wash_status": {
+        "name": "Stato necessità di lavaggio",
+        "state": {
+          "ok_clear": "Lava ora — pulito e in ritardo",
+          "ok_dirty_now": "Lava ora — superficie sporca",
+          "ok_rain": "Lava ora — la pioggia aiuta",
+          "ok_freeze": "Lava ora — il gelo aiuta",
+          "ok_snow": "Lava ora — la neve aiuta",
+          "ok_wind": "Lava ora — il vento aiuta",
+          "ok_bad_condition": "Lava ora — il maltempo aiuta",
+          "not_due_yet": "Non ancora — lavato di recente",
+          "unknown_clear": "Non serve — nessuna pioggia prevista",
+          "no_rain": "Aspetta — pioggia in arrivo",
+          "no_freeze": "Aspetta — gelo in arrivo",
+          "no_snow": "Aspetta — neve in arrivo",
+          "no_wind": "Aspetta — vento in arrivo",
+          "no_bad_condition": "Aspetta — maltempo in arrivo",
+          "no_bad_current_condition": "Aspetta — maltempo attuale",
+          "recent_no_rain": "Aspetta — pioggia in arrivo, lavato di recente",
+          "recent_no_freeze": "Aspetta — gelo in arrivo, lavato di recente",
+          "recent_no_snow": "Aspetta — neve in arrivo, lavato di recente",
+          "recent_no_wind": "Aspetta — vento in arrivo, lavato di recente",
+          "recent_no_bad_condition": "Aspetta — maltempo in arrivo, lavato di recente",
+          "recent_no_bad_current_condition": "Aspetta — maltempo attuale, lavato di recente",
+          "no_data": "Nessun dato di previsione",
           "snoozed": "In pausa"
         }
       },

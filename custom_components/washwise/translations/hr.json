@@ -335,7 +335,7 @@
           "ok_snow": "Da — Očekuje se snijeg",
           "ok_wind": "Da — Očekuje se vjetar",
           "ok_bad_condition": "Da — Očekuje se loše vrijeme",
-          "unknown_clear": "Nepoznato",
+          "unknown_clear": "Ne — Nema kiše u prognozi",
           "no_rain": "Ne — Kiša",
           "no_freeze": "Ne — Smrzavanje",
           "no_snow": "Ne — Snijeg",
@@ -343,6 +343,34 @@
           "no_bad_condition": "Ne — Loše vrijeme",
           "no_bad_current_condition": "Ne — Loši trenutni vremenski uvjeti",
           "no_data": "Ne — Nema podataka prognoze",
+          "snoozed": "Odgođeno"
+        }
+      },
+      "should_wash_status": {
+        "name": "Status potrebe za pranjem",
+        "state": {
+          "ok_clear": "Operi odmah — vedro, a pranje kasni",
+          "ok_dirty_now": "Operi odmah — površina prljava",
+          "ok_rain": "Operi odmah — kiša će pomoći",
+          "ok_freeze": "Operi odmah — smrzavanje će pomoći",
+          "ok_snow": "Operi odmah — snijeg će pomoći",
+          "ok_wind": "Operi odmah — vjetar će pomoći",
+          "ok_bad_condition": "Operi odmah — loše vrijeme pomaže",
+          "not_due_yet": "Još ne — nedavno oprano",
+          "unknown_clear": "Nije potrebno — nema kiše u prognozi",
+          "no_rain": "Pričekaj — dolazi kiša",
+          "no_freeze": "Pričekaj — dolazi smrzavanje",
+          "no_snow": "Pričekaj — dolazi snijeg",
+          "no_wind": "Pričekaj — dolazi vjetar",
+          "no_bad_condition": "Pričekaj — dolazi loše vrijeme",
+          "no_bad_current_condition": "Pričekaj — loše vrijeme sada",
+          "recent_no_rain": "Pričekaj — dolazi kiša, nedavno oprano",
+          "recent_no_freeze": "Pričekaj — dolazi smrzavanje, nedavno oprano",
+          "recent_no_snow": "Pričekaj — dolazi snijeg, nedavno oprano",
+          "recent_no_wind": "Pričekaj — dolazi vjetar, nedavno oprano",
+          "recent_no_bad_condition": "Pričekaj — dolazi loše vrijeme, nedavno oprano",
+          "recent_no_bad_current_condition": "Pričekaj — loše vrijeme sada, nedavno oprano",
+          "no_data": "Nema podataka prognoze",
           "snoozed": "Odgođeno"
         }
       },

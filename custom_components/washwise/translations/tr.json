@@ -335,7 +335,7 @@
           "ok_snow": "Evet — Kar bekleniyor",
           "ok_wind": "Evet — Rüzgar bekleniyor",
           "ok_bad_condition": "Evet — Kötü hava bekleniyor",
-          "unknown_clear": "Bilinmiyor",
+          "unknown_clear": "Hayır — Tahminde yağmur yok",
           "no_rain": "Hayır — Yağmur",
           "no_freeze": "Hayır — Donma",
           "no_snow": "Hayır — Kar",
@@ -343,6 +343,34 @@
           "no_bad_condition": "Hayır — Kötü hava",
           "no_bad_current_condition": "Hayır — Kötü mevcut hava",
           "no_data": "Hayır — Tahmin verisi yok",
+          "snoozed": "Ertelendi"
+        }
+      },
+      "should_wash_status": {
+        "name": "Yıkamalı mı durumu",
+        "state": {
+          "ok_clear": "Şimdi yıkayın — Açık ve gecikmiş",
+          "ok_dirty_now": "Şimdi yıkayın — Yüzey kirli",
+          "ok_rain": "Şimdi yıkayın — Yağmur yardımcı olacak",
+          "ok_freeze": "Şimdi yıkayın — Donma yardımcı olacak",
+          "ok_snow": "Şimdi yıkayın — Kar yardımcı olacak",
+          "ok_wind": "Şimdi yıkayın — Rüzgar yardımcı olacak",
+          "ok_bad_condition": "Şimdi yıkayın — Kötü hava yardımcı olur",
+          "not_due_yet": "Henüz değil — Yakın zamanda yıkandı",
+          "unknown_clear": "Gerekmiyor — tahminde yağmur yok",
+          "no_rain": "Bekleyin — Yağmur geliyor",
+          "no_freeze": "Bekleyin — Donma geliyor",
+          "no_snow": "Bekleyin — Kar geliyor",
+          "no_wind": "Bekleyin — Rüzgar geliyor",
+          "no_bad_condition": "Bekleyin — Kötü hava geliyor",
+          "no_bad_current_condition": "Bekleyin — Kötü hava şu anda",
+          "recent_no_rain": "Bekleyin — Yağmur geliyor, yakın zamanda yıkandı",
+          "recent_no_freeze": "Bekleyin — Donma geliyor, yakın zamanda yıkandı",
+          "recent_no_snow": "Bekleyin — Kar geliyor, yakın zamanda yıkandı",
+          "recent_no_wind": "Bekleyin — Rüzgar geliyor, yakın zamanda yıkandı",
+          "recent_no_bad_condition": "Bekleyin — Kötü hava geliyor, yakın zamanda yıkandı",
+          "recent_no_bad_current_condition": "Bekleyin — Kötü hava şu anda, yakın zamanda yıkandı",
+          "no_data": "Tahmin verisi yok",
           "snoozed": "Ertelendi"
         }
       },

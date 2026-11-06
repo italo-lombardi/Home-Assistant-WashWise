@@ -335,7 +335,7 @@
           "ok_snow": "Oui — Neige prévue",
           "ok_wind": "Oui — Vent prévu",
           "ok_bad_condition": "Oui — Mauvaise météo prévue",
-          "unknown_clear": "Inconnu",
+          "unknown_clear": "Non — Pas de pluie prévue",
           "no_rain": "Non — Pluie",
           "no_freeze": "Non — Gel",
           "no_snow": "Non — Neige",
@@ -343,6 +343,34 @@
           "no_bad_condition": "Non — Mauvaise météo",
           "no_bad_current_condition": "Non — Mauvaise météo actuelle",
           "no_data": "Non — Aucune donnée de prévision",
+          "snoozed": "En pause"
+        }
+      },
+      "should_wash_status": {
+        "name": "Statut de nécessité de lavage",
+        "state": {
+          "ok_clear": "Laver maintenant — dégagé et en retard",
+          "ok_dirty_now": "Laver maintenant — surface sale",
+          "ok_rain": "Laver maintenant — la pluie aidera",
+          "ok_freeze": "Laver maintenant — le gel aidera",
+          "ok_snow": "Laver maintenant — la neige aidera",
+          "ok_wind": "Laver maintenant — le vent aidera",
+          "ok_bad_condition": "Laver maintenant — la mauvaise météo aide",
+          "not_due_yet": "Pas encore — lavé récemment",
+          "unknown_clear": "Pas nécessaire — pas de pluie prévue",
+          "no_rain": "Patienter — pluie à venir",
+          "no_freeze": "Patienter — gel à venir",
+          "no_snow": "Patienter — neige à venir",
+          "no_wind": "Patienter — vent à venir",
+          "no_bad_condition": "Patienter — mauvaise météo à venir",
+          "no_bad_current_condition": "Patienter — mauvaise météo actuelle",
+          "recent_no_rain": "Patienter — pluie à venir, lavé récemment",
+          "recent_no_freeze": "Patienter — gel à venir, lavé récemment",
+          "recent_no_snow": "Patienter — neige à venir, lavé récemment",
+          "recent_no_wind": "Patienter — vent à venir, lavé récemment",
+          "recent_no_bad_condition": "Patienter — mauvaise météo à venir, lavé récemment",
+          "recent_no_bad_current_condition": "Patienter — mauvaise météo actuelle, lavé récemment",
+          "no_data": "Aucune donnée de prévision",
           "snoozed": "En pause"
         }
       },
