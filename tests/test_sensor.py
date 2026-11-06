@@ -41,6 +41,9 @@ from custom_components.washwise.models import (
     WashEntry,
 )
 from custom_components.washwise.sensor import (
+    _NO_REASONS,
+    _OK_REASONS,
+    _RECENT_NO_REASONS,
     ActiveProviderSensor,
     CategorySensor,
     DaysAnalyzedSensor,
@@ -61,9 +64,6 @@ from custom_components.washwise.sensor import (
     WashStatusSensor,
     WashWiseSensorBase,
     WorstConditionSensor,
-    _NO_REASONS,
-    _OK_REASONS,
-    _RECENT_NO_REASONS,
     _coerce_str,
     _parse_iso,
     _resolve_forecast_type,
@@ -939,9 +939,7 @@ def test_should_wash_status_unmapped_reason_falls_back() -> None:
 def test_should_wash_status_attributes_expose_recency_gate() -> None:
     """``extra_state_attributes`` surface the recency gate inputs."""
     decision = _make_decision(can_wash=False, reason="rain")
-    coordinator = _make_coordinator(
-        decision, should_wash=False, days_since_last_wash=1, min_days=3
-    )
+    coordinator = _make_coordinator(decision, should_wash=False, days_since_last_wash=1, min_days=3)
     entry = _make_entry()
 
     sensor = ShouldWashStatusSensor(coordinator, entry)
