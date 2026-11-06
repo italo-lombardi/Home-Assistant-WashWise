@@ -335,7 +335,7 @@
           "ok_snow": "Ja — Sneeuw verwacht",
           "ok_wind": "Ja — Wind verwacht",
           "ok_bad_condition": "Ja — Slecht weer verwacht",
-          "unknown_clear": "Onbekend",
+          "unknown_clear": "Nee — Geen regen voorspeld",
           "no_rain": "Nee — Regen",
           "no_freeze": "Nee — Vorst",
           "no_snow": "Nee — Sneeuw",
@@ -343,6 +343,34 @@
           "no_bad_condition": "Nee — Slecht weer",
           "no_bad_current_condition": "Nee — Slecht actueel weer",
           "no_data": "Nee — Geen voorspellingsgegevens",
+          "snoozed": "Gesluimerd"
+        }
+      },
+      "should_wash_status": {
+        "name": "Wasbehoefte-status",
+        "state": {
+          "ok_clear": "Nu wassen — schoon en over tijd",
+          "ok_dirty_now": "Nu wassen — vies oppervlak",
+          "ok_rain": "Nu wassen — regen helpt",
+          "ok_freeze": "Nu wassen — vorst helpt",
+          "ok_snow": "Nu wassen — sneeuw helpt",
+          "ok_wind": "Nu wassen — wind helpt",
+          "ok_bad_condition": "Nu wassen — slecht weer helpt",
+          "not_due_yet": "Nog niet — recent gewassen",
+          "unknown_clear": "Niet nodig — geen regen voorspeld",
+          "no_rain": "Wacht — regen op komst",
+          "no_freeze": "Wacht — vorst op komst",
+          "no_snow": "Wacht — sneeuw op komst",
+          "no_wind": "Wacht — wind op komst",
+          "no_bad_condition": "Wacht — slecht weer op komst",
+          "no_bad_current_condition": "Wacht — slecht actueel weer",
+          "recent_no_rain": "Wacht — regen op komst, recent gewassen",
+          "recent_no_freeze": "Wacht — vorst op komst, recent gewassen",
+          "recent_no_snow": "Wacht — sneeuw op komst, recent gewassen",
+          "recent_no_wind": "Wacht — wind op komst, recent gewassen",
+          "recent_no_bad_condition": "Wacht — slecht weer op komst, recent gewassen",
+          "recent_no_bad_current_condition": "Wacht — slecht actueel weer, recent gewassen",
+          "no_data": "Geen voorspellingsgegevens",
           "snoozed": "Gesluimerd"
         }
       },

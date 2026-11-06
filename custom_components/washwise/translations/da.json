@@ -335,7 +335,7 @@
           "ok_snow": "Ja — Sne forventet",
           "ok_wind": "Ja — Vind forventet",
           "ok_bad_condition": "Ja — Dårligt vejr forventet",
-          "unknown_clear": "Ukendt",
+          "unknown_clear": "Nej — Ingen regn i vente",
           "no_rain": "Nej — Regn",
           "no_freeze": "Nej — Frost",
           "no_snow": "Nej — Sne",
@@ -343,6 +343,34 @@
           "no_bad_condition": "Nej — Dårligt vejr",
           "no_bad_current_condition": "Nej — Dårligt aktuelt vejr",
           "no_data": "Nej — Ingen prognosedata",
+          "snoozed": "Udsat"
+        }
+      },
+      "should_wash_status": {
+        "name": "Status for om der skal vaskes",
+        "state": {
+          "ok_clear": "Vask nu — klart og overskredet",
+          "ok_dirty_now": "Vask nu — overfladen er beskidt",
+          "ok_rain": "Vask nu — regn vil hjælpe",
+          "ok_freeze": "Vask nu — frost vil hjælpe",
+          "ok_snow": "Vask nu — sne vil hjælpe",
+          "ok_wind": "Vask nu — vind vil hjælpe",
+          "ok_bad_condition": "Vask nu — dårligt vejr hjælper",
+          "not_due_yet": "Ikke endnu — vasket for nylig",
+          "unknown_clear": "Ikke nødvendigt — ingen regn i vente",
+          "no_rain": "Vent — regn på vej",
+          "no_freeze": "Vent — frost på vej",
+          "no_snow": "Vent — sne på vej",
+          "no_wind": "Vent — vind på vej",
+          "no_bad_condition": "Vent — dårligt vejr på vej",
+          "no_bad_current_condition": "Vent — dårligt vejr nu",
+          "recent_no_rain": "Vent — regn på vej, vasket for nylig",
+          "recent_no_freeze": "Vent — frost på vej, vasket for nylig",
+          "recent_no_snow": "Vent — sne på vej, vasket for nylig",
+          "recent_no_wind": "Vent — vind på vej, vasket for nylig",
+          "recent_no_bad_condition": "Vent — dårligt vejr på vej, vasket for nylig",
+          "recent_no_bad_current_condition": "Vent — dårligt vejr nu, vasket for nylig",
+          "no_data": "Ingen prognosedata",
           "snoozed": "Udsat"
         }
       },

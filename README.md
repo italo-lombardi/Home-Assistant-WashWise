@@ -14,6 +14,8 @@
 
 Decide whether to wash your car (or motorcycle, boat, solar panels, patio…) — or whether to skip garden irrigation — based on the weather forecast. WashWise reads any Home Assistant `weather` entity, walks an ordered fallback list of sources, and produces a verdict, a 0–100 score, a blocking reason, and per-day breakdown — all wrapped in a custom Lovelace card.
 
+> ⭐ **If WashWise is useful to you, please [star the repo](https://github.com/italo-lombardi/Home-Assistant-WashWise)** — it helps others find it and motivates continued development.
+
 ---
 
 ## Screenshots
@@ -171,6 +173,8 @@ All entities live under a single **WashWise \<name\>** device per config entry.
 |--------|-------------|
 | `sensor.washwise_<name>_score` | 0–100 wash score. |
 | `sensor.washwise_<name>_reason` | Reason key: `clear` / `rain` / `freeze` / `snow` / `bad_condition` / `bad_current_condition` / `snoozed` / `unavailable`. |
+| `sensor.washwise_<name>_wash_status` | Combined verdict + reason as one translated enum (e.g. *Yes — Clear*, *No — Rain*). Reflects `can_wash`. Never `unknown`. |
+| `sensor.washwise_<name>_should_wash_status` | Like `wash_status` but for the recency-aware should-wash gate (e.g. *Wash now — clear & overdue*, *Not yet — washed recently*, *Hold off — rain coming, washed recently*). Attributes: `can_wash`, `days_since_last_wash`, `min_days`, `reason`. |
 | `sensor.washwise_<name>_days_until_wash` | Whole-day count to first clear window. `0` means today. |
 | `sensor.washwise_<name>_days_since_wash` | Days since the last wash log entry. |
 | `sensor.washwise_<name>_last_washed` | Timestamp of the most recent wash log entry. |

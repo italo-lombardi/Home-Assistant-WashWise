@@ -335,7 +335,7 @@
           "ok_snow": "Ja — Snø ventet",
           "ok_wind": "Ja — Vind ventet",
           "ok_bad_condition": "Ja — Dårlig vær ventet",
-          "unknown_clear": "Ukjent",
+          "unknown_clear": "Nei — Ingen regn i vente",
           "no_rain": "Nei — Regn",
           "no_freeze": "Nei — Frost",
           "no_snow": "Nei — Snø",
@@ -343,6 +343,34 @@
           "no_bad_condition": "Nei — Dårlig vær",
           "no_bad_current_condition": "Nei — Dårlig vær akkurat nå",
           "no_data": "Nei — Ingen værvarseldata",
+          "snoozed": "Slumret"
+        }
+      },
+      "should_wash_status": {
+        "name": "Vaskebehov-status",
+        "state": {
+          "ok_clear": "Vask nå — klart og på overtid",
+          "ok_dirty_now": "Vask nå — skitten overflate",
+          "ok_rain": "Vask nå — regn hjelper",
+          "ok_freeze": "Vask nå — frost hjelper",
+          "ok_snow": "Vask nå — snø hjelper",
+          "ok_wind": "Vask nå — vind hjelper",
+          "ok_bad_condition": "Vask nå — dårlig vær hjelper",
+          "not_due_yet": "Ikke ennå — nylig vasket",
+          "unknown_clear": "Ikke nødvendig — ingen regn i vente",
+          "no_rain": "Vent — regn på vei",
+          "no_freeze": "Vent — frost på vei",
+          "no_snow": "Vent — snø på vei",
+          "no_wind": "Vent — vind på vei",
+          "no_bad_condition": "Vent — dårlig vær på vei",
+          "no_bad_current_condition": "Vent — dårlig vær akkurat nå",
+          "recent_no_rain": "Vent — regn på vei, nylig vasket",
+          "recent_no_freeze": "Vent — frost på vei, nylig vasket",
+          "recent_no_snow": "Vent — snø på vei, nylig vasket",
+          "recent_no_wind": "Vent — vind på vei, nylig vasket",
+          "recent_no_bad_condition": "Vent — dårlig vær på vei, nylig vasket",
+          "recent_no_bad_current_condition": "Vent — dårlig vær akkurat nå, nylig vasket",
+          "no_data": "Ingen værvarseldata",
           "snoozed": "Slumret"
         }
       },

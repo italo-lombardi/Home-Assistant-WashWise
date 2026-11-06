@@ -335,7 +335,7 @@
           "ok_snow": "Ja — Schnee erwartet",
           "ok_wind": "Ja — Wind erwartet",
           "ok_bad_condition": "Ja — Schlechtes Wetter erwartet",
-          "unknown_clear": "Unbekannt",
+          "unknown_clear": "Nein — Kein Regen vorhergesagt",
           "no_rain": "Nein — Regen",
           "no_freeze": "Nein — Frost",
           "no_snow": "Nein — Schnee",
@@ -343,6 +343,34 @@
           "no_bad_condition": "Nein — Schlechtes Wetter",
           "no_bad_current_condition": "Nein — Aktuell schlechtes Wetter",
           "no_data": "Nein — Keine Vorhersagedaten",
+          "snoozed": "Schlummert"
+        }
+      },
+      "should_wash_status": {
+        "name": "Status Waschempfehlung",
+        "state": {
+          "ok_clear": "Jetzt waschen — klar und überfällig",
+          "ok_dirty_now": "Jetzt waschen — Oberfläche schmutzig",
+          "ok_rain": "Jetzt waschen — Regen hilft",
+          "ok_freeze": "Jetzt waschen — Frost hilft",
+          "ok_snow": "Jetzt waschen — Schnee hilft",
+          "ok_wind": "Jetzt waschen — Wind hilft",
+          "ok_bad_condition": "Jetzt waschen — schlechtes Wetter hilft",
+          "not_due_yet": "Noch nicht — kürzlich gewaschen",
+          "unknown_clear": "Nicht nötig — kein Regen vorhergesagt",
+          "no_rain": "Abwarten — Regen kommt",
+          "no_freeze": "Abwarten — Frost kommt",
+          "no_snow": "Abwarten — Schnee kommt",
+          "no_wind": "Abwarten — Wind kommt",
+          "no_bad_condition": "Abwarten — schlechtes Wetter kommt",
+          "no_bad_current_condition": "Abwarten — aktuell schlechtes Wetter",
+          "recent_no_rain": "Abwarten — Regen kommt, kürzlich gewaschen",
+          "recent_no_freeze": "Abwarten — Frost kommt, kürzlich gewaschen",
+          "recent_no_snow": "Abwarten — Schnee kommt, kürzlich gewaschen",
+          "recent_no_wind": "Abwarten — Wind kommt, kürzlich gewaschen",
+          "recent_no_bad_condition": "Abwarten — schlechtes Wetter kommt, kürzlich gewaschen",
+          "recent_no_bad_current_condition": "Abwarten — aktuell schlechtes Wetter, kürzlich gewaschen",
+          "no_data": "Keine Vorhersagedaten",
           "snoozed": "Schlummert"
         }
       },

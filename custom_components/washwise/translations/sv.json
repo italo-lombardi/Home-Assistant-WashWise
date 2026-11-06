@@ -335,7 +335,7 @@
           "ok_snow": "Ja — Snö väntas",
           "ok_wind": "Ja — Vind väntas",
           "ok_bad_condition": "Ja — Dåligt väder väntas",
-          "unknown_clear": "Okänt",
+          "unknown_clear": "Nej — Inget regn i sikte",
           "no_rain": "Nej — Regn",
           "no_freeze": "Nej — Frost",
           "no_snow": "Nej — Snö",
@@ -343,6 +343,34 @@
           "no_bad_condition": "Nej — Dåligt väder",
           "no_bad_current_condition": "Nej — Dåligt väder just nu",
           "no_data": "Nej — Inga prognosdata",
+          "snoozed": "Pausad"
+        }
+      },
+      "should_wash_status": {
+        "name": "Bör tvätta-status",
+        "state": {
+          "ok_clear": "Tvätta nu — Klart och försenat",
+          "ok_dirty_now": "Tvätta nu — Smutsig yta",
+          "ok_rain": "Tvätta nu — Regn hjälper till",
+          "ok_freeze": "Tvätta nu — Frost hjälper till",
+          "ok_snow": "Tvätta nu — Snö hjälper till",
+          "ok_wind": "Tvätta nu — Vind hjälper till",
+          "ok_bad_condition": "Tvätta nu — Dåligt väder hjälper till",
+          "not_due_yet": "Inte än — Nyligen tvättad",
+          "unknown_clear": "Behövs inte — inget regn i sikte",
+          "no_rain": "Vänta — Regn på väg",
+          "no_freeze": "Vänta — Frost på väg",
+          "no_snow": "Vänta — Snö på väg",
+          "no_wind": "Vänta — Vind på väg",
+          "no_bad_condition": "Vänta — Dåligt väder på väg",
+          "no_bad_current_condition": "Vänta — Dåligt väder just nu",
+          "recent_no_rain": "Vänta — Regn på väg, nyligen tvättad",
+          "recent_no_freeze": "Vänta — Frost på väg, nyligen tvättad",
+          "recent_no_snow": "Vänta — Snö på väg, nyligen tvättad",
+          "recent_no_wind": "Vänta — Vind på väg, nyligen tvättad",
+          "recent_no_bad_condition": "Vänta — Dåligt väder på väg, nyligen tvättad",
+          "recent_no_bad_current_condition": "Vänta — Dåligt väder just nu, nyligen tvättad",
+          "no_data": "Inga prognosdata",
           "snoozed": "Pausad"
         }
       },

@@ -1,10 +1,10 @@
 /**
- * WashWise Card v0.3.0
+ * WashWise Card v0.3.1
  * Custom Lovelace card for the Home Assistant WashWise integration.
  * Single-file, hand-coded, no build step.
  */
 
-const CARD_VERSION = "0.3.0";
+const CARD_VERSION = "0.3.1";
 
 console.info(
   `%c WASHWISE-CARD %c v${CARD_VERSION} %c — github.com/italo-lombardi/Home-Assistant-WashWise `,
@@ -695,7 +695,7 @@ class WashWiseCard extends LitElement {
         <div class="ww-card">
           ${this._renderHeader(friendly, headerVerdict, isIrrigation, useShould)}
           ${cfg.show_score_gauge && !snoozed ? this._renderGauge(score, verdict) : nothing}
-          ${cfg.show_reason ? this._renderReason(stateObj, isIrrigation) : nothing}
+          ${cfg.show_reason ? this._renderReason(stateObj, isIrrigation, useShould ? gateObj : null, verdict) : nothing}
           ${cfg.show_last_washed ? this._renderLastWashed() : nothing}
           ${isIrrigation ? this._renderRainGauge(cfg) : nothing}
           ${cfg.show_forecast_strip
@@ -769,7 +769,7 @@ class WashWiseCard extends LitElement {
     `;
   }
 
-  _renderReason(stateObj, isIrrigation = false) {
+  _renderReason(stateObj, isIrrigation = false, gateObj = null, verdict = null) {
     const reason = stateObj.attributes.reason;
     if (!reason) return nothing;
     if (reason === "snoozed") {
@@ -793,6 +793,49 @@ class WashWiseCard extends LitElement {
         <div class="ww-row"><span>Reason:</span><strong>Snoozed</strong></div>
         <div class="ww-row"><span>Resumes:</span><strong>${remaining}</strong></div>
       `;
+    }
+    // should_wash mode: the badge follows the recency gate, so the reason row
+    // must agree. "warn" = weather fine but washed too recently → the reason is
+    // recency, NOT the (clear) weather. "bad" = weather blocks; if ALSO washed
+    // too recently, note both so the row isn't recency-silent.
+    if (gateObj) {
+      const a = gateObj.attributes ?? {};
+      const recentlyWashed =
+        typeof a.min_days === "number" &&
+        a.min_days > 0 &&
+        a.days_since_last_wash != null &&
+        a.days_since_last_wash < a.min_days;
+      if (verdict === "warn") {
+        return html`
+          <div class="ww-row">
+            <span>Reason:</span>
+            <strong>Washed too recently</strong>
+          </div>
+        `;
+      }
+      // Only the six real weather blockers get the combined "+ washed
+      // recently" note — mirrors the sensor's _RECENT_NO_REASONS, which
+      // excludes no_data/clear/snoozed. Keeps the card reason row byte-aligned
+      // with the should_wash_status enum state.
+      const RECENT_WEATHER = [
+        "rain",
+        "freeze",
+        "snow",
+        "wind",
+        "bad_condition",
+        "bad_current_condition",
+      ];
+      if (verdict === "bad" && recentlyWashed && RECENT_WEATHER.includes(reason)) {
+        const weather = isIrrigation
+          ? this._irrigationReason(reason)
+          : prettyReason(reason);
+        return html`
+          <div class="ww-row">
+            <span>Reason:</span>
+            <strong>${weather} · washed recently</strong>
+          </div>
+        `;
+      }
     }
     const reasonLabel = isIrrigation
       ? this._irrigationReason(reason)

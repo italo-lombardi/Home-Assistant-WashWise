@@ -335,7 +335,7 @@
           "ok_snow": "Igen — Hó várható",
           "ok_wind": "Igen — Szél várható",
           "ok_bad_condition": "Igen — Rossz időjárás várható",
-          "unknown_clear": "Ismeretlen",
+          "unknown_clear": "Nem — Nincs eső az előrejelzésben",
           "no_rain": "Nem — Eső",
           "no_freeze": "Nem — Fagyás",
           "no_snow": "Nem — Hó",
@@ -343,6 +343,34 @@
           "no_bad_condition": "Nem — Rossz időjárás",
           "no_bad_current_condition": "Nem — Rossz jelenlegi időjárás",
           "no_data": "Nem — Nincs előrejelzési adat",
+          "snoozed": "Szüneteltetve"
+        }
+      },
+      "should_wash_status": {
+        "name": "Mosás szükségességi állapot",
+        "state": {
+          "ok_clear": "Mosd le most — tiszta és esedékes",
+          "ok_dirty_now": "Mosd le most — felület piszkos",
+          "ok_rain": "Mosd le most — az eső segít",
+          "ok_freeze": "Mosd le most — a fagyás segít",
+          "ok_snow": "Mosd le most — a hó segít",
+          "ok_wind": "Mosd le most — a szél segít",
+          "ok_bad_condition": "Mosd le most — a rossz időjárás segít",
+          "not_due_yet": "Még ne — nemrég mosva",
+          "unknown_clear": "Nem szükséges — nincs eső az előrejelzésben",
+          "no_rain": "Várj — eső jön",
+          "no_freeze": "Várj — fagyás jön",
+          "no_snow": "Várj — hó jön",
+          "no_wind": "Várj — szél jön",
+          "no_bad_condition": "Várj — rossz időjárás jön",
+          "no_bad_current_condition": "Várj — most rossz az idő",
+          "recent_no_rain": "Várj — eső jön, nemrég mosva",
+          "recent_no_freeze": "Várj — fagyás jön, nemrég mosva",
+          "recent_no_snow": "Várj — hó jön, nemrég mosva",
+          "recent_no_wind": "Várj — szél jön, nemrég mosva",
+          "recent_no_bad_condition": "Várj — rossz időjárás jön, nemrég mosva",
+          "recent_no_bad_current_condition": "Várj — most rossz az idő, nemrég mosva",
+          "no_data": "Nincs előrejelzési adat",
           "snoozed": "Szüneteltetve"
         }
       },

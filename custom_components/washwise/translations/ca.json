@@ -335,7 +335,7 @@
           "ok_snow": "Sí — Neu prevista",
           "ok_wind": "Sí — Vent previst",
           "ok_bad_condition": "Sí — Mal temps previst",
-          "unknown_clear": "Desconegut",
+          "unknown_clear": "No — Sense pluja prevista",
           "no_rain": "No — Pluja",
           "no_freeze": "No — Gelada",
           "no_snow": "No — Neu",
@@ -343,6 +343,34 @@
           "no_bad_condition": "No — Mal temps",
           "no_bad_current_condition": "No — Mal temps actual",
           "no_data": "No — Sense dades de previsió",
+          "snoozed": "Ajornat"
+        }
+      },
+      "should_wash_status": {
+        "name": "Estat de si cal rentar",
+        "state": {
+          "ok_clear": "Renta ara — net i endarrerit",
+          "ok_dirty_now": "Renta ara — superfície bruta",
+          "ok_rain": "Renta ara — la pluja ajudarà",
+          "ok_freeze": "Renta ara — la gelada ajudarà",
+          "ok_snow": "Renta ara — la neu ajudarà",
+          "ok_wind": "Renta ara — el vent ajudarà",
+          "ok_bad_condition": "Renta ara — el mal temps ajuda",
+          "not_due_yet": "Encara no — rentat fa poc",
+          "unknown_clear": "No cal — sense pluja prevista",
+          "no_rain": "Espera — ve pluja",
+          "no_freeze": "Espera — ve gelada",
+          "no_snow": "Espera — ve neu",
+          "no_wind": "Espera — ve vent",
+          "no_bad_condition": "Espera — ve mal temps",
+          "no_bad_current_condition": "Espera — mal temps ara",
+          "recent_no_rain": "Espera — ve pluja, rentat fa poc",
+          "recent_no_freeze": "Espera — ve gelada, rentat fa poc",
+          "recent_no_snow": "Espera — ve neu, rentat fa poc",
+          "recent_no_wind": "Espera — ve vent, rentat fa poc",
+          "recent_no_bad_condition": "Espera — ve mal temps, rentat fa poc",
+          "recent_no_bad_current_condition": "Espera — mal temps ara, rentat fa poc",
+          "no_data": "Sense dades de previsió",
           "snoozed": "Ajornat"
         }
       },

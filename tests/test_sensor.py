@@ -41,6 +41,9 @@ from custom_components.washwise.models import (
     WashEntry,
 )
 from custom_components.washwise.sensor import (
+    _NO_REASONS,
+    _OK_REASONS,
+    _RECENT_NO_REASONS,
     ActiveProviderSensor,
     CategorySensor,
     DaysAnalyzedSensor,
@@ -55,6 +58,7 @@ from custom_components.washwise.sensor import (
     PrimaryProviderUptimeSensor,
     ReasonSensor,
     ScoreSensor,
+    ShouldWashStatusSensor,
     SnoozeRemainingSensor,
     WashCount30dSensor,
     WashStatusSensor,
@@ -134,8 +138,16 @@ def _make_coordinator(
     active_provider_label: str | None = "Home",
     last_update_success_time: datetime | None = None,
     weather_ids: list[str] | None = None,
+    should_wash: bool | None = None,
+    days_since_last_wash: int | None = None,
+    min_days: int = 0,
 ) -> SimpleNamespace:
-    """Build a stub coordinator that satisfies CoordinatorEntity init."""
+    """Build a stub coordinator that satisfies CoordinatorEntity init.
+
+    ``should_wash`` / ``days_since_last_wash`` / ``min_days`` back the
+    ShouldWashStatusSensor gate surface; defaults keep the gate inert for the
+    sensors that don't read them.
+    """
     store = SimpleNamespace(_data=stored) if stored is not None else SimpleNamespace()
     ids = list(weather_ids) if weather_ids is not None else []
     return SimpleNamespace(
@@ -147,6 +159,9 @@ def _make_coordinator(
         _store=store,
         _weather_ids=lambda ids=ids: list(ids),
         async_add_listener=lambda update_callback, context=None: lambda: None,
+        should_wash=should_wash,
+        _days_since_last_wash=lambda stored=None, v=days_since_last_wash: v,
+        _resolve_should_wash_min_days=lambda v=min_days: v,
     )
 
 
@@ -755,35 +770,35 @@ def test_wash_status_combines_can_wash_and_reason(
 
 
 def test_wash_status_unknown_reason_falls_back() -> None:
-    """A reason key not in the mapping resolves to ``None`` (HA renders ``unknown``)."""
+    """A reason key not in the mapping resolves to ``no_data`` (never ``unknown``)."""
     decision = _make_decision(can_wash=False, reason="future_reason_key")
     coordinator = _make_coordinator(decision)
     entry = _make_entry()
 
     sensor = WashStatusSensor(coordinator, entry)
 
-    assert sensor.native_value is None
+    assert sensor.native_value == "no_data"
 
 
-def test_wash_status_empty_reason_yields_none() -> None:
-    """An empty reason short-circuits to ``None`` (matches ``ReasonSensor``)."""
+def test_wash_status_empty_reason_yields_no_data() -> None:
+    """An empty reason resolves to ``no_data`` (no ``unknown`` state)."""
     decision = _make_decision(can_wash=False, reason="")
     coordinator = _make_coordinator(decision)
     entry = _make_entry()
 
     sensor = WashStatusSensor(coordinator, entry)
 
-    assert sensor.native_value is None
+    assert sensor.native_value == "no_data"
 
 
-def test_wash_status_none_without_decision() -> None:
-    """``WashStatusSensor`` returns ``None`` while waiting for first refresh."""
+def test_wash_status_no_data_without_decision() -> None:
+    """``WashStatusSensor`` returns ``no_data`` while waiting for first refresh."""
     coordinator = _make_coordinator(None)
     entry = _make_entry()
 
     sensor = WashStatusSensor(coordinator, entry)
 
-    assert sensor.native_value is None
+    assert sensor.native_value == "no_data"
 
 
 def test_wash_status_options_match_state_keys() -> None:
@@ -814,11 +829,177 @@ def test_wash_status_options_match_state_keys() -> None:
     assert "unavailable" not in (sensor.options or [])
     # Every value either mapping can emit must be a declared option (guards
     # against adding a reason to the map without an enum slot / translation).
-    emitted = set(WashStatusSensor._OK_REASONS.values()) | set(
-        WashStatusSensor._NO_REASONS.values()
-    )
+    emitted = set(_OK_REASONS.values()) | set(_NO_REASONS.values())
     assert emitted <= set(sensor.options or [])
     assert "unknown" not in (sensor.options or [])
+
+
+# ----------------------------------------------------------------------
+# ShouldWashStatusSensor
+# ----------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("should_wash", "can_wash", "reason", "days_since", "min_days", "expected"),
+    [
+        # Gate ON -> OK reason map (can_wash implied True).
+        (True, True, "clear", 9, 3, "ok_clear"),
+        (True, True, "dirty_now", 9, 3, "ok_dirty_now"),
+        (True, True, "rain", 9, 3, "ok_rain"),  # inverted mode
+        (True, True, "snow", 9, 3, "ok_snow"),
+        (True, True, "freeze", 9, 3, "ok_freeze"),
+        (True, True, "wind", 9, 3, "ok_wind"),
+        (True, True, "bad_condition", 9, 3, "ok_bad_condition"),
+        # Gate OFF but weather fine (recency holds it) -> not_due_yet.
+        (False, True, "clear", 1, 3, "not_due_yet"),
+        (False, True, "dirty_now", 1, 3, "not_due_yet"),
+        # Gate OFF, weather blocks, NOT recently washed -> plain NO key.
+        (False, False, "rain", 10, 3, "no_rain"),
+        (False, False, "freeze", None, 3, "no_freeze"),  # never washed
+        (False, False, "snow", 5, 0, "no_snow"),  # min_days inert
+        # Gate OFF, weather blocks, recently washed -> combined recent_no_*.
+        (False, False, "rain", 1, 3, "recent_no_rain"),
+        (False, False, "freeze", 2, 5, "recent_no_freeze"),
+        (False, False, "snow", 0, 7, "recent_no_snow"),
+        (False, False, "wind", 1, 2, "recent_no_wind"),
+        (False, False, "bad_condition", 1, 3, "recent_no_bad_condition"),
+        (False, False, "bad_current_condition", 0, 3, "recent_no_bad_current_condition"),
+        # Reasons NOT in _RECENT_NO_REASONS keep their plain key even when recent.
+        (False, False, "clear", 1, 3, "unknown_clear"),
+        (False, False, "no_data", 1, 3, "no_data"),
+        (False, False, "snoozed", 1, 3, "snoozed"),
+    ],
+)
+def test_should_wash_status_combines_gate_and_reason(
+    should_wash: bool,
+    can_wash: bool,
+    reason: str,
+    days_since: int | None,
+    min_days: int,
+    expected: str,
+) -> None:
+    """``ShouldWashStatusSensor`` merges the recency gate, weather, and reason."""
+    decision = _make_decision(can_wash=can_wash, reason=reason)
+    coordinator = _make_coordinator(
+        decision,
+        should_wash=should_wash,
+        days_since_last_wash=days_since,
+        min_days=min_days,
+    )
+    entry = _make_entry()
+
+    sensor = ShouldWashStatusSensor(coordinator, entry)
+
+    assert sensor.native_value == expected
+    assert sensor.native_value in (sensor.options or [])
+
+
+@pytest.mark.parametrize(
+    ("decision", "should_wash"),
+    [
+        (None, None),  # no decision yet
+        (True, None),  # gate not computed yet
+    ],
+)
+def test_should_wash_status_no_data_when_incomplete(
+    decision: bool | None, should_wash: bool | None
+) -> None:
+    """Missing decision or ungated state resolves to ``no_data`` (never None)."""
+    dec = None if decision is None else _make_decision(can_wash=bool(decision))
+    coordinator = _make_coordinator(dec, should_wash=should_wash)
+    entry = _make_entry()
+
+    sensor = ShouldWashStatusSensor(coordinator, entry)
+
+    assert sensor.native_value == "no_data"
+
+
+def test_should_wash_status_empty_reason_yields_no_data() -> None:
+    """An empty reason resolves to ``no_data``."""
+    decision = _make_decision(can_wash=False, reason="")
+    coordinator = _make_coordinator(decision, should_wash=False, min_days=3, days_since_last_wash=1)
+    entry = _make_entry()
+
+    sensor = ShouldWashStatusSensor(coordinator, entry)
+
+    assert sensor.native_value == "no_data"
+
+
+def test_should_wash_status_unmapped_reason_falls_back() -> None:
+    """A future reason not in any map resolves to ``no_data`` (never ``unknown``)."""
+    decision = _make_decision(can_wash=False, reason="future_key")
+    coordinator = _make_coordinator(decision, should_wash=False)
+    entry = _make_entry()
+
+    sensor = ShouldWashStatusSensor(coordinator, entry)
+
+    assert sensor.native_value == "no_data"
+
+
+def test_should_wash_status_attributes_expose_recency_gate() -> None:
+    """``extra_state_attributes`` surface the recency gate inputs."""
+    decision = _make_decision(can_wash=False, reason="rain")
+    coordinator = _make_coordinator(decision, should_wash=False, days_since_last_wash=1, min_days=3)
+    entry = _make_entry()
+
+    sensor = ShouldWashStatusSensor(coordinator, entry)
+    attrs = sensor.extra_state_attributes
+
+    assert attrs == {
+        "can_wash": False,
+        "days_since_last_wash": 1,
+        "min_days": 3,
+        "reason": "rain",
+    }
+
+
+def test_should_wash_status_attributes_none_without_decision() -> None:
+    """Attributes degrade gracefully when there's no decision yet."""
+    coordinator = _make_coordinator(None, should_wash=None, min_days=0)
+    entry = _make_entry()
+
+    sensor = ShouldWashStatusSensor(coordinator, entry)
+    attrs = sensor.extra_state_attributes
+
+    assert attrs["can_wash"] is None
+    assert attrs["reason"] is None
+
+
+def test_should_wash_status_options_cover_emitted_keys() -> None:
+    """Every key native_value can emit is a declared enum option."""
+    coordinator = _make_coordinator(_make_decision(), should_wash=True)
+    entry = _make_entry()
+    sensor = ShouldWashStatusSensor(coordinator, entry)
+    opts = set(sensor.options or [])
+
+    emitted = (
+        set(_OK_REASONS.values())
+        | set(_NO_REASONS.values())
+        | set(_RECENT_NO_REASONS.values())
+        | {"not_due_yet", "no_data"}
+    )
+    assert emitted <= opts
+    assert "unknown" not in opts
+    assert "unavailable" not in opts
+    assert len(opts) == 23
+
+
+def test_should_wash_status_recently_washed_edges() -> None:
+    """``_recently_washed`` is False for never-washed and inert min_days."""
+    entry = _make_entry()
+    decision = _make_decision(can_wash=False, reason="rain")
+
+    # never washed (days_since None) -> not recently washed -> plain no_rain
+    c1 = _make_coordinator(decision, should_wash=False, days_since_last_wash=None, min_days=3)
+    assert ShouldWashStatusSensor(c1, entry).native_value == "no_rain"
+
+    # min_days 0 (gate inert) -> not recently washed -> plain no_rain
+    c2 = _make_coordinator(decision, should_wash=False, days_since_last_wash=0, min_days=0)
+    assert ShouldWashStatusSensor(c2, entry).native_value == "no_rain"
+
+    # days_since == min_days (due, not under) -> plain no_rain
+    c3 = _make_coordinator(decision, should_wash=False, days_since_last_wash=3, min_days=3)
+    assert ShouldWashStatusSensor(c3, entry).native_value == "no_rain"
 
 
 def test_days_until_wash_returns_value_with_decision() -> None:

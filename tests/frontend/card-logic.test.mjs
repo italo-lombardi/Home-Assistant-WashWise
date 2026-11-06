@@ -262,6 +262,70 @@ test("_renderReason: wind + no_data backend reasons have friendly labels (both m
   assert.match(irr("no_data"), /No forecast data/);
 });
 
+// ── _renderReason: should_wash recency gate ──────────────────────────────────
+
+// In verdict_source=should_wash the reason row must agree with the badge.
+//   warn (weather fine, washed recently)  → "Washed too recently" (not weather)
+//   bad  (weather blocks) + recent + one of the six real weather blockers
+//        → "<weather> · washed recently" (mirrors the sensor's recent_no_*)
+//   bad  + recent + a non-weather reason (clear/no_data) → plain weather label
+//        (byte-parity with the enum sensor's _RECENT_NO_REASONS)
+function gate(attrs) {
+  return { attributes: attrs };
+}
+
+test("_renderReason should_wash: warn shows recency, not the (clear) weather reason", () => {
+  const frag = Card.prototype._renderReason.call(
+    {}, { attributes: { reason: "clear" } }, false,
+    gate({ can_wash: true, days_since_last_wash: 1, min_days: 3 }), "warn"
+  );
+  assert.match(frag.__html, /Washed too recently/);
+  assert.doesNotMatch(frag.__html, /Clear/, "weather must not contradict the badge");
+});
+
+test("_renderReason should_wash: bad + recent + weather blocker shows both", () => {
+  const frag = Card.prototype._renderReason.call(
+    {}, { attributes: { reason: "rain" } }, false,
+    gate({ can_wash: false, days_since_last_wash: 1, min_days: 3 }), "bad"
+  );
+  assert.match(frag.__html, /washed recently/);
+  assert.match(frag.__html, /Rain in forecast/, "weather kept as primary reason");
+});
+
+test("_renderReason should_wash: bad + no_data gets NO recency suffix (sensor parity)", () => {
+  const frag = Card.prototype._renderReason.call(
+    {}, { attributes: { reason: "no_data" } }, false,
+    gate({ can_wash: false, days_since_last_wash: 1, min_days: 3 }), "bad"
+  );
+  assert.doesNotMatch(frag.__html, /washed recently/);
+  assert.match(frag.__html, /No forecast data/);
+});
+
+test("_renderReason should_wash: bad + NOT recent → plain weather reason", () => {
+  const frag = Card.prototype._renderReason.call(
+    {}, { attributes: { reason: "rain" } }, false,
+    gate({ can_wash: false, days_since_last_wash: 10, min_days: 3 }), "bad"
+  );
+  assert.doesNotMatch(frag.__html, /washed recently/);
+  assert.match(frag.__html, /Rain in forecast/);
+});
+
+test("_renderReason should_wash: min_days=0 (inert gate) → no recency suffix", () => {
+  const frag = Card.prototype._renderReason.call(
+    {}, { attributes: { reason: "rain" } }, false,
+    gate({ can_wash: false, days_since_last_wash: 0, min_days: 0 }), "bad"
+  );
+  assert.doesNotMatch(frag.__html, /washed recently/);
+});
+
+test("_renderReason can_wash mode (gateObj null) keeps plain weather reason", () => {
+  const frag = Card.prototype._renderReason.call(
+    {}, { attributes: { reason: "rain" } }, false, null, "bad"
+  );
+  assert.match(frag.__html, /Rain in forecast/);
+  assert.doesNotMatch(frag.__html, /washed recently/);
+});
+
 test("_renderReason: every backend reason key maps to a non-raw label (both modes)", () => {
   // The full REASON_* enum from decision.py. If the backend adds a reason and
   // the card map isn't updated, prettyReason falls through to `?? key` and the

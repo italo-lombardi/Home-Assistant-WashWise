@@ -335,7 +335,7 @@
           "ok_snow": "Áno — Očakáva sa sneh",
           "ok_wind": "Áno — Očakáva sa vietor",
           "ok_bad_condition": "Áno — Očakáva sa zlé počasie",
-          "unknown_clear": "Neznámy",
+          "unknown_clear": "Nie — Žiadny dážď v predpovedi",
           "no_rain": "Nie — Dážď",
           "no_freeze": "Nie — Mráz",
           "no_snow": "Nie — Sneh",
@@ -343,6 +343,34 @@
           "no_bad_condition": "Nie — Zlé počasie",
           "no_bad_current_condition": "Nie — Zlé aktuálne počasie",
           "no_data": "Nie — Žiadne dáta predpovede",
+          "snoozed": "Odložené"
+        }
+      },
+      "should_wash_status": {
+        "name": "Stav či umývať",
+        "state": {
+          "ok_clear": "Umyte teraz — Jasno a po termíne",
+          "ok_dirty_now": "Umyte teraz — Povrch špinavý",
+          "ok_rain": "Umyte teraz — Dážď pomôže",
+          "ok_freeze": "Umyte teraz — Mráz pomôže",
+          "ok_snow": "Umyte teraz — Sneh pomôže",
+          "ok_wind": "Umyte teraz — Vietor pomôže",
+          "ok_bad_condition": "Umyte teraz — Zlé počasie pomôže",
+          "not_due_yet": "Ešte nie — Nedávno umyté",
+          "unknown_clear": "Netreba — žiadny dážď v predpovedi",
+          "no_rain": "Počkajte — Blíži sa dážď",
+          "no_freeze": "Počkajte — Blíži sa mráz",
+          "no_snow": "Počkajte — Blíži sa sneh",
+          "no_wind": "Počkajte — Blíži sa vietor",
+          "no_bad_condition": "Počkajte — Blíži sa zlé počasie",
+          "no_bad_current_condition": "Počkajte — Zlé aktuálne počasie",
+          "recent_no_rain": "Počkajte — Blíži sa dážď, nedávno umyté",
+          "recent_no_freeze": "Počkajte — Blíži sa mráz, nedávno umyté",
+          "recent_no_snow": "Počkajte — Blíži sa sneh, nedávno umyté",
+          "recent_no_wind": "Počkajte — Blíži sa vietor, nedávno umyté",
+          "recent_no_bad_condition": "Počkajte — Blíži sa zlé počasie, nedávno umyté",
+          "recent_no_bad_current_condition": "Počkajte — Zlé aktuálne počasie, nedávno umyté",
+          "no_data": "Žiadne dáta predpovede",
           "snoozed": "Odložené"
         }
       },

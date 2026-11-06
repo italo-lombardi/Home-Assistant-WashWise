@@ -335,7 +335,7 @@
           "ok_snow": "Kyllä — Lunta odotettavissa",
           "ok_wind": "Kyllä — Tuulta odotettavissa",
           "ok_bad_condition": "Kyllä — Huonoa säätä odotettavissa",
-          "unknown_clear": "Tuntematon",
+          "unknown_clear": "Ei — Ei sadetta ennusteessa",
           "no_rain": "Ei — Sade",
           "no_freeze": "Ei — Jäätyminen",
           "no_snow": "Ei — Lumi",
@@ -343,6 +343,34 @@
           "no_bad_condition": "Ei — Huono sää",
           "no_bad_current_condition": "Ei — Huono nykyinen sää",
           "no_data": "Ei — Ei ennustetietoja",
+          "snoozed": "Torkussa"
+        }
+      },
+      "should_wash_status": {
+        "name": "Pesutarpeen tila",
+        "state": {
+          "ok_clear": "Pese nyt — selkeää ja myöhässä",
+          "ok_dirty_now": "Pese nyt — pinta likainen",
+          "ok_rain": "Pese nyt — sade auttaa",
+          "ok_freeze": "Pese nyt — jäätyminen auttaa",
+          "ok_snow": "Pese nyt — lumi auttaa",
+          "ok_wind": "Pese nyt — tuuli auttaa",
+          "ok_bad_condition": "Pese nyt — huono sää auttaa",
+          "not_due_yet": "Ei vielä — pesty äskettäin",
+          "unknown_clear": "Ei tarpeen — ei sadetta ennusteessa",
+          "no_rain": "Odota — sadetta tulossa",
+          "no_freeze": "Odota — jäätymistä tulossa",
+          "no_snow": "Odota — lunta tulossa",
+          "no_wind": "Odota — tuulta tulossa",
+          "no_bad_condition": "Odota — huonoa säätä tulossa",
+          "no_bad_current_condition": "Odota — huono sää nyt",
+          "recent_no_rain": "Odota — sadetta tulossa, pesty äskettäin",
+          "recent_no_freeze": "Odota — jäätymistä tulossa, pesty äskettäin",
+          "recent_no_snow": "Odota — lunta tulossa, pesty äskettäin",
+          "recent_no_wind": "Odota — tuulta tulossa, pesty äskettäin",
+          "recent_no_bad_condition": "Odota — huonoa säätä tulossa, pesty äskettäin",
+          "recent_no_bad_current_condition": "Odota — huono sää nyt, pesty äskettäin",
+          "no_data": "Ei ennustetietoja",
           "snoozed": "Torkussa"
         }
       },
