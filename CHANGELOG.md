@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [0.3.1] - 2026-11-06
 
+> ⭐ **If WashWise is useful to you, please [star the repo](https://github.com/italo-lombardi/Home-Assistant-WashWise)** — it helps others find it and keeps development going.
+
 ### Added
 - **`should_wash_status` sensor** — a combined enum sensor mirroring `wash_status` but for the recency-aware should-wash gate. It merges the verdict and reason into one translated string (e.g. *Wash now — clear & overdue*, *Not yet — washed recently*, *Hold off — rain coming*), distinct from `wash_status` which only reflects `can_wash`. When the weather blocks a wash **and** the surface was also washed too recently, the state carries both facts (e.g. *Hold off — rain coming, washed recently*). Fully translated across all 29 locales.
 - **Recency attributes on `should_wash_status`** — `can_wash`, `days_since_last_wash`, `min_days`, and `reason` are exposed as attributes so the recency gate is visible in every state, not only the `not_due_yet` one (mirrors the `should_wash` binary sensor).
@@ -15,6 +17,18 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - **Card bumped to v0.3.1** — carries the should-wash reason fix above.
+
+### Other Home Assistant integrations by the same author
+
+| Integration | Description |
+|---|---|
+| [Entity Availability](https://github.com/italo-lombardi/Home-Assistant-EntityAvailability) | Monitor entity availability by group — tracks offline entities, availability history, and degraded states with a custom dashboard card |
+| [Entity Guard](https://github.com/italo-lombardi/Home-Assistant-EntityGuard) | Enforce entity state via declarative rules — replaces hand-written auto-off / auto-lock / kill-switch automations |
+| [Entity Distance](https://github.com/italo-lombardi/Home-Assistant-EntityDistance) | Tracks distance between 2–5 HA entities (persons, devices, zones) — direction, closing speed, ETA, proximity, group sensors |
+| [Entity State Tracker](https://github.com/italo-lombardi/Home-Assistant-EntityStateTracker) | Tracks time-in-state and transitions across time frames — per-state breakdowns and compliance scoring, with a custom card |
+| [Fuel Compare](https://github.com/italo-lombardi/Home-Assistant-FuelCompare) | Live fuel prices from 36 providers across 30 countries |
+| [DashSnap](https://github.com/italo-lombardi/DashSnap) | Record or screenshot any web page via headless Chromium — HA dashboards, Grafana, public pages; HA Add-on or Docker |
+| [DashSnap Integration](https://github.com/italo-lombardi/DashSnap-Integration) | Trigger DashSnap recordings and screenshots from HA automations and scripts |
 
 ## [0.3.0] - 2026-11-05
 
