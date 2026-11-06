@@ -813,7 +813,19 @@ class WashWiseCard extends LitElement {
           </div>
         `;
       }
-      if (verdict === "bad" && recentlyWashed) {
+      // Only the six real weather blockers get the combined "+ washed
+      // recently" note — mirrors the sensor's _RECENT_NO_REASONS, which
+      // excludes no_data/clear/snoozed. Keeps the card reason row byte-aligned
+      // with the should_wash_status enum state.
+      const RECENT_WEATHER = [
+        "rain",
+        "freeze",
+        "snow",
+        "wind",
+        "bad_condition",
+        "bad_current_condition",
+      ];
+      if (verdict === "bad" && recentlyWashed && RECENT_WEATHER.includes(reason)) {
         const weather = isIrrigation
           ? this._irrigationReason(reason)
           : prettyReason(reason);

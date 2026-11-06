@@ -14,6 +14,8 @@
 
 Decide whether to wash your car (or motorcycle, boat, solar panels, patio…) — or whether to skip garden irrigation — based on the weather forecast. WashWise reads any Home Assistant `weather` entity, walks an ordered fallback list of sources, and produces a verdict, a 0–100 score, a blocking reason, and per-day breakdown — all wrapped in a custom Lovelace card.
 
+> ⭐ **If WashWise is useful to you, please [star the repo](https://github.com/italo-lombardi/Home-Assistant-WashWise)** — it helps others find it and motivates continued development.
+
 ---
 
 ## Screenshots
