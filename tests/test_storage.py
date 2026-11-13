@@ -267,6 +267,65 @@ async def test_update_provider_health_increments_counters(
     assert record.last_success_ts is not None
 
 
+async def test_update_provider_health_steady_state_skips_disk_writes(
+    store: WashWiseStore,
+) -> None:
+    """WW-F1: repeated same-outcome ticks accrue in memory, no per-tick write.
+
+    The healthy-primary success path runs every coordinator tick. Only a
+    real transition (ok<->fail or error change) may hit disk; counter-only
+    bumps must stay in memory to avoid flash wear.
+    """
+    with patch.object(store._store, "async_save", new=AsyncMock()) as mock_save:
+        # First sighting = transition → one write.
+        await store.update_provider_health("weather.a", True, None)
+        assert mock_save.await_count == 1
+        # Three more identical successes = no further writes.
+        await store.update_provider_health("weather.a", True, None)
+        await store.update_provider_health("weather.a", True, None)
+        await store.update_provider_health("weather.a", True, None)
+        assert mock_save.await_count == 1
+        # But counters still accrue in the in-memory cache.
+        data = await store.load()
+        assert data.provider_health["weather.a"].success_count == 4
+        # A flip to failure IS a transition → one more write.
+        await store.update_provider_health("weather.a", False, "boom")
+        assert mock_save.await_count == 2
+        # Same failure again (same error) = no write.
+        await store.update_provider_health("weather.a", False, "boom")
+        assert mock_save.await_count == 2
+        # A changed error string IS a transition → write.
+        await store.update_provider_health("weather.a", False, "other")
+        assert mock_save.await_count == 3
+
+
+async def test_flush_health_persists_accrued_counters(
+    store: WashWiseStore,
+) -> None:
+    """``flush_health`` writes pending in-memory counters exactly once."""
+    with patch.object(store._store, "async_save", new=AsyncMock()) as mock_save:
+        await store.update_provider_health("weather.a", True, None)  # transition write
+        await store.update_provider_health("weather.a", True, None)  # accrue only
+        assert mock_save.await_count == 1
+        await store.flush_health()  # persists the accrued count
+        assert mock_save.await_count == 2
+        # Nothing pending now → second flush is a no-op.
+        await store.flush_health()
+        assert mock_save.await_count == 2
+
+
+async def test_gc_stale_health_flushes_pending_when_nothing_expired(
+    store: WashWiseStore,
+) -> None:
+    """The periodic gc flushes accrued counters even when no record expired."""
+    with patch.object(store._store, "async_save", new=AsyncMock()) as mock_save:
+        await store.update_provider_health("weather.a", True, None)  # transition write
+        await store.update_provider_health("weather.a", True, None)  # accrue only
+        assert mock_save.await_count == 1
+        await store.gc_stale_health()  # nothing stale, but flush pending
+        assert mock_save.await_count == 2
+
+
 async def test_update_provider_health_keeps_last_seen_on_each_call(
     store: WashWiseStore,
 ) -> None:

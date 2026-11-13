@@ -1045,6 +1045,18 @@ async def test_async_shutdown_detaches_registry_listener(hass: HomeAssistant) ->
     assert calls == ["unsub"]
 
 
+async def test_async_shutdown_flush_failure_is_non_fatal(hass: HomeAssistant) -> None:
+    """A failing provider-health flush at shutdown is logged, not raised."""
+    entry = _make_entry(["weather.primary"])
+    entry.add_to_hass(hass)
+    coord, _stub = _build_coordinator(hass, entry)
+
+    coord._store.flush_health = AsyncMock(side_effect=OSError("disk gone"))  # type: ignore[method-assign]
+    # Must not raise despite the flush error.
+    await coord.async_shutdown()
+    coord._store.flush_health.assert_awaited_once()
+
+
 async def test_init_without_weather_entities_skips_registry_listener(
     hass: HomeAssistant,
 ) -> None:
