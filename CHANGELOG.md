@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.2] - 2026-11-13
+
+> ⭐ **If WashWise is useful to you, please [star the repo](https://github.com/italo-lombardi/Home-Assistant-WashWise)** — it helps others find it and keeps development going.
+
+### Fixed
+- **No more constant disk writes for provider health.** The integration persisted its provider-health record (success/failure counters, last-seen timestamp) to disk on *every* coordinator update — including the normal healthy case — so a working install rewrote its storage file every poll (~every 15 min per entry, more often when a weather entity changes state). On SD-card / eMMC-backed Home Assistant hosts that is needless flash wear just to save an incrementing counter. The counters now accrue in memory and are written to disk only when something meaningful changes (a provider goes down or recovers, or its error changes) and are flushed on a periodic cadence and at shutdown, so they still survive a restart. Values are unchanged; only the redundant writes are gone.
+- **No more coordinator deprecation warning on HA 2026.8+.** The data coordinator is now constructed with the `config_entry` argument Home Assistant expects, silencing the deprecation warning and the removed-in-a-future-release implicit fallback.
+
+### Other Home Assistant integrations by the same author
+
+| Integration | Description |
+|---|---|
+| [Entity Availability](https://github.com/italo-lombardi/Home-Assistant-EntityAvailability) | Monitor entity availability by group — tracks offline entities, availability history, and degraded states with a custom dashboard card |
+| [Entity Guard](https://github.com/italo-lombardi/Home-Assistant-EntityGuard) | Enforce entity state via declarative rules — replaces hand-written auto-off / auto-lock / kill-switch automations |
+| [Entity Distance](https://github.com/italo-lombardi/Home-Assistant-EntityDistance) | Tracks distance between 2–5 HA entities (persons, devices, zones) — direction, closing speed, ETA, proximity, group sensors |
+| [Entity State Tracker](https://github.com/italo-lombardi/Home-Assistant-EntityStateTracker) | Tracks time-in-state and transitions across time frames — per-state breakdowns and compliance scoring, with a custom card |
+| [Fuel Compare](https://github.com/italo-lombardi/Home-Assistant-FuelCompare) | Live fuel prices from 36 providers across 30 countries |
+| [DashSnap](https://github.com/italo-lombardi/DashSnap) | Record or screenshot any web page via headless Chromium — HA dashboards, Grafana, public pages; HA Add-on or Docker |
+| [DashSnap Integration](https://github.com/italo-lombardi/DashSnap-Integration) | Trigger DashSnap recordings and screenshots from HA automations and scripts |
+
 ## [0.3.1] - 2026-11-06
 
 > ⭐ **If WashWise is useful to you, please [star the repo](https://github.com/italo-lombardi/Home-Assistant-WashWise)** — it helps others find it and keeps development going.

@@ -106,6 +106,7 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         super().__init__(
             hass,
             _LOGGER,
+            config_entry=entry,
             name=DOMAIN,
             update_interval=interval,
         )
@@ -352,6 +353,14 @@ class WashWiseCoordinator(DataUpdateCoordinator[Decision]):
         if self._unsub_gauge is not None:
             self._unsub_gauge()
             self._unsub_gauge = None
+        # Persist any provider-health counters accrued in memory since the last
+        # transition/gc flush, so they survive a restart (WW-F1). Shutdown must
+        # stay non-fatal, but leave a breadcrumb if the final flush fails rather
+        # than dropping the counts silently.
+        try:
+            await self._store.flush_health()
+        except Exception as err:  # shutdown must not raise
+            _LOGGER.debug("WashWise: provider-health flush at shutdown failed: %s", err)
         await super().async_shutdown()
 
     # ------------------------------------------------------------------

@@ -62,6 +62,13 @@ class WashWiseStore:
         self._load_lock: asyncio.Lock = asyncio.Lock()
         # Diagnostics: count actual disk reads (not cache hits).
         self._disk_read_count: int = 0
+        # WW-F1: provider-health counters churn every coordinator tick
+        # (success_count / last_seen_ts differ each call), so persisting them
+        # unconditionally writes to disk every ~15 min per entry — pure flash
+        # wear to save an incrementing counter. Accrue them in memory and only
+        # flush on a real transition (ok<->fail or last_error change); the
+        # periodic gc flush and shutdown flush persist the accrued counts.
+        self._health_dirty: bool = False
 
     @property
     def disk_read_count(self) -> int:
@@ -217,6 +224,8 @@ class WashWiseStore:
                 last_error=None if ok else error,
                 last_seen_ts=now_iso,
             )
+            # First sighting of a provider is a transition worth persisting.
+            transition = True
         else:
             new_health = ProviderHealth(
                 entity_id=entity_id,
@@ -227,21 +236,50 @@ class WashWiseStore:
                 last_error=None if ok else error,
                 last_seen_ts=now_iso,
             )
+            # A transition is an ok<->fail flip or a change of error string.
+            # Infer the previous outcome from which error field moved last:
+            # a prior failure left ``last_error`` set, a prior success cleared
+            # it. This relies on the caller contract "every failure carries a
+            # non-None error" (all call sites honour it, coordinator.py). A
+            # failure with error=None would make a later call mis-infer
+            # was_ok=True and skip a real fail->fail flush, so pin the contract.
+            assert ok or error is not None, "a failure must carry an error string"
+            # Counter-only increments (same outcome, same error) do NOT count —
+            # they stay in memory until a transition/gc/shutdown flush.
+            was_ok = existing.last_error is None
+            transition = (ok != was_ok) or (not ok and error != existing.last_error)
+
         health[entity_id] = new_health
-        await self.save(
-            StoredData(
-                wash_log=list(data.wash_log),
-                snooze_until=data.snooze_until,
-                last_failover_ts=data.last_failover_ts,
-                last_failover_from=data.last_failover_from,
-                last_failover_to=data.last_failover_to,
-                provider_health=health,
-            )
+        new_data = StoredData(
+            wash_log=list(data.wash_log),
+            snooze_until=data.snooze_until,
+            last_failover_ts=data.last_failover_ts,
+            last_failover_from=data.last_failover_from,
+            last_failover_to=data.last_failover_to,
+            provider_health=health,
         )
+        if transition:
+            await self.save(new_data)
+            self._health_dirty = False
+        else:
+            # Accrue in memory only — no disk write for a counter bump.
+            self._data = new_data
+            self._health_dirty = True
+
+    async def flush_health(self) -> None:
+        """Persist any in-memory provider-health counters not yet on disk.
+
+        Called on the periodic gc cadence and at shutdown so accrued
+        success/failure counts survive a restart without a per-tick write.
+        """
+        if self._health_dirty and self._data is not None:
+            await self.save(self._data)
+            self._health_dirty = False
 
     async def gc_stale_health(self) -> None:
         data = await self.load()
         if not data.provider_health:
+            await self.flush_health()
             return
         cutoff = _utcnow() - timedelta(days=STALE_PROVIDER_TTL_DAYS)
         kept: dict[str, ProviderHealth] = {}
@@ -254,6 +292,8 @@ class WashWiseStore:
             else:
                 changed = True
         if not changed:
+            # Nothing expired, but flush any pending accrued counters.
+            await self.flush_health()
             return
         await self.save(
             StoredData(
@@ -265,3 +305,4 @@ class WashWiseStore:
                 provider_health=kept,
             )
         )
+        self._health_dirty = False
